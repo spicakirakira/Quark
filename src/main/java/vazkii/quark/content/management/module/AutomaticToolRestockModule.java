@@ -40,7 +40,7 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 
 @LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, antiOverlap = "inventorytweaks")
-public class AutomaticTookRestockModule extends QuarkModule {
+public class AutomaticToolRestockModule extends QuarkModule {
 
 	private static final Map<ToolAction, String> ACTION_TO_CLASS = new HashMap<>();
 	
