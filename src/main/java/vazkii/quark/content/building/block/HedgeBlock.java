@@ -75,8 +75,8 @@ public class HedgeBlock extends FenceBlock implements IQuarkBlock, IBlockColorPr
 		} else {
 			RegistryHelper.registerBlock(this, leafRes.getPath().replaceAll("_leaves", "_hedge"));
 		}
-
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 

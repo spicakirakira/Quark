@@ -35,7 +35,7 @@ public class QuarkVineBlock extends VineBlock implements IQuarkBlock {
 		RegistryHelper.registerBlock(this, name);
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 
-		if(creative)
+		if (creative && this.isEnabled())
 			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 	}
 

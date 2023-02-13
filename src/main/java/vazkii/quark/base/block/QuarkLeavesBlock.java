@@ -33,7 +33,8 @@ public class QuarkLeavesBlock extends LeavesBlock implements IQuarkBlock {
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, name + "_leaves");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT_MIPPED);
 	}

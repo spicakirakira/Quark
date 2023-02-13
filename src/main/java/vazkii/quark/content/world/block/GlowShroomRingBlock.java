@@ -21,6 +21,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
@@ -43,7 +44,8 @@ public class GlowShroomRingBlock extends QuarkBlock implements SimpleWaterlogged
 				.noCollission()
 				.instabreak()
 				.sound(SoundType.FUNGUS));
-
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
 	}

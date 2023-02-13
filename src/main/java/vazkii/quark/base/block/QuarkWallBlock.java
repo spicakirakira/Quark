@@ -32,7 +32,8 @@ public class QuarkWallBlock extends WallBlock implements IQuarkBlock, IBlockColo
 
 		this.parent = parent;
 		RegistryHelper.registerBlock(this, IQuarkBlock.inheritQuark(parent, "%s_wall"));
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setInherited(this, parent.getBlock());
 	}

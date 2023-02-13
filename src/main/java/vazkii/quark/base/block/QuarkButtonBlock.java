@@ -26,7 +26,7 @@ public abstract class QuarkButtonBlock extends ButtonBlock implements IQuarkBloc
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, regname);
-		if(creativeTab != null)
+		if (creativeTab != null && this.isEnabled())
 			RegistryHelper.setCreativeTab(this, creativeTab);
 	}
 

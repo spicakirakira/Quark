@@ -41,7 +41,8 @@ public class IronRodBlock extends EndRodBlock implements ICollateralMover, IQuar
 				.noOcclusion());
 
 		RegistryHelper.registerBlock(this, "iron_rod");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 

@@ -48,7 +48,8 @@ public class VariantChestBlock extends ChestBlock implements IBlockItemProvider,
 	public VariantChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
 		super(props, supplier);
 		RegistryHelper.registerBlock(this, type + "_chest");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 

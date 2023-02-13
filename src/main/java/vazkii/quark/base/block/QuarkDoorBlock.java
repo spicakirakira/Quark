@@ -30,7 +30,7 @@ public class QuarkDoorBlock extends DoorBlock implements IQuarkBlock, IBlockItem
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 		RegistryHelper.registerBlock(this, regname);
-		if(creativeTab != null)
+		if (creativeTab != null && this.isEnabled())
 			RegistryHelper.setCreativeTab(this, creativeTab);
 	}
 

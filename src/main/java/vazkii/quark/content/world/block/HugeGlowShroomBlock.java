@@ -32,6 +32,7 @@ public class HugeGlowShroomBlock extends HugeMushroomBlock implements IQuarkBloc
 	public HugeGlowShroomBlock(String name, QuarkModule module, final boolean glowing) {
 		super(Block.Properties.copy(Blocks.RED_MUSHROOM_BLOCK)
 				.lightLevel(b -> glowing ? 12 : 0)
+				.hasPostProcess((a,b,c)-> glowing).emissiveRendering((a,b,c)-> glowing)
 				.randomTicks()
 				.noOcclusion());
 
@@ -39,7 +40,8 @@ public class HugeGlowShroomBlock extends HugeMushroomBlock implements IQuarkBloc
 		this.glowing = glowing;
 
 		RegistryHelper.registerBlock(this, name);
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 	}
 
 	@Override

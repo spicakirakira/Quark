@@ -24,7 +24,8 @@ public class QuarkPaneBlock extends IronBarsBlock implements IQuarkBlock {
 
 		this.module = module;
 		RegistryHelper.registerBlock(this, name);
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		if(renderType != null)
 			RenderLayerHandler.setRenderType(this, renderType);

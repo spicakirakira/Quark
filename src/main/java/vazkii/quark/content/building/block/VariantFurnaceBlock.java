@@ -28,7 +28,8 @@ public class VariantFurnaceBlock extends FurnaceBlock implements IQuarkBlock {
 		super(props);
 
 		RegistryHelper.registerBlock(this, type + "_furnace");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 	}

@@ -25,7 +25,7 @@ public class QuarkTrapdoorBlock extends TrapDoorBlock implements IQuarkBlock {
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 		RegistryHelper.registerBlock(this, regname);
-		if(creativeTab != null)
+		if (creativeTab != null && this.isEnabled())
 			RegistryHelper.setCreativeTab(this, creativeTab);
 	}
 

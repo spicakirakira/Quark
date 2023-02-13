@@ -30,7 +30,8 @@ public class VariantLadderBlock extends LadderBlock implements IQuarkBlock {
 		super(props);
 
 		RegistryHelper.registerBlock(this, type + "_ladder");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);

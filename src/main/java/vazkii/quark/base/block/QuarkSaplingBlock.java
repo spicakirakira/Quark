@@ -26,7 +26,8 @@ public abstract class QuarkSaplingBlock extends SaplingBlock implements IQuarkBl
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, name + "_sapling");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (this.isEnabled())
+			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 	}
