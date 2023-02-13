@@ -37,7 +37,7 @@ public interface IQuarkBlock extends IForgeBlock {
 
 	default boolean isEnabled() {
 		QuarkModule module = getModule();
-		return module != null && module.enabled && doesConditionApply();
+		return module != null && module.enabled && !module.disabledByOverlap && doesConditionApply();
 	}
 
 	@Override

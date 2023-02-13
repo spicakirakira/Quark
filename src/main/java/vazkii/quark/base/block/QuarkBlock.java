@@ -18,53 +18,55 @@ import java.util.function.BooleanSupplier;
 
 public class QuarkBlock extends BasicBlock implements IQuarkBlock {
 
-	private final QuarkModule module;
-	private BooleanSupplier enabledSupplier = () -> true;
+    private final QuarkModule module;
+    private BooleanSupplier enabledSupplier = () -> true;
 
-	public QuarkBlock(String regname, QuarkModule module, CreativeModeTab creativeTab, Properties properties) {
-		super(regname, properties);
-		this.module = module;
+    public QuarkBlock(String regname, QuarkModule module, CreativeModeTab creativeTab, Properties properties) {
+        super(regname, properties);
+        this.module = module;
 
-		if(creativeTab != null)
-			RegistryHelper.setCreativeTab(this, creativeTab);
+        if (creativeTab != null && this.isEnabled())
+            //this takes care of JEI+creative as giving a null tab will hide from both
+            //TODO: check if fillItemCategory is still needed
+            RegistryHelper.setCreativeTab(this, creativeTab);
 
-		if(module.category.isAddon())
-			RequiredModTooltipHandler.map(this, module.category.requiredMod);
-	}
+        if (module.category.isAddon())
+            RequiredModTooltipHandler.map(this, module.category.requiredMod);
+    }
 
-	@Override
-	public void fillItemCategory(@Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> items) {
-		if(isEnabled() || group == CreativeModeTab.TAB_SEARCH)
-			super.fillItemCategory(group, items);
-	}
+    @Override
+    public void fillItemCategory(@Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> items) {
+        if (isEnabled() || group == CreativeModeTab.TAB_SEARCH)
+            super.fillItemCategory(group, items);
+    }
 
-	@Override
-	public QuarkBlock setCondition(BooleanSupplier enabledSupplier) {
-		this.enabledSupplier = enabledSupplier;
-		return this;
-	}
+    @Override
+    public QuarkBlock setCondition(BooleanSupplier enabledSupplier) {
+        this.enabledSupplier = enabledSupplier;
+        return this;
+    }
 
-	@Override
-	public boolean doesConditionApply() {
-		return enabledSupplier.getAsBoolean();
-	}
+    @Override
+    public boolean doesConditionApply() {
+        return enabledSupplier.getAsBoolean();
+    }
 
-	@Nullable
-	@Override
-	public QuarkModule getModule() {
-		return module;
-	}
+    @Nullable
+    @Override
+    public QuarkModule getModule() {
+        return module;
+    }
 
-	@Nullable
-	@SuppressWarnings("unchecked")
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> thisType, BlockEntityType<E> targetType, BlockEntityTicker<? super E> ticker) {
-		return targetType == thisType ? (BlockEntityTicker<A>) ticker : null;
-	}
+    @Nullable
+    @SuppressWarnings("unchecked")
+    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> thisType, BlockEntityType<E> targetType, BlockEntityTicker<? super E> ticker) {
+        return targetType == thisType ? (BlockEntityTicker<A>) ticker : null;
+    }
 
-	public interface Constructor<T extends Block> {
+    public interface Constructor<T extends Block> {
 
-		T make(String regname, QuarkModule module, CreativeModeTab creativeTab, Properties properties);
+        T make(String regname, QuarkModule module, CreativeModeTab creativeTab, Properties properties);
 
-	}
+    }
 
 }

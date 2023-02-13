@@ -20,6 +20,7 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.util.VanillaWoods;
 import vazkii.quark.base.util.VanillaWoods.Wood;
 import vazkii.quark.content.building.block.HollowLogBlock;
+import vazkii.quark.content.building.block.HollowPillarBlock;
 
 @LoadModule(category = ModuleCategory.BUILDING, hasSubscriptions = true)
 public class HollowLogsModule extends QuarkModule {
@@ -63,15 +64,15 @@ public class HollowLogsModule extends QuarkModule {
 		BlockState state = player.level.getBlockState(pos);
 		Block block = state.getBlock();
 		
-		if(block instanceof HollowLogBlock) {
-			Axis axis = state.getValue(HollowLogBlock.AXIS);
+		if(block instanceof HollowPillarBlock) {
+			Axis axis = state.getValue(HollowPillarBlock.AXIS);
 			if(axis != Axis.Y && axis == dir.getAxis()) {
 				player.setPose(Pose.SWIMMING);
 				player.setSwimming(true);
 				
-				double x = pos.getX() + 0.5 - ((double) dir.getStepX() * 0.4);
+				double x = pos.getX() + 0.5 - (dir.getStepX() * 0.4);
 				double y = pos.getY() + 0.13;
-				double z = pos.getZ() + 0.5 - ((double) dir.getStepZ() * 0.4);
+				double z = pos.getZ() + 0.5 - (dir.getStepZ() * 0.4);
 				
 				player.setPos(x, y, z);
 				
