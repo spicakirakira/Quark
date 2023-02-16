@@ -64,9 +64,11 @@ public class StonelingsModule extends QuarkModule {
 		
 		makeStonelingTrigger = QuarkAdvancementHandler.registerGenericTrigger("make_stoneling");
 	}
+	public boolean registered = false;
 
 	@Override
 	public void register() {
+		this.registered = true;
 		diamondHeart = new DiamondHeartItem("diamond_heart", this, new Item.Properties().tab(CreativeModeTab.TAB_MISC));
 
 		stonelingType = EntityType.Builder.of(Stoneling::new, MobCategory.CREATURE)

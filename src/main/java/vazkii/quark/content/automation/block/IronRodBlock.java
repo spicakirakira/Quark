@@ -23,6 +23,7 @@ import net.minecraft.world.level.material.Material;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.api.ICollateralMover;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -41,8 +42,7 @@ public class IronRodBlock extends EndRodBlock implements ICollateralMover, IQuar
 				.noOcclusion());
 
 		RegistryHelper.registerBlock(this, "iron_rod");
-		if (this.isEnabled())
-			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 

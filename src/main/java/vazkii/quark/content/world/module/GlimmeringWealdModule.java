@@ -88,9 +88,14 @@ public class GlimmeringWealdModule extends QuarkModule {
 
 		makeFeatures();
 
+
+	}
+
+	@Override
+	public void postRegister() {
 		RegistryHelper.register(makeBiome(), Registry.BIOME_REGISTRY);
 		UndergroundBiomeHandler.addUndergroundBiome(this, Climate.parameters(FULL_RANGE, FULL_RANGE, FULL_RANGE, FULL_RANGE, Climate.Parameter.span(1.55F, 2F), FULL_RANGE, 0F), BIOME_NAME);
-		
+
 		QuarkAdvancementHandler.addModifier(new AdventuringTimeModifier(this, ImmutableSet.of(BIOME_KEY)));
 	}
 

@@ -20,6 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.world.module.GlimmeringWealdModule;
@@ -40,8 +41,7 @@ public class HugeGlowShroomBlock extends HugeMushroomBlock implements IQuarkBloc
 		this.glowing = glowing;
 
 		RegistryHelper.registerBlock(this, name);
-		if (this.isEnabled())
-			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 	}
 
 	@Override

@@ -1,9 +1,6 @@
 package vazkii.quark.base.module;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
@@ -27,6 +24,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.item.IQuarkItem;
 import vazkii.quark.base.module.config.ConfigResolver;
 
@@ -75,6 +73,7 @@ public final class ModuleLoader {
 
 	public void register() {
 		dispatch(Step.REGISTER, QuarkModule::register);
+		CreativeTabHandler.finalizeTabs();
 		dispatch(Step.POST_REGISTER, QuarkModule::postRegister);
 		config.registerConfigBoundElements();
 	}

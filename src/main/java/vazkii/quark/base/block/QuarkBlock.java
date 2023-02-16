@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import vazkii.arl.block.BasicBlock;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.client.handler.RequiredModTooltipHandler;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 
 import javax.annotation.Nonnull;
@@ -25,10 +26,7 @@ public class QuarkBlock extends BasicBlock implements IQuarkBlock {
         super(regname, properties);
         this.module = module;
 
-        if (creativeTab != null && this.isEnabled())
-            //this takes care of JEI+creative as giving a null tab will hide from both
-            //TODO: check if fillItemCategory is still needed
-            RegistryHelper.setCreativeTab(this, creativeTab);
+        CreativeTabHandler.addTab(this, creativeTab);
 
         if (module.category.isAddon())
             RequiredModTooltipHandler.map(this, module.category.requiredMod);

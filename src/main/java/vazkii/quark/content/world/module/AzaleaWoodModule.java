@@ -34,7 +34,7 @@ public class AzaleaWoodModule extends QuarkModule {
 		if(configured != null) {
 			TreeConfiguration config = configured.config();
 	
-			if(newStatus)
+			if(newStatus && woodSet != null)
 				config.trunkProvider = BlockStateProvider.simple(woodSet.log);
 			else if(!firstLoad)
 				config.trunkProvider = BlockStateProvider.simple(Blocks.OAK_LOG);

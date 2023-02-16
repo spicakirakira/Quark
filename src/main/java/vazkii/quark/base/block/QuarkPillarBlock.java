@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 
 public class QuarkPillarBlock extends RotatedPillarBlock implements IQuarkBlock {
@@ -22,8 +23,7 @@ public class QuarkPillarBlock extends RotatedPillarBlock implements IQuarkBlock 
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, regname);
-		if (creativeTab != null && this.isEnabled())
-			RegistryHelper.setCreativeTab(this, creativeTab);
+		CreativeTabHandler.addTab(this, creativeTab);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ButtonBlock;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 
 import javax.annotation.Nonnull;
@@ -26,8 +27,7 @@ public abstract class QuarkButtonBlock extends ButtonBlock implements IQuarkBloc
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, regname);
-		if (creativeTab != null && this.isEnabled())
-			RegistryHelper.setCreativeTab(this, creativeTab);
+		CreativeTabHandler.addTab(this, creativeTab);
 	}
 
 	@Nonnull

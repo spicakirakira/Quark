@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BushBlock;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -24,8 +25,8 @@ public class QuarkBushBlock extends BushBlock implements IQuarkBlock {
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, regname);
-		if (creativeTab != null && this.isEnabled())
-			RegistryHelper.setCreativeTab(this, creativeTab);
+
+		CreativeTabHandler.addTab(this, creativeTab);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 	}
