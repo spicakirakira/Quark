@@ -9,6 +9,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.ItemInteractWithBlockTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
 import vazkii.quark.base.handler.advancement.AdvancementModifier;
 import vazkii.quark.base.handler.advancement.MutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
@@ -39,12 +40,14 @@ public class WaxModifier  extends AdvancementModifier {
 		Criterion criterion = adv.criteria.get(title);
 		if(criterion != null && criterion.getTrigger() instanceof ItemInteractWithBlockTrigger.TriggerInstance iib) {
 			Set<Block> blockSet = iib.location.block.blocks;
-			Set<Block> ourSet = res.equals(TARGET_ON) ? unwaxed : waxed;;
-			
-			if(!addToBlockSet(blockSet, ourSet)) {
-				blockSet = new HashSet<>(blockSet);
-				iib.location.block.blocks = blockSet;
-				addToBlockSet(blockSet, ourSet);
+			if(blockSet != null) {
+				Set<Block> ourSet = res.equals(TARGET_ON) ? unwaxed : waxed;
+
+				if (!addToBlockSet(blockSet, ourSet)) {
+					blockSet = new HashSet<>(blockSet);
+					iib.location.block.blocks = blockSet;
+					addToBlockSet(blockSet, ourSet);
+				}
 			}
 		}
 		
@@ -54,7 +57,7 @@ public class WaxModifier  extends AdvancementModifier {
 	private static boolean addToBlockSet(Set<Block> blockSet, Set<Block> ourSet) {
 		try {
 			blockSet.addAll(ourSet);
-		} catch(UnsupportedOperationException e) {
+		} catch(Exception e) {
 			return false;
 		}
 		
