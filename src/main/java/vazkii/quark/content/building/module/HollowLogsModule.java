@@ -44,12 +44,14 @@ public class HollowLogsModule extends QuarkModule {
 	public void playerTick(PlayerTickEvent event) {
 		if(enableAutoCrawl && event.phase == Phase.START) {
 			Player player = event.player;
-			boolean isTrying = player.isCrouching() && !player.isSwimming();
+			BlockPos playerPos = player.blockPosition();
+			boolean isTrying = player.isCrouching() && !player.isSwimming() &&
+					player.level.getBlockState(playerPos).getCollisionShape(player.level, playerPos).isEmpty();
 			boolean wasTrying = player.getPersistentData().getBoolean(TAG_TRYING_TO_CRAWL);
 			
 			if(isTrying && !wasTrying) {
 				Direction dir = player.getDirection();
-				BlockPos pos = player.blockPosition().relative(dir);
+				BlockPos pos = playerPos.relative(dir);
 				
 				if(!tryClimb(player, dir, pos))
 					tryClimb(player, dir, pos.above());

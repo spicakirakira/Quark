@@ -9,7 +9,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.ItemInteractWithBlockTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import org.jetbrains.annotations.Nullable;
 import vazkii.quark.base.handler.advancement.AdvancementModifier;
 import vazkii.quark.base.handler.advancement.MutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
