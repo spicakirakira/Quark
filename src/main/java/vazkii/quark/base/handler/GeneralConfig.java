@@ -13,6 +13,7 @@ public class GeneralConfig {
 	private static final List<String> STATIC_ALLOWED_SCREENS = Lists.newArrayList(
 			"appeng.client.gui.implementations.SkyChestScreen",
 			"com.progwml6.ironchest.client.screen.IronChestScreen",
+			"net.mehvahdjukaar.supplementaries.client.screens.SackScreen",
 			"vazkii.quark.addons.oddities.client.screen.CrateScreen",
 			"vazkii.quark.addons.oddities.client.screen.BackpackInventoryScreen"
 			);
