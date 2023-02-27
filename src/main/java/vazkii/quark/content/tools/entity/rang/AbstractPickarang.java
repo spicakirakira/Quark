@@ -1,13 +1,6 @@
 package vazkii.quark.content.tools.entity.rang;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Multimap;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -21,20 +14,15 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.IndirectEntityDamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -43,6 +31,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -56,11 +45,18 @@ import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.NetworkHooks;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.content.mobs.entity.Toretoise;
 import vazkii.quark.content.tools.config.PickarangType;
 import vazkii.quark.content.tools.module.PickarangModule;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.UUID;
 
 public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends Projectile {
 
@@ -196,8 +192,8 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	protected void onHit(@Nonnull HitResult result) {
 		LivingEntity owner = getThrower();
 
-		if(result.getType() == Type.BLOCK && result instanceof BlockHitResult) {
-			BlockPos hit = ((BlockHitResult) result).getBlockPos();
+		if(result.getType() == Type.BLOCK && result instanceof BlockHitResult blockHitResult) {
+			BlockPos hit = blockHitResult.getBlockPos();
 			BlockState state = level.getBlockState(hit);
 
 			if(getPiercingModifier() == 0 || state.getMaterial().isSolidBlocking())
@@ -205,10 +201,14 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 
 			if(!(owner instanceof ServerPlayer player))
 				return;
+			//more general way of doing it instead of just checking hardness
+			float progress = getBlockDestroyProgress(state,player, level, hit);
+			if (progress == 0) return;
 
-			float hardness = state.getDestroySpeed(level, hit);
-			if (hardness <= getPickarangType().maxHardness 
-					&& hardness >= 0
+			float equivalentHardness = (1) / (progress * 100);
+
+			if (equivalentHardness <= getPickarangType().maxHardness
+					&& equivalentHardness >= 0
 					&& !state.is(PickarangModule.pickarangImmuneTag)) {
 				ItemStack prev = player.getMainHandItem();
 				player.setItemInHand(InteractionHand.MAIN_HAND, getStack());
@@ -223,8 +223,8 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				player.setItemInHand(InteractionHand.MAIN_HAND, prev);
 			} else
 				clank();
-		} else if(result.getType() == Type.ENTITY && result instanceof EntityHitResult) {
-			Entity hit = ((EntityHitResult) result).getEntity();
+		} else if(result.getType() == Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
+			Entity hit = entityHitResult.getEntity();
 
 			if(hit != owner) {
 				addHit(hit);
@@ -299,6 +299,40 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		}
 	}
 
+	//equivalent of BlockState::getDestroyProgress
+	private float getBlockDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+		float f = state.getDestroySpeed(level, pos);
+		if (f == -1.0F) {
+			return 0.0F;
+		} else {
+			float i = ForgeHooks.isCorrectToolForDrops(state, player) ? 30 : 100;
+			float digSpeed = getPlayerDigSpeed(player,state, pos);
+			return (digSpeed / f / i);
+		}
+	}
+
+	//equivalent of Player::getDigSpeed but without held item stack stuff
+	private float getPlayerDigSpeed(Player player, BlockState state, @Nullable BlockPos pos) {
+		float f = 1;
+
+		if (MobEffectUtil.hasDigSpeed(player)) {
+			f *= 1.0F + (MobEffectUtil.getDigSpeedAmplification(player) + 1) * 0.2F;
+		}
+
+		if (player.hasEffect(MobEffects.DIG_SLOWDOWN)) {
+			float f1 = switch (player.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
+				case 0 -> 0.3F;
+				case 1 -> 0.09F;
+				case 2 -> 0.0027F;
+				default -> 8.1E-4F;
+			};
+
+			f *= f1;
+		}
+		f = ForgeEventFactory.getBreakSpeed(player, state, f, pos);
+		return f;
+	}
+
 	public void spark() {
 		playSound(QuarkSounds.ENTITY_PICKARANG_SPARK, 1, 1);
 		setReturning();
@@ -366,7 +400,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 
 		setXRot(Mth.lerp(0.2F, this.xRotO, this.getXRot()));
 		setYRot(Mth.lerp(0.2F, this.yRotO, this.getYRot()));
-		
+
 
 		float drag;
 		if (this.isInWater()) {
@@ -377,7 +411,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 			drag = 0.8F;
 		} else drag = 0.99F;
 
-		if(hasDrag()) 
+		if(hasDrag())
 			this.setDeltaMovement(ourMotion.scale(drag));
 
 		pos = position();
@@ -444,10 +478,10 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 
 				if(!level.isClientSide) {
 					playSound(QuarkSounds.ENTITY_PICKARANG_PICKUP, 1, 1);
-					
+
 					if(player instanceof ServerPlayer sp && (this instanceof Flamerang) && isOnFire() && getPassengers().size() > 0)
 						PickarangModule.useFlamerangTrigger.trigger(sp);
-					
+
 					if(!stack.isEmpty()) if (player.isAlive() && stackInSlot.isEmpty())
 						inventory.setItem(slot, stack);
 					else if (!player.isAlive() || !inventory.add(stack))
@@ -479,7 +513,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				setDeltaMovement(motion.normalize().scale(0.7 + eff * 0.325F));
 		}
 	}
-	
+
 	public boolean isReturning() {
 		return entityData.get(RETURNING);
 	}
@@ -491,7 +525,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	public boolean hasDrag() {
 		return true;
 	}
-	
+
 	public abstract PickarangType<T> getPickarangType();
 
 	private void giveItemToPlayer(Player player, ItemEntity itemEntity) {
@@ -501,7 +535,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		if (itemEntity.isAlive()) {
 			// Player could not pick up everything
 			ItemStack drop = itemEntity.getItem();
-			
+
 			player.drop(drop, false);
 			itemEntity.discard();
 		}
