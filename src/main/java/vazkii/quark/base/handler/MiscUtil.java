@@ -93,7 +93,7 @@ public class MiscUtil {
 	@OnlyIn(Dist.CLIENT)
 	public static void drawChatBubble(PoseStack matrix, int x, int y, Font font, String text, float alpha, boolean extendRight) {
 		matrix.pushPose();
-		matrix.translate(0, 0, 100);
+		matrix.translate(0, 0, 200);
 		RenderSystem.setShaderTexture(0, MiscUtil.GENERAL_ICONS);
 		int w = font.width(text);
 		int left = x - (extendRight ? 0 : w);

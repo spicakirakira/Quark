@@ -46,7 +46,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.network.NetworkHooks;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.content.mobs.entity.Toretoise;
@@ -328,6 +330,9 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 			};
 
 			f *= f1;
+		}
+		if (this.isEyeInFluidType(ForgeMod.WATER_TYPE.get())) {
+			f /= 5.0F;
 		}
 		f = ForgeEventFactory.getBreakSpeed(player, state, f, pos);
 		return f;
