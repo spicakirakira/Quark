@@ -297,7 +297,7 @@ public class AncientTomesModule extends QuarkModule {
 		ItemStack output = event.getOutput();
 		ItemStack right = event.getRight();
 
-		if(curseGear && right.is(ancient_tome) || event.getLeft().is(ancient_tome)){
+		if(curseGear && (right.is(ancient_tome) || event.getLeft().is(ancient_tome))){
 			event.getOutput().enchant(curses.get(event.getEntity().level.random.nextInt(curses.size())),1);
 		}
 		

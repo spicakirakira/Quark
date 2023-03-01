@@ -33,7 +33,7 @@ import vazkii.quark.base.Quark;
 
 public class PipeRenderer implements BlockEntityRenderer<PipeBlockEntity> {
 
-	private static final ModelResourceLocation LOCATION_MODEL = new ModelResourceLocation(new ResourceLocation(Quark.MOD_ID, "pipe_flare"), "inventory");
+	private static final ModelResourceLocation LOCATION_MODEL = new ModelResourceLocation(new ResourceLocation(Quark.MOD_ID, "extra/pipe_flare"), "inventory");
 
 	private final Random random = new Random();
 
