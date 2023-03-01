@@ -81,6 +81,9 @@ public class AncientTomeItem extends QuarkItem {
 		Enchantment ench = AncientTomesModule.getTomeEnchantment(stack);
 		if(ench != null)
 			tooltip.add(getFullTooltipText(ench));
+		if(AncientTomesModule.curseGear){
+			tooltip.add(Component.translatable("quark.misc.ancient_tome_tooltip_curse").withStyle(ChatFormatting.RED));
+		}
 	}
 
 }

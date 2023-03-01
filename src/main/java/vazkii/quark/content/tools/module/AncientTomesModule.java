@@ -119,6 +119,9 @@ public class AncientTomesModule extends QuarkModule {
 	@Config(description = "Master Librarians will offer to exchange Ancient Tomes, provided you give them a max-level Enchanted Book of the Tome's enchantment too.")
 	public static boolean librariansExchangeAncientTomes = true;
 
+	@Config(description = "Also applies a random curse along each book")
+	public static boolean curseGear = false;
+
 	public static Item ancient_tome;
 	public static final List<Enchantment> validEnchants = new ArrayList<>();
 	private static boolean initialized = false;
@@ -172,6 +175,7 @@ public class AncientTomesModule extends QuarkModule {
 	@Override
 	public void setup() {
 		setupEnchantList();
+		setupCursesList();
 		initialized = true;
 	}
 
@@ -292,6 +296,10 @@ public class AncientTomesModule extends QuarkModule {
 	public void onAnvilUse(AnvilRepairEvent event) {
 		ItemStack output = event.getOutput();
 		ItemStack right = event.getRight();
+
+		if(curseGear && right.is(ancient_tome) || event.getLeft().is(ancient_tome)){
+			event.getOutput().enchant(curses.get(event.getEntity().level.random.nextInt(curses.size())),1);
+		}
 		
 		if(isOverlevel(output) && (right.getItem() == Items.ENCHANTED_BOOK || right.getItem() == ancient_tome) && event.getEntity() instanceof ServerPlayer sp)
 			overlevelTrigger.trigger(sp);
@@ -408,6 +416,14 @@ public class AncientTomesModule extends QuarkModule {
 	private void setupEnchantList() {
 		MiscUtil.initializeEnchantmentList(enchantNames, validEnchants);
 		validEnchants.removeIf((ench) -> ench.getMaxLevel() == 1);
+	}
+
+	private final List<Enchantment> curses = new ArrayList<>();
+
+	public void setupCursesList() {
+		for (var e : Registry.ENCHANTMENT) {
+			if (e.isCurse()) curses.add(e);
+		}
 	}
 
 	public static Enchantment getTomeEnchantment(ItemStack stack) {
