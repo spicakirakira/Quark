@@ -73,8 +73,8 @@ public final class ModuleLoader {
 
 	public void register() {
 		dispatch(Step.REGISTER, QuarkModule::register);
-		CreativeTabHandler.finalizeTabs();
 		dispatch(Step.POST_REGISTER, QuarkModule::postRegister);
+		CreativeTabHandler.finalizeTabs();
 		config.registerConfigBoundElements();
 	}
 
