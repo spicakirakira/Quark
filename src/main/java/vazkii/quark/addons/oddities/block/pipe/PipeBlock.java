@@ -30,6 +30,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import vazkii.quark.addons.oddities.block.be.PipeBlockEntity;
 import vazkii.quark.addons.oddities.module.PipesModule;
 import vazkii.quark.base.module.QuarkModule;
 
@@ -61,25 +62,25 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
 		ItemStack stack = player.getItemInHand(handIn);
 		if(stack.is(Items.GLASS) && PipesModule.enableEncasedPipes) {
-			BlockEntity be = worldIn.getBlockEntity(pos);
-			CompoundTag cmp = be.saveWithoutMetadata();
+			if(worldIn.getBlockEntity(pos) instanceof PipeBlockEntity be) {
+				CompoundTag cmp = be.saveWithoutMetadata();
 
-			if(!worldIn.isClientSide) {
-				worldIn.removeBlockEntity(pos);
-				BlockState target = ((BasePipeBlock) PipesModule.encasedPipe).getTargetState(worldIn, pos, false);
-				worldIn.setBlock(pos, target, 1 | 2);
-				worldIn.updateNeighborsAt(pos, PipesModule.encasedPipe);
+				if (!worldIn.isClientSide) {
+					worldIn.removeBlockEntity(pos);
+					BlockState target = ((BasePipeBlock) PipesModule.encasedPipe).getTargetState(worldIn, pos);
+					worldIn.setBlock(pos, target, 1 | 2);
+					worldIn.updateNeighborsAt(pos, PipesModule.encasedPipe);
 
-				be = worldIn.getBlockEntity(pos);
-				be.load(cmp);
+					BlockEntity newBe = worldIn.getBlockEntity(pos);
+					newBe.load(cmp);
+				}
+
+				SoundType type = Blocks.GLASS.defaultBlockState().getSoundType(worldIn, pos, player);
+				SoundEvent sound = type.getPlaceSound();
+				worldIn.playSound(player, pos, sound, SoundSource.BLOCKS, (type.getVolume() + 1.0F) / 2.0F, type.getPitch() * 0.8F);
+
+				stack.shrink(1);
 			}
-
-			SoundType type = Blocks.GLASS.defaultBlockState().getSoundType(worldIn, pos, player);
-			SoundEvent sound = type.getPlaceSound();
-			worldIn.playSound(player, pos, sound, SoundSource.BLOCKS, (type.getVolume() + 1.0F) / 2.0F, type.getPitch() * 0.8F);
-
-			stack.shrink(1);
-
 			return InteractionResult.SUCCESS;
 		}
 
@@ -97,8 +98,9 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	protected BlockState getTargetState(Level worldIn, BlockPos pos, boolean waterlog) {
-		return super.getTargetState(worldIn, pos, waterlog).setValue(WATERLOGGED, waterlog);
+	protected BlockState getTargetState(Level worldIn, BlockPos pos) {
+		return super.getTargetState(worldIn, pos).setValue(WATERLOGGED,
+				worldIn.getFluidState(pos).getType() == Fluids.WATER);
 	}
 
 	@Nonnull

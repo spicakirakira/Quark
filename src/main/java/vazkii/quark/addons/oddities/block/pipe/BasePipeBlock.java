@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.fluids.FluidType;
 import vazkii.quark.addons.oddities.block.be.PipeBlockEntity;
 import vazkii.quark.addons.oddities.module.PipesModule;
 import vazkii.quark.base.block.QuarkBlock;
@@ -99,7 +100,7 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 					}
 
 					BlockState curr = worldIn.getBlockState(cand);
-					BlockState target = getTargetState(worldIn, cand, isPipeWaterlogged(curr));
+					BlockState target = getTargetState(worldIn, cand);
 					if(!target.equals(curr)) {
 						fixedAny = true;
 						worldIn.setBlock(cand, target, 2 | 4);
@@ -119,18 +120,18 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 	}
 
 	@Override
-	public BlockState updateShape(BlockState state, Direction facing, BlockState neighbor, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-		if(world.getBlockEntity(pos) instanceof PipeBlockEntity tile){
-			var type = tile.updateConnection(facing);
-			BooleanProperty prop = CONNECTIONS[facing.ordinal()];
-			return state.setValue(prop, allowsFullConnection(type));
+	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos neighbor, boolean moving) {
+		super.neighborChanged(state, level, pos, block, neighbor, moving);
+		if(!level.isClientSide){
+			//not using update shape as we need to check all sides anyways
+			BlockState newState = getTargetState(level, pos);
+			if(newState != state) level.setBlockAndUpdate(pos, newState);
 		}
-		return super.updateShape(state, facing, neighbor, world, pos, neighborPos);
 	}
 
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		return getTargetState(context.getLevel(), context.getClickedPos(), context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+		return getTargetState(context.getLevel(), context.getClickedPos());
 	}
 
 	@Override
@@ -141,7 +142,7 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 		super.onPlace(state, world, pos, oldState, moving);
 	}
 
-	protected BlockState getTargetState(Level worldIn, BlockPos pos, boolean waterlog) {
+	protected BlockState getTargetState(Level worldIn, BlockPos pos) {
 		BlockState newState = defaultBlockState();
 
 		for(Direction facing : Direction.values()) {
