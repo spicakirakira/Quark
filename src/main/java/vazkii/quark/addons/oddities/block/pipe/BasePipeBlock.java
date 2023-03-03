@@ -50,7 +50,7 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 			DOWN, UP, NORTH, SOUTH, WEST, EAST
 	};
 
-	public BasePipeBlock(String name, QuarkModule module) {
+	protected BasePipeBlock(String name, QuarkModule module) {
 		super(name, module, CreativeModeTab.TAB_REDSTONE,
 				Block.Properties.of(Material.GLASS)
 						.strength(3F, 10F)
