@@ -98,9 +98,9 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	protected BlockState getTargetState(Level worldIn, BlockPos pos) {
-		return super.getTargetState(worldIn, pos).setValue(WATERLOGGED,
-				worldIn.getFluidState(pos).getType() == Fluids.WATER);
+	protected BlockState getTargetState(LevelAccessor level, BlockPos pos) {
+		return super.getTargetState(level, pos).setValue(WATERLOGGED,
+				level.getFluidState(pos).getType() == Fluids.WATER);
 	}
 
 	@Nonnull
@@ -111,11 +111,11 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 
 	@Nonnull
 	@Override
-	public BlockState updateShape(BlockState state, @Nonnull Direction facing, @Nonnull BlockState neighbor, @Nonnull LevelAccessor world, @Nonnull BlockPos pos, @Nonnull BlockPos neighborPos) {
+	public BlockState updateShape(BlockState state, @Nonnull Direction direction, @Nonnull BlockState neighbor, @Nonnull LevelAccessor level, @Nonnull BlockPos pos, @Nonnull BlockPos neighborPos) {
 		if (isPipeWaterlogged(state)) {
-			world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
+			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
-		return super.updateShape(state, facing, neighbor, world, pos, neighborPos);
+		return super.updateShape(state, direction, neighbor, level, pos, neighborPos);
 	}
 
 	@Override

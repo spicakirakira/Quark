@@ -68,9 +68,10 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	}
 
 	public void tick() {
+		//convert old pipes
 		if (convert) {
 			convert = false;
-			Arrays.stream(Direction.values()).forEach(this::updateConnection);
+			refreshAllConnections();
 		}
 		boolean enabled = isPipeEnabled();
 		if (!enabled && level.getGameTime() % 10 == 0 && level instanceof ServerLevel serverLevel)
@@ -330,8 +331,10 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		cmp.put(TAG_PIPE_ITEMS, pipeItemList);
 
 		for (int i = 0; i < connectionsCache.length; i++) {
-			if (connectionsCache[i] == null) connectionsCache[i] = ConnectionType.NONE;
-			this.convert = true;
+			if (connectionsCache[i] == null) {
+				connectionsCache[i] = ConnectionType.NONE;
+				this.convert = true;
+			}
 		}
 		cmp.putByteArray(TAG_CONNECTIONS, (Arrays.stream(connectionsCache).map(c -> (byte) c.ordinal()).toList()));
 	}
@@ -386,7 +389,11 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		MiscUtil.syncTE(this);
 	}
 
-	public ConnectionType updateConnection(Direction facing) {
+	public void refreshAllConnections() {
+		Arrays.stream(Direction.values()).forEach(this::updateConnection);
+	}
+
+	protected ConnectionType updateConnection(Direction facing) {
 		var c = computeConnectionTo(level, worldPosition, facing);
 		connectionsCache[facing.ordinal()] = c;
 		return c;
@@ -396,8 +403,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		var c = connectionsCache[side.ordinal()];
 		if (c == null) {
 			//backwards compat
-			c = computeConnectionTo(this.level, this.worldPosition, side);
-			connectionsCache[side.ordinal()] = c;
+			c = updateConnection(side);
 		}
 		return c;
 	}
