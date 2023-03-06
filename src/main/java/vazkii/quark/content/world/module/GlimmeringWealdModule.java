@@ -27,7 +27,6 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
-import net.minecraft.world.level.block.MagmaBlock;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -47,7 +46,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.content.building.module.ThatchModule;
+import vazkii.quark.base.module.config.Config;
 import vazkii.quark.content.mobs.module.StonelingsModule;
 import vazkii.quark.content.world.block.GlowLichenGrowthBlock;
 import vazkii.quark.content.world.block.GlowShroomBlock;
@@ -75,6 +74,17 @@ public class GlimmeringWealdModule extends QuarkModule {
 
 	public static TagKey<Item> glowShroomFeedablesTag;
 
+	@Config(name = "Min Weirdness Range",
+			description = "Experimental, dont change if you dont know what you are doing. Weirdness min value from which biome will spawn. Decreasing will make biome appear more often")
+	@Config.Min(-2)
+	@Config.Max(2)
+	public static double minWeirdnessRange = 1.55F;
+	@Config(name = "Max Weirdness Range",
+			description = "Experimental, dont change if you dont know what you are doing. Weirdness max value until which biome will spawn. Increasing will make biome appear more often")
+	@Config.Min(-2)
+	@Config.Max(2)
+	public static double maxWeirdnessRange = 2;
+
 	@Override
 	public void register() {
 		glow_shroom = new GlowShroomBlock(this);
@@ -94,7 +104,15 @@ public class GlimmeringWealdModule extends QuarkModule {
 	@Override
 	public void postRegister() {
 		RegistryHelper.register(makeBiome(), Registry.BIOME_REGISTRY);
-		UndergroundBiomeHandler.addUndergroundBiome(this, Climate.parameters(FULL_RANGE, FULL_RANGE, FULL_RANGE, FULL_RANGE, Climate.Parameter.span(1.55F, 2F), FULL_RANGE, 0F), BIOME_NAME);
+		float wmin = (float) minWeirdnessRange;
+		float wmax = (float) maxWeirdnessRange;
+		if(wmin >= wmax){
+			Quark.LOG.warn("Incorrect value for Glimmering Weald biome parameters. Using default");
+			wmax = 2;
+			wmin = 1.55f;
+		}
+		UndergroundBiomeHandler.addUndergroundBiome(this, Climate.parameters(FULL_RANGE, FULL_RANGE, FULL_RANGE, FULL_RANGE,
+				Climate.Parameter.span(wmin, wmax), FULL_RANGE, 0F), BIOME_NAME);
 
 		QuarkAdvancementHandler.addModifier(new AdventuringTimeModifier(this, ImmutableSet.of(BIOME_KEY)));
 	}

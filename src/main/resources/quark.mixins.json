@@ -16,7 +16,6 @@
     "BonusLevelTableConditionMixin",
     "DamageEnchantmentMixin",
     "DamageSourceMixin",
-    "DebugConfigHackeryMixin",
     "DiggerItemMixin",
     "EnchantBookForEmeraldsMixin",
     "EnchantedBookItemMixin",
