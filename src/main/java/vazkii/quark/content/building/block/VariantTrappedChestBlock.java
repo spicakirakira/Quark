@@ -24,6 +24,7 @@ import net.minecraftforge.fml.ModList;
 import vazkii.arl.interf.IBlockItemProvider;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.building.block.be.VariantTrappedChestBlockEntity;
 import vazkii.quark.content.building.module.VariantChestsModule.IChestTextureProvider;
@@ -45,8 +46,8 @@ public class VariantTrappedChestBlock extends ChestBlock implements IBlockItemPr
 	public VariantTrappedChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
 		super(props, supplier);
 		RegistryHelper.registerBlock(this, type + "_trapped_chest");
-		if (this.isEnabled())
-			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_REDSTONE);
+
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_REDSTONE);
 
 		this.type = type;
 		this.module = module;

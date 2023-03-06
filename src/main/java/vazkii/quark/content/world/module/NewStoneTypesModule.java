@@ -31,10 +31,10 @@ import java.util.function.BooleanSupplier;
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class NewStoneTypesModule extends QuarkModule {
 
-	@Config(flag = "limestone") private static boolean enableLimestone = true;
-	@Config(flag = "jasper") private static boolean enableJasper = true;
-	@Config(flag = "shale") private static boolean enableShale = true;
-	@Config(flag = "myalite") private static boolean enableMyalite = true;
+	@Config(flag = "limestone") public static boolean enableLimestone = true;
+	@Config(flag = "jasper") public static boolean enableJasper = true;
+	@Config(flag = "shale") public static boolean enableShale = true;
+	@Config(flag = "myalite") public static boolean enableMyalite = true;
 
 	public static boolean enabledWithLimestone, enabledWithJasper, enabledWithShale, enabledWithMyalite;
 

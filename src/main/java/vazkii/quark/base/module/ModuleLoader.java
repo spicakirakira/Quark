@@ -3,6 +3,7 @@ package vazkii.quark.base.module;
 import java.util.*;
 import java.util.function.Consumer;
 
+import com.electronwill.nightconfig.core.ConfigSpec;
 import com.google.common.base.Preconditions;
 
 import net.minecraft.world.item.BlockItem;
@@ -21,6 +22,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
@@ -69,6 +71,10 @@ public final class ModuleLoader {
 	private void resolveConfigSpec() {
 		config = new ConfigResolver();
 		config.makeSpec();
+	}
+
+	public ModConfig getConfig() {
+		return config.getConfig();
 	}
 
 	public void register() {

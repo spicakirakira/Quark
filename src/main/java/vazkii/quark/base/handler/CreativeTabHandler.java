@@ -2,9 +2,12 @@ package vazkii.quark.base.handler;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.block.QuarkBlock;
+import vazkii.quark.base.block.QuarkPillarBlock;
 import vazkii.quark.content.building.block.VariantChestBlock;
 
 import java.util.ArrayList;
@@ -28,8 +31,6 @@ public class CreativeTabHandler {
             TAB_INFOS.add(new TabInfo(block, creativeTab, isEnabled));
         }
     }
-
-    private static final List<IQuarkBlock> test = new ArrayList<>();
 
     public static void addTab(IQuarkBlock block, @Nullable CreativeModeTab creativeTab) {
         addTab(block, creativeTab, block::isEnabled);

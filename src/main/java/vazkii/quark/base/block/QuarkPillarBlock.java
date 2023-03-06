@@ -22,8 +22,9 @@ public class QuarkPillarBlock extends RotatedPillarBlock implements IQuarkBlock 
 		super(properties);
 		this.module = module;
 
-		RegistryHelper.registerBlock(this, regname);
 		CreativeTabHandler.addTab(this, creativeTab);
+
+		RegistryHelper.registerBlock(this, regname);
 	}
 
 	@Override
