@@ -1,10 +1,13 @@
 package vazkii.quark.base.module.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
+import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.WritingMode;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ConfigFileTypeHandler;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -13,9 +16,9 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.content.tools.module.AncientTomesModule;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +27,8 @@ import java.util.Map;
 public class ConfigResolver {
 
     private static final Method SET_CONFIG_DATA = ObfuscationReflectionHelper.findMethod(ModConfig.class, "setConfigData", CommentedConfig.class);
+    private static final Method SETUP_CONFIG_FILE = ObfuscationReflectionHelper.findMethod(ConfigFileTypeHandler.class,
+            "setupConfigFile", ModConfig.class, Path.class, ConfigFormat.class);
 
     private final ConfigFlagManager flagManager;
 
@@ -32,6 +37,10 @@ public class ConfigResolver {
 
     public ConfigResolver() {
         this.flagManager = new ConfigFlagManager();
+    }
+
+    public ModConfig getConfig() {
+        return config;
     }
 
     public void registerConfigBoundElements() {
@@ -49,24 +58,58 @@ public class ConfigResolver {
         this.config = new ModConfig(ModConfig.Type.COMMON, spec, container);
         container.addConfig(config);
         //load early for creative tabs
-		loadFromFile(config,container);
+		loadFromFile(config, container);
     }
 
-    private void loadFromFile(ModConfig modConfig,ModContainer container) {
+    private void loadFromFile(ModConfig modConfig, ModContainer container) {
         //same stuff that forge config tracker does
 
-            final CommentedFileConfig configData = modConfig.getHandler().reader(FMLPaths.CONFIGDIR.get()).apply(modConfig);
-            SET_CONFIG_DATA.setAccessible(true);
-            try {
-                SET_CONFIG_DATA.invoke(modConfig, configData);
-            }catch (Exception ignored){}
-            //container.dispatchConfigEvent(IConfigEvent.loading(this.config));
-            configChanged();
+        ConfigFileTypeHandler handler = modConfig.getHandler();
+        //read config without setting file watcher which could cause resets. forge will load it later
+        CommentedFileConfig configData = readConfig(handler, FMLPaths.CONFIGDIR.get(), modConfig);
+        //CommentedFileConfig configData = handler.reader(FMLPaths.CONFIGDIR.get()).apply( modConfig);
 
-            modConfig.save();
+        SET_CONFIG_DATA.setAccessible(true);
+        try {
+            SET_CONFIG_DATA.invoke(modConfig, configData);
+        }catch (Exception ignored){}
+        //container.dispatchConfigEvent(IConfigEvent.loading(this.config));
 
+        //Note that here normal config reload stuff isnt called as quark is set to only run those after registration
+        //will run later but this means we cant access some config values that depend on the reload for tabs
+        configChanged();
+        modConfig.save();
     }
 
+    //we need this so we dont add a second file watcher. Same as handler::reader
+    private CommentedFileConfig readConfig(ConfigFileTypeHandler handler, Path configBasePath, ModConfig c) {
+        Path configPath = configBasePath.resolve(c.getFileName());
+        CommentedFileConfig configData = CommentedFileConfig.builder(configPath).sync().
+                preserveInsertionOrder().
+                autosave().
+                onFileNotFound((newfile, configFormat)->{
+                    try {
+                     return (Boolean) SETUP_CONFIG_FILE.invoke(handler, c, newfile, configFormat);
+                    } catch (Exception e) {
+                        throw new ConfigLoadingException(c, e);
+                    }
+                }).
+                writingMode(WritingMode.REPLACE).
+                build();
+        try {
+            configData.load();
+        }
+        catch (Exception ex) {
+            throw new ConfigLoadingException(c, ex);
+        }
+        return configData;
+    }
+
+    private static class ConfigLoadingException extends RuntimeException {
+        public ConfigLoadingException(ModConfig config, Exception cause) {
+            super("Failed loading config file " + config.getFileName() + " of type " + config.getType() + " for modid " + config.getModId(), cause);
+        }
+    }
 
     public void configChanged() {
         flagManager.clear();
