@@ -102,9 +102,9 @@ public class ItemSharingModule extends QuarkModule {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(ItemSharingModule.class))
 			return;
 
-		Inventory inv = player.getInventory();
-		if(slot >= 0 && slot < inv.getContainerSize()) {
-			ItemStack stack = inv.getItem(slot);
+		var slots = player.containerMenu.slots;
+		if(slot >= 0 && slots.size() > slot) {
+			ItemStack stack = slots.get(slot).getItem();
 			if(!stack.isEmpty()) {
 				MutableComponent comp = Component.translatable("quark.misc.shared_item", player.getName());
 				Component itemComp = stack.getDisplayName();
