@@ -1181,7 +1181,7 @@
 
 	"entity.quark.pickarang": "Kilorang",
 	"entity.quark.glass_frame": "Szklana ramka na przedmiot",
-	"entity.quark.colored_frame": "Barwiona ramka na przedmiot",
+	"entity.quark.dyed_item_frame": "Barwiona ramka na przedmiot",
 	"entity.quark.totem": "Totem przetrzymywania",
 	"entity.quark.stoneling": "Kamieniak",
 	"entity.quark.gravisand": "Lewitujący grawipiasek",

@@ -1089,7 +1089,7 @@
 
 	"entity.quark.pickarang": "Picarang",
 	"entity.quark.glass_frame": "Marco de vidrio",
-	"entity.quark.colored_frame": "Marco teñido",
+	"entity.quark.dyed_item_frame": "Marco teñido",
 	"entity.quark.totem": "Tótem de la tenencia",
 	"entity.quark.stoneling": "Petrícola",
 	"entity.quark.gravisand": "Gravitarena flotando",

@@ -1256,7 +1256,7 @@
 
 	"entity.quark.pickarang": "Pickarang",
 	"entity.quark.glass_frame": "Cadre en verre",
-	"entity.quark.colored_frame": "Cadre en verre coloré",
+	"entity.quark.dyed_item_frame": "Cadre en verre coloré",
 	"entity.quark.totem": "Totem d'inventaire",
 	"entity.quark.stoneling": "Stoneling",
 	"entity.quark.gravisand": "Gravisable",

@@ -971,7 +971,7 @@
 	"entity.quark.pickarang": "픽메랑",
 	"entity.quark.chest_passenger": "보트에 실린 상자",
 	"entity.quark.glass_frame": "유리 아이템 액자",
-	"entity.quark.colored_frame": "염색된 아이템 액자",
+	"entity.quark.dyed_item_frame": "염색된 아이템 액자",
 	"entity.quark.totem": "보관의 토템",
 	"entity.quark.stoneling": "스톤링",
 	"entity.quark.gravisand": "떠있는 중력모래",
