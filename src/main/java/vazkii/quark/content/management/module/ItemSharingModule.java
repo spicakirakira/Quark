@@ -10,12 +10,9 @@
  */
 package vazkii.quark.content.management.module;
 
-import java.util.List;
-
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.EditBox;
@@ -28,7 +25,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -44,11 +40,16 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.ShareItemMessage;
 
+import java.util.List;
+
 @LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class ItemSharingModule extends QuarkModule {
 
 	@Config
 	public static boolean renderItemsInChat = true;
+
+	//global variable to apply 5 sec cooldown
+	private static long lastShadeTimestamp = -1;
 
 	@OnlyIn(Dist.CLIENT)
 	public static void renderItemForMessage(PoseStack poseStack, FormattedCharSequence sequence, float x, float y, int color) {
@@ -91,6 +92,9 @@ public class ItemSharingModule extends QuarkModule {
 				ItemStack stack = slot.getItem();
 
 				if(!stack.isEmpty()) {
+					if(mc.level != null && mc.level.getGameTime() - lastShadeTimestamp > 3) {
+						lastShadeTimestamp = mc.level.getGameTime();
+					}else return;
 					ShareItemMessage message = new ShareItemMessage(slot.getSlotIndex());
 					QuarkNetwork.sendToServer(message);
 				}
@@ -108,13 +112,13 @@ public class ItemSharingModule extends QuarkModule {
 			if(!stack.isEmpty()) {
 				MutableComponent comp = Component.translatable("quark.misc.shared_item", player.getName());
 				Component itemComp = stack.getDisplayName();
-				
+
 				comp.append(itemComp);
 				player.server.getPlayerList().getPlayers().forEach(p -> p.sendSystemMessage(comp));
 			}
 		}
 	}
-	
+
 	public static MutableComponent createStackComponent(ItemStack stack, MutableComponent component) {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(ItemSharingModule.class) || !renderItemsInChat)
 			return component;
