@@ -84,7 +84,7 @@ public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterlo
 
     @Override
     public boolean propagatesSkylightDown(BlockState state, @Nonnull BlockGetter reader, @Nonnull BlockPos pos) {
-        return !state.getValue(WATERLOGGED);
+        return !state.getValue(WATERLOGGED) && state.getValue(AXIS) == Axis.Y;
     }
 
     @Nonnull
