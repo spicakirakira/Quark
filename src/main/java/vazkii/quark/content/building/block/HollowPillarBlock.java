@@ -51,17 +51,11 @@ public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterlo
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext ctx) {
-        if (ctx instanceof EntityCollisionContext ectx && ectx.getEntity() instanceof Player player) {
-            BlockPos bpos = player.blockPosition();
-            if (player.getEyeHeight() > 1F)
-                bpos = bpos.above();
-
-            BlockState bstate = world.getBlockState(bpos);
-            if (bstate.getBlock() instanceof HollowPillarBlock)
-                return getCollisionShape(state, world, bpos, ctx);
-        }
-
-        return super.getShape(state, world, pos, ctx);
+        return switch (state.getValue(AXIS)) {
+            case X -> SHAPE_X;
+            case Y -> SHAPE_Y;
+            case Z -> SHAPE_Z;
+        };
     }
 
     @Override
@@ -105,7 +99,7 @@ public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterlo
 
     @Override
     public boolean useShapeForLightOcclusion(BlockState p_56967_) {
-        return false;
+        return true;
     }
 
     @Override
@@ -115,14 +109,6 @@ public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterlo
         def.add(WATERLOGGED);
     }
 
-    @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext ctx) {
-        return switch (state.getValue(AXIS)) {
-            case X -> SHAPE_X;
-            case Y -> SHAPE_Y;
-            case Z -> SHAPE_Z;
-        };
-    }
 
 }
 

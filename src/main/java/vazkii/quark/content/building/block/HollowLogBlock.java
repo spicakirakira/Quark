@@ -18,7 +18,6 @@ public class HollowLogBlock extends HollowPillarBlock {
     public HollowLogBlock(Block sourceLog, QuarkModule module, boolean flammable) {
         super(IQuarkBlock.inherit(sourceLog, "hollow_%s"), module, CreativeModeTab.TAB_DECORATIONS,
                 Properties.copy(sourceLog)
-                        .noOcclusion()
                         .isSuffocating((s, g, p) -> false));
 
         this.flammable = flammable;
