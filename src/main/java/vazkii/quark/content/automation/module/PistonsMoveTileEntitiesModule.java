@@ -9,22 +9,27 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraftforge.common.util.NonNullConsumer;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.LevelTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 import vazkii.quark.api.IIndirectConnector;
 import vazkii.quark.api.IPistonCallback;
 import vazkii.quark.api.QuarkCapabilities;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -68,15 +73,8 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 		for (Pair<BlockPos, CompoundTag> delay : delays) {
 			BlockPos pos = delay.getLeft();
 			BlockState state = event.level.getBlockState(pos);
-			BlockEntity tile = BlockEntity.loadStatic(pos, state, delay.getRight());
-
-			if(tile != null) {
-				tile.setBlockState(state);
-				tile.setChanged();
-
-				event.level.setBlockEntity(tile);
-			}
-
+			BlockEntity entity = loadBlockEntitySafe(event.level, pos, delay.getRight());
+			callCallback(entity, IPistonCallback::onPistonMovementFinished);
 			event.level.updateNeighbourForOutputSignal(pos, state.getBlock());
 		}
 
@@ -117,8 +115,7 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 			if (state.getBlock() instanceof EntityBlock) {
 				BlockEntity tile = world.getBlockEntity(pos);
 				if (tile != null) {
-					if (hasCallback(tile))
-						getCallback(tile).onPistonMovementStarted();
+					callCallback(tile, IPistonCallback::onPistonMovementStarted);
 
 					CompoundTag tag = tile.saveWithFullMetadata();
 					world.removeBlockEntity(pos);
@@ -139,17 +136,19 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 			state = state.setValue(ChestBlock.TYPE, ChestType.SINGLE);
 
 		Block block = state.getBlock();
-		BlockEntity entity = getAndClearMovement(world, pos);
+		CompoundTag entityTag = getAndClearMovement(world, pos);
 		boolean destroyed = false;
 
-		if (entity != null) {
+		if (entityTag != null) {
 			BlockState currState = world.getBlockState(pos);
 			BlockEntity currEntity = world.getBlockEntity(pos);
+			CompoundTag currTag = currEntity == null ? null : currEntity.saveWithFullMetadata();
 
 			world.removeBlock(pos, false);
 			if (!block.canSurvive(state, world, pos)) {
 				world.setBlock(pos, state, flags);
-				world.setBlockEntity(entity);
+				BlockEntity entity = loadBlockEntitySafe(world, pos, entityTag);
+				callCallback(entity, IPistonCallback::onPistonMovementFinished);
 				Block.dropResources(state, world, pos, entity);
 				world.removeBlock(pos, false);
 				destroyed = true;
@@ -157,8 +156,8 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 
 			if (!destroyed) {
 				world.setBlockAndUpdate(pos, currState);
-				if(currEntity != null)
-					world.setBlockEntity(currEntity);
+				if(currTag != null)
+					loadBlockEntitySafe(world, pos, currTag);
 			}
 		}
 
@@ -168,14 +167,12 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 			if (world.getBlockEntity(pos) != null)
 				world.setBlock(pos, state, 0);
 
-			if (entity != null && !world.isClientSide) {
+			if (entityTag != null && !world.isClientSide) {
 				if (delayedUpdateList.contains(Objects.toString(Registry.BLOCK.getKey(block))))
-					registerDelayedUpdate(world, pos, entity);
+					registerDelayedUpdate(world, pos, entityTag);
 				else {
-					entity.setBlockState(state);
-					entity.setChanged();
-
-					world.setBlockEntity(entity);
+					BlockEntity entity = loadBlockEntitySafe(world, pos, entityTag);
+					callCallback(entity, IPistonCallback::onPistonMovementFinished);
 				}
 			}
 			world.updateNeighborsAt(pos, block);
@@ -191,11 +188,11 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 		movements.get(world).put(pos, nbt);
 	}
 
-	public static BlockEntity getMovement(Level world, BlockPos pos) {
+	public static CompoundTag getMovement(Level world, BlockPos pos) {
 		return getMovement(world, pos, false);
 	}
 
-	private static BlockEntity getMovement(Level world, BlockPos pos, boolean remove) {
+	private static CompoundTag getMovement(Level world, BlockPos pos, boolean remove) {
 		if (!movements.containsKey(world))
 			return null;
 
@@ -207,36 +204,24 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 		if (remove)
 			worldMovements.remove(pos);
 
-		return BlockEntity.loadStatic(pos, world.getBlockState(pos), ret);
+		return ret;
 	}
 
-	private static BlockEntity getAndClearMovement(Level world, BlockPos pos) {
-		BlockEntity tile = getMovement(world, pos, true);
-
-		if (tile != null) {
-			if (hasCallback(tile))
-				getCallback(tile).onPistonMovementFinished();
-
-			tile.setLevel(world);
-			tile.clearRemoved();
-		}
-
-		return tile;
+	private static CompoundTag getAndClearMovement(Level world, BlockPos pos) {
+		return getMovement(world, pos, true);
+		// TODO this function formerly called the callback, make sure it's called from all the right places
 	}
 
-	private static void registerDelayedUpdate(Level world, BlockPos pos, BlockEntity tile) {
+	private static void registerDelayedUpdate(Level world, BlockPos pos, CompoundTag tag) {
 		if (!delayedUpdates.containsKey(world))
 			delayedUpdates.put(world, new ArrayList<>());
 
-		delayedUpdates.get(world).add(Pair.of(pos, tile.saveWithFullMetadata()));
+		delayedUpdates.get(world).add(Pair.of(pos, tag));
 	}
 
-	private static boolean hasCallback(BlockEntity tile) {
-		return tile.getCapability(QuarkCapabilities.PISTON_CALLBACK).isPresent();
-	}
-
-	private static IPistonCallback getCallback(BlockEntity tile) {
-		return tile.getCapability(QuarkCapabilities.PISTON_CALLBACK).orElse(() -> {});
+	private static void callCallback(@Nullable BlockEntity entity, NonNullConsumer<? super IPistonCallback> caller) {
+		if(entity != null)
+			entity.getCapability(QuarkCapabilities.PISTON_CALLBACK).ifPresent(caller);
 	}
 
 	public static class ChestConnection implements IIndirectConnector {
@@ -271,4 +256,20 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 
 	}
 
+	@Nullable
+	private static BlockEntity loadBlockEntitySafe(Level level, BlockPos pos, CompoundTag tag) {
+		BlockEntity inWorldEntity = level.getBlockEntity(pos);
+		String expectedTypeStr = tag.getString("id");
+		if (inWorldEntity == null) {
+			Quark.LOG.warn("No block entity found at {} (expected {})", pos.toShortString(), expectedTypeStr);
+			return null;
+		} else if (inWorldEntity.getType() != ForgeRegistries.BLOCK_ENTITY_TYPES.getValue(new ResourceLocation(expectedTypeStr))) {
+			Quark.LOG.warn("Wrong block entity found at {} (expected {}, got {})", pos.toShortString(), expectedTypeStr, BlockEntityType.getKey(inWorldEntity.getType()));
+			return null;
+		} else {
+			inWorldEntity.load(tag);
+			inWorldEntity.setChanged();
+			return inWorldEntity;
+		}
+	}
 }
