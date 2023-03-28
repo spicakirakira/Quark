@@ -197,7 +197,7 @@ public class EmotesModule extends QuarkModule {
 			}
 
 			int buttonX = buttonShiftX;
-			int buttonY = (expandDown ? 2 : gui.height - 40) + buttonShiftX;
+			int buttonY = (expandDown ? 2 : gui.height - 40) + buttonShiftY;
 
 			List<Button> emoteButtons = new LinkedList<>();
 			for (int tier : keys) {

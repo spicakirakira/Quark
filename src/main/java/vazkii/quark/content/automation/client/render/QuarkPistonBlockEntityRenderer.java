@@ -36,7 +36,7 @@ public class QuarkPistonBlockEntityRenderer {
 		if (!(state.getBlock() instanceof EntityBlock eb)) return false;
 		BlockEntity tile = eb.newBlockEntity(truePos, state);
 		if (tile == null) return false;
-		CompoundTag tileTag = PistonsMoveTileEntitiesModule.getMovement(piston.getLevel(), truePos);
+		CompoundTag tileTag = PistonsMoveTileEntitiesModule.getMovingBlockEntityData(piston.getLevel(), truePos);
 		if (tileTag != null && tile.getType() == ForgeRegistries.BLOCK_ENTITY_TYPES.getValue(new ResourceLocation(tileTag.getString("id"))))
 			tile.load(tileTag);
 		Vec3 offset = new Vec3(piston.getXOff(partialTicks), piston.getYOff(partialTicks), piston.getZOff(partialTicks));

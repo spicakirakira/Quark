@@ -74,16 +74,16 @@ public class GlimmeringWealdModule extends QuarkModule {
 
 	public static TagKey<Item> glowShroomFeedablesTag;
 
-	@Config(name = "Min Weirdness Range",
-			description = "Experimental, dont change if you dont know what you are doing. Weirdness min value from which biome will spawn. Decreasing will make biome appear more often")
+	@Config(name = "Min Depth Range",
+			description = "Experimental, dont change if you dont know what you are doing. Depth min value from which biome will spawn. Decreasing will make biome appear more often")
 	@Config.Min(-2)
 	@Config.Max(2)
-	public static double minWeirdnessRange = 1.55F;
+	public static double minDepthRange = 1.55F;
 	@Config(name = "Max Weirdness Range",
-			description = "Experimental, dont change if you dont know what you are doing. Weirdness max value until which biome will spawn. Increasing will make biome appear more often")
+			description = "Experimental, dont change if you dont know what you are doing. Depth max value until which biome will spawn. Increasing will make biome appear more often")
 	@Config.Min(-2)
 	@Config.Max(2)
-	public static double maxWeirdnessRange = 2;
+	public static double maxDepthRange = 2;
 
 	@Override
 	public void register() {
@@ -104,8 +104,8 @@ public class GlimmeringWealdModule extends QuarkModule {
 	@Override
 	public void postRegister() {
 		RegistryHelper.register(makeBiome(), Registry.BIOME_REGISTRY);
-		float wmin = (float) minWeirdnessRange;
-		float wmax = (float) maxWeirdnessRange;
+		float wmin = (float) minDepthRange;
+		float wmax = (float) maxDepthRange;
 		if(wmin >= wmax){
 			Quark.LOG.warn("Incorrect value for Glimmering Weald biome parameters. Using default");
 			wmax = 2;
