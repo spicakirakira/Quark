@@ -128,7 +128,7 @@ public class DyeableItemFramesModule extends QuarkModule {
 	}
 
 	protected boolean mayPlace(Player player, Direction direction, ItemStack stack, BlockPos pos) {
-		return player.mayUseItemAt(pos, direction, stack);
+		return !player.level.isOutsideBuildHeight(pos) && player.mayUseItemAt(pos, direction, stack);
 	}
 
 }

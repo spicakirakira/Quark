@@ -3,8 +3,11 @@ package vazkii.quark.content.world.module;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -12,6 +15,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.QuarkLeavesBlock;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.VariantHandler;
@@ -52,7 +56,16 @@ public class AncientWoodModule extends QuarkModule {
 	public static Item ancient_fruit;
 	
 	public static QuarkGenericTrigger ancientFruitTrigger;
-	
+
+	@Override
+	public void setup() {
+		enqueue(() -> {
+			ComposterBlock.COMPOSTABLES.put(ancient_sapling.asItem(), 0.3F);
+			ComposterBlock.COMPOSTABLES.put(ancient_leaves.asItem(), 0.3F);
+			ComposterBlock.COMPOSTABLES.put(ancient_fruit.asItem(), 0.65F);
+		});
+	}
+
 	@Override
 	public void register() {
 		woodSet = WoodSetHandler.addWoodSet(this, "ancient", MaterialColor.TERRACOTTA_WHITE, MaterialColor.TERRACOTTA_WHITE);

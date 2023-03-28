@@ -81,6 +81,15 @@ repositories {
         name "progwml6"
         url "https://dvs1.progwml6.com/files/maven"
     }
+    maven {
+        url "https://maven.parchmentmc.org"
+    }
+
+    maven {
+        url = "https://www.cursemaven.com"
+        allowInsecureProtocol = true
+    }
+
 }
 
 
@@ -96,6 +105,10 @@ dependencies {
 
     compileOnly fg.deobf("mezz.jei:${config.jei_version}")
     runtimeOnly fg.deobf("mezz.jei:${config.jei_version}")
+    //runtimeOnly fg.deobf("curse.maven:life-steal-enchantment-508712:4100178")
+
+
+
 }
 
 spotless {
@@ -244,6 +257,7 @@ publishing {
         maven {
             url "file://" + System.getenv("local_maven")
         }
+
     }
 }
 
