@@ -11,7 +11,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemFrameItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -92,7 +94,6 @@ public class DyeableItemFramesModule extends QuarkModule {
 	}
 
 	// Copy of the logic from HangingEntityItem from here on out
-
 	private InteractionResult useOn(UseOnContext context) {
 		BlockPos blockpos = context.getClickedPos();
 		Direction direction = context.getClickedFace();
@@ -126,8 +127,8 @@ public class DyeableItemFramesModule extends QuarkModule {
 		return InteractionResult.CONSUME;
 	}
 
-	protected boolean mayPlace(Player p_41326_, Direction p_41327_, ItemStack p_41328_, BlockPos p_41329_) {
-		return !p_41327_.getAxis().isVertical() && p_41326_.mayUseItemAt(p_41329_, p_41327_, p_41328_);
+	protected boolean mayPlace(Player player, Direction direction, ItemStack stack, BlockPos pos) {
+		return player.mayUseItemAt(pos, direction, stack);
 	}
 
 }
