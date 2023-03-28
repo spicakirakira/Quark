@@ -14,8 +14,8 @@ import net.minecraft.world.level.block.piston.PistonStructureResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraftforge.common.util.NonNullConsumer;
-import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.LevelTickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
@@ -118,9 +118,8 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 					callCallback(tile, IPistonCallback::onPistonMovementStarted);
 
 					CompoundTag tag = tile.saveWithFullMetadata();
+					setMovingBlockEntityData(world, pos.relative(facing), tag);
 					world.removeBlockEntity(pos);
-
-					registerMovement(world, pos.relative(facing), tile, tag);
 				}
 			}
 		}
@@ -181,18 +180,26 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 		return false; // the value is popped, doesn't matter what we return
 	}
 
-	private static void registerMovement(Level world, BlockPos pos, BlockEntity tile, CompoundTag nbt) {
-		if (!movements.containsKey(world))
-			movements.put(world, new HashMap<>());
-
-		movements.get(world).put(pos, nbt);
+	/**
+	 * Use to update your tile entity data. Use with care
+	 * @param world current world
+	 * @param pos moving tile position
+	 * @param nbt tile entity data
+	 */
+	public static void setMovingBlockEntityData(Level world, BlockPos pos, CompoundTag nbt) {
+		movements.computeIfAbsent(world, l -> new HashMap<>()).put(pos, nbt);
 	}
 
-	public static CompoundTag getMovement(Level world, BlockPos pos) {
-		return getMovement(world, pos, false);
+	@Deprecated(forRemoval = true)
+	public static BlockEntity getMovement(Level world, BlockPos pos) {
+		return null;
 	}
 
-	private static CompoundTag getMovement(Level world, BlockPos pos, boolean remove) {
+	public static CompoundTag getMovingBlockEntityData(Level world, BlockPos pos) {
+		return getMovingBlockEntityData(world, pos, false);
+	}
+
+	private static CompoundTag getMovingBlockEntityData(Level world, BlockPos pos, boolean remove) {
 		if (!movements.containsKey(world))
 			return null;
 
@@ -208,7 +215,7 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 	}
 
 	private static CompoundTag getAndClearMovement(Level world, BlockPos pos) {
-		return getMovement(world, pos, true);
+		return getMovingBlockEntityData(world, pos, true);
 		// TODO this function formerly called the callback, make sure it's called from all the right places
 	}
 
