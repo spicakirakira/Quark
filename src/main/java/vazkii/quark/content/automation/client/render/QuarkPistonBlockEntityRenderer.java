@@ -64,8 +64,8 @@ public class QuarkPistonBlockEntityRenderer {
 				tile.blockState = state;
 				tileentityrenderer.render(tile, partialTicks, matrix, bufferIn, combinedLightIn, combinedOverlayIn);
 			}
-		} catch(Throwable e) {
-			Quark.LOG.warn(id + " can't be rendered for piston TE moving", e);
+		} catch(Exception e) {
+			Quark.LOG.warn("{} can't be rendered for piston TE moving",id, e);
 			PistonsMoveTileEntitiesModule.renderBlacklist.add(id);
 			return false;
 		} finally {

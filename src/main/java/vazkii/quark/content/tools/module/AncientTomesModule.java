@@ -111,16 +111,19 @@ public class AncientTomesModule extends QuarkModule {
 	public static boolean overleveledBooksGlowRainbow = true;
 
 	@Config(description = "When enabled, Efficiency VI Diamond and Netherite pickaxes can instamine Deepslate when under Haste 2", flag = "deepslate_tweak")
-	public static boolean deepslateTweak = true; 
-	
+	public static boolean deepslateTweak = true;
+
 	@Config
 	public static boolean deepslateTweakNeedsHaste2 = true;
 
 	@Config(description = "Master Librarians will offer to exchange Ancient Tomes, provided you give them a max-level Enchanted Book of the Tome's enchantment too.")
 	public static boolean librariansExchangeAncientTomes = true;
 
-	@Config(description = "Also applies a random curse along each book")
+	@Config(description = "Applying a tome will also randomly curse your item")
 	public static boolean curseGear = false;
+
+	@Config(description = "Allows combining tomes with normal books")
+	public static boolean combineWithBooks = true;
 
 	public static Item ancient_tome;
 	public static final List<Enchantment> validEnchants = new ArrayList<>();
@@ -228,7 +231,7 @@ public class AncientTomesModule extends QuarkModule {
 				}
 			}
 
-			else if(right.is(Items.ENCHANTED_BOOK)) {
+			else if(combineWithBooks && right.is(Items.ENCHANTED_BOOK)) {
 				Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(right);
 				Map<Enchantment, Integer> currentEnchants = EnchantmentHelper.getEnchantments(left);
 				boolean hasOverLevel = false;
