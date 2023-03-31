@@ -19,6 +19,7 @@ import vazkii.quark.base.handler.RayTraceHandler;
 import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.module.BottledCloudModule;
+import vazkii.quark.integration.claim.IClaimIntegration;
 
 import javax.annotation.Nonnull;
 
@@ -39,7 +40,8 @@ public class BottledCloudItem extends QuarkItem {
 			if(!world.isEmptyBlock(pos))
 				pos = pos.relative(bresult.getDirection());
 
-			if(world.isEmptyBlock(pos)) {
+			if(world.isEmptyBlock(pos) && IClaimIntegration.INSTANCE.canPlace(player, pos)) {
+
 				if(!world.isClientSide) {
 					world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
 					world.setBlockAndUpdate(pos, BottledCloudModule.cloud.defaultBlockState());

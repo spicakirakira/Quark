@@ -105,6 +105,9 @@ dependencies {
 
     compileOnly fg.deobf("mezz.jei:${config.jei_version}")
     runtimeOnly fg.deobf("mezz.jei:${config.jei_version}")
+
+    compileOnly fg.deobf("curse.maven:flan-forge-493246:3902633")
+
     //runtimeOnly fg.deobf("curse.maven:life-steal-enchantment-508712:4100178")
 
 

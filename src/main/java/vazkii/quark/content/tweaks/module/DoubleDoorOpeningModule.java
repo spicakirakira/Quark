@@ -31,6 +31,7 @@ import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.DoubleDoorMessage;
+import vazkii.quark.integration.claim.IClaimIntegration;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class DoubleDoorOpeningModule extends QuarkModule {
@@ -45,15 +46,18 @@ public class DoubleDoorOpeningModule extends QuarkModule {
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
-		if(!event.getLevel().isClientSide || event.getEntity().isDiscrete() || event.isCanceled() || event.getResult() == Result.DENY || event.getUseBlock() == Result.DENY || handling)
+		Player player = event.getEntity();
+		if(!event.getLevel().isClientSide || player.isDiscrete() || event.isCanceled() || event.getResult() == Result.DENY || event.getUseBlock() == Result.DENY || handling)
 			return;
 
 		Level world = event.getLevel();
 		BlockPos pos = event.getPos();
 
 		if(isDoor(world.getBlockState(pos))) {
+			if(!IClaimIntegration.INSTANCE.canInteract(player, pos))return;
+
 			handling = true;
-			openDoor(world, event.getEntity(), pos);
+			openDoor(world, player, pos);
 			handling = false;
 			
 			QuarkNetwork.sendToServer(new DoubleDoorMessage(pos));

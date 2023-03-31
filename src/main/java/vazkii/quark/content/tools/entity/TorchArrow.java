@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -16,6 +17,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import vazkii.quark.content.tools.module.TorchArrowModule;
+import vazkii.quark.integration.claim.IClaimIntegration;
 
 public class TorchArrow extends AbstractArrow {
 	
@@ -65,6 +67,10 @@ public class TorchArrow extends AbstractArrow {
 			BlockState state = level.getBlockState(finalPos);
 			
 			if((state.isAir() || state.getMaterial().isReplaceable()) && direction != Direction.DOWN) {
+
+				if(this.getOwner() instanceof Player p && !IClaimIntegration.INSTANCE.canPlace(p, finalPos))
+					return;
+
 				BlockState setState;
 				if(direction == Direction.UP)
 					setState = Blocks.TORCH.defaultBlockState();

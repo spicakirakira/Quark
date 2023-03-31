@@ -48,6 +48,7 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.inputtable.RGBColorConfig;
+import vazkii.quark.integration.claim.IClaimIntegration;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class ReacharoundPlacingModule extends QuarkModule {
@@ -130,6 +131,8 @@ public class ReacharoundPlacingModule extends QuarkModule {
 			ItemStack stack = event.getItemStack();
 			if(!player.mayUseItemAt(target.pos, target.dir, stack) || !player.level.mayInteract(player, target.pos))
 				return;
+
+			if(!IClaimIntegration.INSTANCE.canPlace(player, target.pos))return;
 
 			int count = stack.getCount();
 			InteractionHand hand = event.getHand();

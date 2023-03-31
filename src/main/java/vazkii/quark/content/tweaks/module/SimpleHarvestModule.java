@@ -52,6 +52,7 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.HarvestMessage;
 import vazkii.quark.content.mobs.entity.Toretoise;
+import vazkii.quark.integration.claim.IClaimIntegration;
 
 import java.util.Collection;
 import java.util.List;
@@ -258,6 +259,9 @@ public class SimpleHarvestModule extends QuarkModule {
             return false;
 
         if (pick.getType() != HitResult.Type.BLOCK || !pick.getBlockPos().equals(pos))
+            return false;
+
+        if(!IClaimIntegration.INSTANCE.canBreak(player, pos))
             return false;
 
         BlockState stateAt = player.level.getBlockState(pos);
