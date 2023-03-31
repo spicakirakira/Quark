@@ -92,29 +92,30 @@ public class ItemSharingModule extends QuarkModule {
 				ItemStack stack = slot.getItem();
 
 				if(!stack.isEmpty()) {
-					if(mc.level != null && mc.level.getGameTime() - lastShadeTimestamp > 3) {
+					if(mc.level != null && mc.level.getGameTime() - lastShadeTimestamp > 10) {
 						lastShadeTimestamp = mc.level.getGameTime();
 					}else return;
-					ShareItemMessage message = new ShareItemMessage(slot.getSlotIndex());
+					ShareItemMessage message = new ShareItemMessage(slot.index, gui.getMenu().containerId);
 					QuarkNetwork.sendToServer(message);
 				}
 			}
 		}
 	}
 
-	public static void shareItem(ServerPlayer player, int slot) {
+	public static void shareItem(ServerPlayer player, int slot, int containedId) {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(ItemSharingModule.class))
 			return;
+		if(player.containerMenu.containerId == containedId) {
+			var slots = player.containerMenu.slots;
+			if (slot >= 0 && slots.size() > slot) {
+				ItemStack stack = slots.get(slot).getItem();
+				if (!stack.isEmpty()) {
+					MutableComponent comp = Component.translatable("quark.misc.shared_item", player.getName());
+					Component itemComp = stack.getDisplayName();
 
-		var slots = player.containerMenu.slots;
-		if(slot >= 0 && slots.size() > slot) {
-			ItemStack stack = slots.get(slot).getItem();
-			if(!stack.isEmpty()) {
-				MutableComponent comp = Component.translatable("quark.misc.shared_item", player.getName());
-				Component itemComp = stack.getDisplayName();
-
-				comp.append(itemComp);
-				player.server.getPlayerList().getPlayers().forEach(p -> p.sendSystemMessage(comp));
+					comp.append(itemComp);
+					player.server.getPlayerList().getPlayers().forEach(p -> p.sendSystemMessage(comp));
+				}
 			}
 		}
 	}
