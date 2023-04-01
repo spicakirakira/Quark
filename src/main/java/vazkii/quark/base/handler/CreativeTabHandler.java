@@ -2,13 +2,10 @@ package vazkii.quark.base.handler;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
-import vazkii.quark.base.block.QuarkBlock;
-import vazkii.quark.base.block.QuarkPillarBlock;
-import vazkii.quark.content.building.block.VariantChestBlock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +20,13 @@ public class CreativeTabHandler {
 
 
     public static void addTab(IQuarkBlock block, @Nullable CreativeModeTab creativeTab, BooleanSupplier isEnabled) {
-        if(finalized){
+        if (finalized) {
             //if has been finalized we assign them immediately. This usually shouldn't happen with blocks from quark but other dependencies might. If it does conditions might not be taken into account
-            RegistryHelper.setCreativeTab((Block) block, creativeTab);
+            try {
+                RegistryHelper.setCreativeTab((Block) block, creativeTab);
+            } catch (Exception e) {
+                Quark.LOG.error("Failed to assign tab to {}", block);
+            }
         }
         if (creativeTab != null) {
             TAB_INFOS.add(new TabInfo(block, creativeTab, isEnabled));
@@ -38,8 +39,8 @@ public class CreativeTabHandler {
 
     //actually registers the tabs
     public static void finalizeTabs() {
-        TAB_INFOS.forEach(i-> {
-            if(i.enabled.getAsBoolean()) {
+        TAB_INFOS.forEach(i -> {
+            if (i.enabled.getAsBoolean()) {
                 RegistryHelper.setCreativeTab((Block) i.block, i.tab);
             }
         });

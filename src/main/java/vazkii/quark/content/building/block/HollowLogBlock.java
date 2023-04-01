@@ -16,13 +16,18 @@ public class HollowLogBlock extends HollowPillarBlock {
     private final boolean flammable;
 
     public HollowLogBlock(Block sourceLog, QuarkModule module, boolean flammable) {
-        super(IQuarkBlock.inherit(sourceLog, "hollow_%s"), module, CreativeModeTab.TAB_DECORATIONS,
+        this(IQuarkBlock.inherit(sourceLog, "hollow_%s"), sourceLog, module, flammable);
+    }
+
+    public HollowLogBlock(String name, Block sourceLog, QuarkModule module, boolean flammable) {
+        super(name, module, CreativeModeTab.TAB_DECORATIONS,
                 Properties.copy(sourceLog)
                         .isSuffocating((s, g, p) -> false));
 
         this.flammable = flammable;
         RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT_MIPPED);
     }
+
 
     @Override
     public boolean isFlammable(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
