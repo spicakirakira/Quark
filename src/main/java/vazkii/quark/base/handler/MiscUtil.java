@@ -327,4 +327,13 @@ public class MiscUtil {
 		}
 	}
 
+	//gets rid of lambdas that could contain references to blockstate properties we might not have
+	public static Properties copyPropertySafe(BlockBehaviour blockBehaviour) {
+		Properties p = Properties.copy(blockBehaviour);
+		p.lightLevel(s -> 0);
+		p.offsetType(OffsetType.NONE);
+		p.color(blockBehaviour.defaultMaterialColor());
+		return p;
+	}
+
 }

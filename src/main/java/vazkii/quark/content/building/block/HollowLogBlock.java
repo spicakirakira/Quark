@@ -7,6 +7,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -21,7 +22,7 @@ public class HollowLogBlock extends HollowPillarBlock {
 
     public HollowLogBlock(String name, Block sourceLog, QuarkModule module, boolean flammable) {
         super(name, module, CreativeModeTab.TAB_DECORATIONS,
-                Properties.copy(sourceLog)
+                MiscUtil.copyPropertySafe(sourceLog)
                         .isSuffocating((s, g, p) -> false));
 
         this.flammable = flammable;
