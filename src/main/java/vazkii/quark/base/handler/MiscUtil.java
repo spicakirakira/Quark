@@ -39,6 +39,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -328,10 +329,10 @@ public class MiscUtil {
 	}
 
 	//gets rid of lambdas that could contain references to blockstate properties we might not have
-	public static Properties copyPropertySafe(BlockBehaviour blockBehaviour) {
-		Properties p = Properties.copy(blockBehaviour);
+	public static BlockBehaviour.Properties copyPropertySafe(BlockBehaviour blockBehaviour) {
+		BlockBehaviour.Properties p = BlockBehaviour.Properties.copy(blockBehaviour);
 		p.lightLevel(s -> 0);
-		p.offsetType(OffsetType.NONE);
+		p.offsetType(BlockBehaviour.OffsetType.NONE);
 		p.color(blockBehaviour.defaultMaterialColor());
 		return p;
 	}

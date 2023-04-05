@@ -170,6 +170,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 
 	private static boolean armorOverride(ItemStack stack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean simulate) {
 		if (incoming.isEmpty()) {
+			//disallow stacks with more than one since it would prevent from de stacking
+			if (stack.getCount() >1) return false;
 			EquipmentSlot equipSlot = null;
 
 			if (stack.getItem() instanceof ArmorItem armor) {
