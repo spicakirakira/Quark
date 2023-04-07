@@ -318,8 +318,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 							if (any) {
 								ItemStack workStack = useCopy ? shulkerBox.copy() : shulkerBox;
 
-								ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithFullMetadata());
-								ItemNBTHelper.setCompound(stack, "BlockEntityTag", otherShulker.saveWithFullMetadata());
+								ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithId());
+								ItemNBTHelper.setCompound(stack, "BlockEntityTag", otherShulker.saveWithId());
 
 								if (slot.mayPlace(workStack))
 									return workStack;
@@ -335,7 +335,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 					if (!simulate)
 						stack.setCount(result.getCount());
 
-					ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithFullMetadata());
+					ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithId());
 
 					if (slot.mayPlace(workStack))
 						return workStack;
