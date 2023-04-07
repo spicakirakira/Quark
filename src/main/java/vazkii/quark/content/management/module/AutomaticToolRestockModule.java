@@ -67,6 +67,9 @@ public class AutomaticToolRestockModule extends QuarkModule {
 
 	@Config(description = "Enable comparing enchantments to find a replacement")
 	private boolean enableEnchantMatching = true;
+	
+	@Config(description = "Allow pulling items from one hotbar slot to another")
+	private boolean checkHotbar = false;
 
 	@Config
 	private boolean unstackablesOnly = false;
@@ -156,7 +159,8 @@ public class AutomaticToolRestockModule extends QuarkModule {
 
 	private boolean findReplacement(Player player, int currSlot, Predicate<ItemStack> match) {
 		synchronized(mutex) {
-			for(int i = 0; i < player.getInventory().items.size(); i++) {
+			int start = checkHotbar ? 0 : 9;
+			for(int i = start; i < player.getInventory().items.size(); i++) {
 				if(i == currSlot)
 					continue;
 
