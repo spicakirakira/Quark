@@ -48,6 +48,9 @@
     "TemptGoalMixin",
     "TrapDoorBlockMixin",
     "WeatheringCopperMixin",
+    "WallBlockMixin",
+    "IronBarsBlockMixin",
+
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
     "accessor.AccessorLivingEntity",
