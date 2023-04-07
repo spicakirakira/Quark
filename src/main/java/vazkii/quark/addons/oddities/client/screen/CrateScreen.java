@@ -42,7 +42,6 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 		int j = (height - imageHeight) / 2;
 		extraAreas = Lists.newArrayList(new Rect2i(i + imageWidth, j, 23, 136));
 	}
-	// TODO LOW PRIO scroll with mouse
 
 	public List<Rect2i> getExtraAreas() {
 		return extraAreas;
