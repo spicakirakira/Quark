@@ -209,7 +209,12 @@ public class AncientTomesModule extends QuarkModule {
 		String name = event.getName();
 
 		if(!left.isEmpty() && !right.isEmpty() ) {
+			
+			// Apply tome to book or item
 			if(right.is(ancient_tome)) {
+				if(!combineWithBooks && left.is(Items.ENCHANTED_BOOK))
+					return;
+				
 				Enchantment ench = getTomeEnchantment(right);
 				Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(left);
 
@@ -231,6 +236,7 @@ public class AncientTomesModule extends QuarkModule {
 				}
 			}
 
+			// Apply overleveled book to item
 			else if(combineWithBooks && right.is(Items.ENCHANTED_BOOK)) {
 				Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(right);
 				Map<Enchantment, Integer> currentEnchants = EnchantmentHelper.getEnchantments(left);
