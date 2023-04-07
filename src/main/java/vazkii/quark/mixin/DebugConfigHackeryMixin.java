@@ -13,7 +13,6 @@
 //
 //import java.util.List;
 //
-////TODO: remove before releasing!
 //@Deprecated(forRemoval = true)
 //@Mixin(ForgeConfigSpec.class)
 //public abstract class DebugConfigHackeryMixin implements IConfigSpec<ForgeConfigSpec> {
