@@ -33,7 +33,7 @@ import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.DoubleDoorMessage;
 import vazkii.quark.integration.claim.IClaimIntegration;
 
-@LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
+@LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true, subscribeOn = Dist.CLIENT, antiOverlap = "utilitix")
 public class DoubleDoorOpeningModule extends QuarkModule {
 
 	public static TagKey<Block> nonDoubleDoorTag;
