@@ -1,5 +1,7 @@
 package vazkii.quark.base.block;
 
+import java.util.function.BooleanSupplier;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -8,12 +10,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.IPlantable;
 import vazkii.quark.base.module.QuarkModule;
 
-import java.util.function.BooleanSupplier;
-
 // Wrapper to allow vanilla blocks to be treated as quark blocks contextualized under a module
-public record QuarkBlockWrapper(Block parent,
-								QuarkModule module) implements IQuarkBlock {
+public class QuarkBlockWrapper implements IQuarkBlock {
 
+	private final Block parent;
+	private final QuarkModule module;
+	
+	private BooleanSupplier condition;
+	
+	public QuarkBlockWrapper(Block parent, QuarkModule module) {
+		this.parent = parent;
+		this.module = module;
+	}
+	
 	@Override
 	public Block getBlock() {
 		return parent;
@@ -25,13 +34,14 @@ public record QuarkBlockWrapper(Block parent,
 	}
 
 	@Override
-	public IQuarkBlock setCondition(BooleanSupplier condition) {
+	public QuarkBlockWrapper setCondition(BooleanSupplier condition) {
+		this.condition = condition;
 		return this;
 	}
 
 	@Override
 	public boolean doesConditionApply() {
-		return true;
+		return condition == null || condition.getAsBoolean();
 	}
 
 	@Override
