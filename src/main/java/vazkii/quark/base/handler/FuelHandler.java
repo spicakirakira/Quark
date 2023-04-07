@@ -24,7 +24,7 @@ public class FuelHandler {
 	private static final Map<Item, Integer> fuelValues = new HashMap<>();
 
 	public static void addFuel(Item item, int fuel) {
-		if(fuel > 0 && item != null)
+		if(fuel > 0 && item != null && !fuelValues.containsKey(item))
 			fuelValues.put(item, fuel);
 	}
 
