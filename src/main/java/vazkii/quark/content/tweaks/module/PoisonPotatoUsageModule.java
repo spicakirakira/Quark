@@ -44,7 +44,7 @@ public class PoisonPotatoUsageModule extends QuarkModule {
 			
 			if(!event.getLevel().isClientSide) {
 				Vec3 pos = entity.position();
-				if(entity.level.random.nextDouble() < chance) {
+				if(event.getEntity().isCreative() || entity.level.random.nextDouble() < chance) {
 					entity.playSound(SoundEvents.GENERIC_EAT, 0.5f, 0.25f);
 					entity.level.addParticle(ParticleTypes.ENTITY_EFFECT, pos.x, pos.y, pos.z, 0.2, 0.8, 0);
 					poisonEntity(entity);
