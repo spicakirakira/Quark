@@ -4,7 +4,7 @@ Hey there. Looks like you want to contribute with an issue. Great. Here's what y
   * Issues regarding MCPC+/Cauldron/Spigot/Sponge that are not reproducible with forge only are **not accepted**;
   * Issues regarding outdated versions of Quark or AutoReglib are **not accepted**, make sure you have the most recent version of *both mods*;
   * Duplicate issues or issues that have been solved already (use the search feature!) will be closed without asking. If the issue is still happening, comment on the old one with the proper info you'd use when reporting a new one. (if it's locked for some reason feel free to make another one)
-  * Suggestions are **not accepted** here. Please check out the [Quark subreddit](https://www.reddit.com/r/quarkmod) and post them there instead.
+  * Unless requested by a team member ahead of time, suggestions are **not accepted** here. Please check out the [Quark subreddit](https://www.reddit.com/r/quarkmod) and post them there instead.
 
 [Report the Issue](https://github.com/Vazkii/Quark/issues)!
 
