@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.core.Registry;
 import net.minecraft.world.InteractionHand;
@@ -31,11 +30,16 @@ import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.PlayerInvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
+import vazkii.arl.util.InventoryIIH;
+import vazkii.quark.addons.oddities.module.BackpackModule;
 import vazkii.quark.api.event.GatherToolClassesEvent;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
+import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 
@@ -54,7 +58,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		ACTION_TO_CLASS.put(ToolActions.FISHING_ROD_CAST, "fishing_rod");
 	}
 	
-	private static final WeakHashMap<Player, Stack<Pair<Integer, Integer>>> replacements = new WeakHashMap<>();
+	private static final WeakHashMap<Player, Stack<QueuedRestock>> replacements = new WeakHashMap<>();
 
 	public List<Enchantment> importantEnchants = new ArrayList<>();
 
@@ -99,38 +103,65 @@ public class AutomaticToolRestockModule extends QuarkModule {
 
 			Predicate<ItemStack> enchantmentPredicate = (other) -> !(new ArrayList<>(enchantmentsOnStack)).retainAll(getImportantEnchantments(other));
 
-			if(enableEnchantMatching && findReplacement(player, currSlot, itemPredicate.and(enchantmentPredicate)))
-				return;
-
-			if(findReplacement(player, currSlot, itemPredicate))
-				return;
-
-			if(enableLooseMatching) {
-				Set<String> classes = getItemClasses(stack);
-
-				if(!classes.isEmpty()) {
-					Predicate<ItemStack> toolPredicate = (other) -> {
-						Set<String> otherClasses = getItemClasses(other);
-						return !otherClasses.isEmpty() && !otherClasses.retainAll(classes);
-					};
-
-					if(enableEnchantMatching && !enchantmentsOnStack.isEmpty() && findReplacement(player, currSlot, toolPredicate.and(enchantmentPredicate)))
-						return;
-
-					findReplacement(player, currSlot, toolPredicate);
+			Set<String> classes = getItemClasses(stack);
+			Optional<Predicate<ItemStack>> toolPredicate = Optional.empty();
+			
+			if(!classes.isEmpty())
+				toolPredicate = Optional.of((other) -> {
+					Set<String> otherClasses = getItemClasses(other);
+					return !otherClasses.isEmpty() && !otherClasses.retainAll(classes);
+				});
+			
+			RestockContext ctx = new RestockContext(player, currSlot, enchantmentsOnStack, itemPredicate, enchantmentPredicate, toolPredicate);
+			
+			int lower = checkHotbar ? 0 : 9;
+			int upper = player.getInventory().items.size();
+			boolean foundInInv = crawlInventory(new PlayerInvWrapper(player.getInventory()), lower, upper, ctx);
+			
+			if(!foundInInv && ModuleLoader.INSTANCE.isModuleEnabled(BackpackModule.class)) {
+				ItemStack backpack = player.getInventory().armor.get(2);
+ 				
+				if(backpack.getItem() == BackpackModule.backpack) {
+					InventoryIIH inv = new InventoryIIH(backpack);
+					crawlInventory(inv, 0, inv.getSlots(), ctx);
 				}
 			}
 		}
+	}
+			
+	private boolean crawlInventory(IItemHandler inv, int lowerBound, int upperBound, RestockContext ctx) {
+		Player player = ctx.player;
+		int currSlot = ctx.currSlot;
+		List<Enchantment> enchantmentsOnStack = ctx.enchantmentsOnStack;
+		Predicate<ItemStack> itemPredicate = ctx.itemPredicate;
+		Predicate<ItemStack> enchantmentPredicate = ctx.enchantmentPredicate;
+		Optional<Predicate<ItemStack>> toolPredicateOpt = ctx.toolPredicate;
+		
+		if(enableEnchantMatching && findReplacement(inv, player, lowerBound, upperBound, currSlot, itemPredicate.and(enchantmentPredicate)))
+			return true;
+
+		if(findReplacement(inv, player, lowerBound, upperBound, currSlot, itemPredicate))
+			return true;
+
+		if(enableLooseMatching && toolPredicateOpt.isPresent()) {
+			Predicate<ItemStack> toolPredicate = toolPredicateOpt.get();
+			if(enableEnchantMatching && !enchantmentsOnStack.isEmpty() && findReplacement(inv, player, lowerBound, upperBound, currSlot, toolPredicate.and(enchantmentPredicate)))
+				return true;
+
+			return findReplacement(inv, player, lowerBound, upperBound, currSlot, toolPredicate);
+		}
+		
+		return false;
 	}
 
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent event) {
 		if(event.phase == Phase.END && !event.player.level.isClientSide && replacements.containsKey(event.player)) {
-			Stack<Pair<Integer, Integer>> replacementStack = replacements.get(event.player);
+			Stack<QueuedRestock> replacementStack = replacements.get(event.player);
 			synchronized(mutex) {
 				while(!replacementStack.isEmpty()) {
-					Pair<Integer, Integer> pair = replacementStack.pop();
-					switchItems(event.player, pair.getLeft(), pair.getRight());
+					QueuedRestock restock = replacementStack.pop();
+					switchItems(event.player, restock);
 				}
 			}
 		}
@@ -157,16 +188,15 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		return classes;
 	}
 
-	private boolean findReplacement(Player player, int currSlot, Predicate<ItemStack> match) {
+	private boolean findReplacement(IItemHandler inv, Player player, int lowerBound, int upperBound, int currSlot, Predicate<ItemStack> match) {
 		synchronized(mutex) {
-			int start = checkHotbar ? 0 : 9;
-			for(int i = start; i < player.getInventory().items.size(); i++) {
+			for(int i = lowerBound; i < upperBound; i++) {
 				if(i == currSlot)
 					continue;
 
-				ItemStack stackAt = player.getInventory().getItem(i);
+				ItemStack stackAt = inv.getStackInSlot(i);
 				if(!stackAt.isEmpty() && match.test(stackAt)) {
-					pushReplace(player, i, currSlot);
+					pushReplace(player, inv, i, currSlot);
 					return true;
 				}
 			}
@@ -175,23 +205,29 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		}
 	}
 
-	private void pushReplace(Player player, int slot1, int slot2) {
+	private void pushReplace(Player player, IItemHandler inv, int slot1, int slot2) {
 		if(!replacements.containsKey(player))
 			replacements.put(player, new Stack<>());
-		replacements.get(player).push(Pair.of(slot1, slot2));
+		replacements.get(player).push(new QueuedRestock(inv, slot1, slot2));
 	}
 
-	private void switchItems(Player player, int slot1, int slot2) {
-		Inventory inventory = player.getInventory();
-		int size = inventory.items.size();
-		if(slot1 >= size || slot2 >= size)
+	private void switchItems(Player player, QueuedRestock restock) {
+		Inventory playerInv = player.getInventory();
+		IItemHandler providingInv = restock.providingInv;
+
+		int providingSlot = restock.providingSlot;
+		int playerSlot = restock.playerSlot;
+		
+		if(providingSlot >= providingInv.getSlots() || playerSlot >= playerInv.items.size())
 			return;
 
-		ItemStack stackAtSlot1 = inventory.getItem(slot1).copy();
-		ItemStack stackAtSlot2 = inventory.getItem(slot2).copy();
+		ItemStack stackAtPlayerSlot = playerInv.getItem(playerSlot).copy();
+		ItemStack stackProvidingSlot = providingInv.getStackInSlot(providingSlot).copy();
 
-		inventory.setItem(slot2, stackAtSlot1);
-		inventory.setItem(slot1, stackAtSlot2);
+		providingInv.extractItem(providingSlot, stackProvidingSlot.getCount(), false);
+		providingInv.insertItem(providingSlot, stackAtPlayerSlot, false);
+		
+		playerInv.setItem(playerSlot, stackProvidingSlot);
 	}
 
 	private List<Enchantment> getImportantEnchantments(ItemStack stack) {
@@ -218,5 +254,13 @@ public class AutomaticToolRestockModule extends QuarkModule {
 
 		return strings;
 	}
+	
+	private record RestockContext(Player player, int currSlot,
+			List<Enchantment> enchantmentsOnStack, 
+			Predicate<ItemStack> itemPredicate, 
+			Predicate<ItemStack> enchantmentPredicate,
+			Optional<Predicate<ItemStack>> toolPredicate) {}
+			
+	private record QueuedRestock(IItemHandler providingInv, int providingSlot, int playerSlot) {}
 
 }
