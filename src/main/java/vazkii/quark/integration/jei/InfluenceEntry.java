@@ -66,16 +66,16 @@ public class InfluenceEntry implements IRecipeCategoryExtension {
 		NonNullList<ItemStack> books = NonNullList.create();
 		for (Enchantment enchantment : influence.boost()) {
 			for (int i = 0; i < enchantment.getMaxLevel(); i++) {
-				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i)));
+				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i + 1)));
 			}
 		}
 
 		for (Enchantment enchantment : influence.dampen()) {
 			for (int i = 0; i < enchantment.getMaxLevel(); i++) {
-				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i)));
+				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i + 1)));
 			}
 		}
-
+		
 		return books;
 	}
 
