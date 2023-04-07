@@ -2,6 +2,7 @@ package vazkii.quark.content.building.module;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -18,6 +19,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.ToolActions;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.ToolInteractionHandler;
@@ -135,8 +138,22 @@ public class VerticalSlabsModule extends QuarkModule {
 			return prev;
 		
 		if(state.is(verticalSlabTag)) {
-			Direction vsDir = state.getValue(VerticalSlabBlock.TYPE).direction; // TODO figure out a way to do this without invoking the enum
-			return vsDir == null || vsDir.getAxis() != dir.getAxis();
+			// We use this absolute nonsene instead of a sane check to support mods that copy the VerticalSlabBlock
+			// class. If we just checked against VerticalSlabBlock.TYPE, it would type error when another mod
+			// has a copy paste enum in there
+			
+			Optional<Property<?>> opt = state.getProperties().stream().filter(p -> p.getName() == "type").findFirst();
+			if(opt.isPresent()) {
+				Property<?> prop = opt.get();
+				
+				if(prop instanceof EnumProperty<?> ep) {
+					Enum<?> val = (Enum<?>) state.getValue(prop);
+					
+					String name = val.name().toLowerCase();
+					Direction vsDir = Direction.byName(name);
+					return vsDir != null && vsDir.getAxis() != dir.getAxis();
+				}
+			}
 		}
 		
 		return false;
