@@ -10,11 +10,16 @@
  */
 package vazkii.quark.content.management.module;
 
-import com.mojang.blaze3d.platform.InputConstants;
+import java.util.List;
+
+import org.lwjgl.glfw.GLFW;
+
+import com.mojang.blaze3d.platform.InputConstants.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,7 +35,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent.KeyPressed;
+import net.minecraftforge.client.event.ScreenEvent.MouseButtonPressed;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -39,8 +45,6 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.ShareItemMessage;
-
-import java.util.List;
 
 @LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class ItemSharingModule extends QuarkModule {
@@ -73,13 +77,30 @@ public class ItemSharingModule extends QuarkModule {
 
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
-	public void keyboardEvent(ScreenEvent.KeyPressed.Pre event) {
-		Minecraft mc = Minecraft.getInstance();
-		Options settings = mc.options;
-		Screen screen = event.getScreen();
-		if(InputConstants.isKeyDown(mc.getWindow().getWindow(), settings.keyChat.getKey().getValue()) &&
-				screen instanceof AbstractContainerScreen<?> gui && Screen.hasShiftDown()) {
+	public void onKeyInput(KeyPressed.Pre event) {
+		KeyMapping key = getChatKey();
+		if(key.getKey().getType() == Type.KEYSYM && event.getKeyCode() == key.getKey().getValue())
+			clicc();
+	}
 
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void onMouseInput(MouseButtonPressed.Post event) {
+		KeyMapping key = getChatKey();
+		int btn = event.getButton();
+		if(key.getKey().getType() == Type.MOUSE && btn != GLFW.GLFW_MOUSE_BUTTON_LEFT && btn == key.getKey().getValue())
+			clicc();
+	}
+	
+	private KeyMapping getChatKey() {
+		return Minecraft.getInstance().options.keyChat;
+	}
+	
+	public void clicc() {
+		Minecraft mc = Minecraft.getInstance();
+		Screen screen = mc.screen;
+		
+		if(screen instanceof AbstractContainerScreen<?> gui && Screen.hasShiftDown()) {
 			List<? extends GuiEventListener> children = gui.children();
 			for(GuiEventListener c : children)
 				if(c instanceof EditBox tf) {
@@ -94,7 +115,8 @@ public class ItemSharingModule extends QuarkModule {
 				if(!stack.isEmpty()) {
 					if(mc.level != null && mc.level.getGameTime() - lastShadeTimestamp > 10) {
 						lastShadeTimestamp = mc.level.getGameTime();
-					}else return;
+					} else return;
+					
 					ShareItemMessage message = new ShareItemMessage(slot.index, gui.getMenu().containerId);
 					QuarkNetwork.sendToServer(message);
 				}
