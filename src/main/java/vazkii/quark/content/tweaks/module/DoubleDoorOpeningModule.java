@@ -55,7 +55,7 @@ public class DoubleDoorOpeningModule extends QuarkModule {
 		nonDoubleDoorTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "non_double_door"));
 	}
 	
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	@SubscribeEvent(priority = EventPriority.LOW)
 	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
 		Player player = event.getEntity();
 		if(!event.getLevel().isClientSide || player.isDiscrete() || event.isCanceled() || event.getResult() == Result.DENY || event.getUseBlock() == Result.DENY || handling)
