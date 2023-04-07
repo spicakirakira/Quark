@@ -35,6 +35,7 @@ public class AutoWalkKeybindModule extends QuarkModule {
 
 	private boolean autorunning;
 	private boolean hadAutoJump;
+	private boolean shouldAccept;
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
@@ -89,18 +90,23 @@ public class AutoWalkKeybindModule extends QuarkModule {
 			autorunning = false;
 		}
 
-		else if(keybind.isDown()) {
-			Player player = mc.player;
-			float height = player.getStepHeight();
-			
-			autorunning = !autorunning;
+		else {
+			if(keybind.isDown()) {
+				if(shouldAccept) {
+					shouldAccept = false;
+					Player player = mc.player;
+					float height = player.getStepHeight();
 
-			if(autorunning) {
-				hadAutoJump = opt.get();
-				
-				if(height < 1)
-					opt.set(true);
-			} else opt.set(hadAutoJump);	
+					autorunning = !autorunning;
+
+					if(autorunning) {
+						hadAutoJump = opt.get();
+
+						if(height < 1)
+							opt.set(true);
+					} else opt.set(hadAutoJump);	
+				}
+			} else shouldAccept = true;
 		}
 	}
 
