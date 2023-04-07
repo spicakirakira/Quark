@@ -142,5 +142,29 @@
       "potion": "difference"
     },
     "texture": "quark:attribute/reach_distance"
+  },
+  "forge:attack_range": {
+    "display": {
+      "mainhand": "difference",
+      "offhand": "difference",
+      "feet": "difference",
+      "legs": "difference",
+      "chest": "difference",
+      "head": "difference",
+      "potion": "difference"
+    },
+    "texture": "quark:attribute/attack_range"
+  },
+  "forge:step_height_addition": {
+    "display": {
+      "mainhand": "difference",
+      "offhand": "difference",
+      "feet": "difference",
+      "legs": "difference",
+      "chest": "difference",
+      "head": "difference",
+      "potion": "difference"
+    },
+    "texture": "quark:attribute/step_height"
   }
 }
