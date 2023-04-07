@@ -8,6 +8,7 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
@@ -89,12 +90,17 @@ public class AutoWalkKeybindModule extends QuarkModule {
 		}
 
 		else if(keybind.isDown()) {
+			Player player = mc.player;
+			float height = player.getStepHeight();
+			
 			autorunning = !autorunning;
 
 			if(autorunning) {
 				hadAutoJump = opt.get();
-				opt.set(true);
-			} else opt.set(hadAutoJump);
+				
+				if(height < 1)
+					opt.set(true);
+			} else opt.set(hadAutoJump);	
 		}
 	}
 
