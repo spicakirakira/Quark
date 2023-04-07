@@ -138,7 +138,7 @@ public class FoodTooltips {
 						GuiComponent.blit(pose, x, y, u, v, 9, 9, 256, 256);
 
 						u = 52;
-						if (fract && i == 0)
+						if (fract && i == (renderCount - 1))
 							u += 9;
 						if (poison)
 							u += 36;
