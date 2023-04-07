@@ -1,8 +1,10 @@
 package vazkii.quark.content.tools.module;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+
+import com.ibm.icu.util.Currency.CurrencyUsage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,13 +71,26 @@ public class BeaconRedirectionModule extends QuarkModule {
 		
 		float[] currColor = new float[] { 1, 1, 1 };
 		float alpha = 1F;
+		
+		Direction lastDir = null;
 		ExtendedBeamSegment currSegment = new ExtendedBeamSegment(Direction.UP, Vec3i.ZERO, currColor, alpha);
 
-		List<BlockPos> seenPositions = new LinkedList<>();
+		Collection<BlockPos> seenPositions = new HashSet<>();
 		boolean check = true;
 		boolean hardColorSet = false;
 		
 		while(world.isInWorldBounds(currPos) && horizontalMoves > 0) {
+			if(currSegment.dir == Direction.UP && currSegment.dir != lastDir) {
+				int heightmapVal = world.getHeight(Heightmap.Types.WORLD_SURFACE, currPos.getX(), currPos.getZ());
+				if(heightmapVal == (currPos.getY() + 1)) {
+					currSegment.setHeight(heightmapVal + 1000);
+					break;
+				}
+
+					
+				lastDir = currSegment.dir;
+			}
+			
 			currPos = currPos.relative(currSegment.dir);
 			if(currSegment.dir.getAxis().isHorizontal())
 				horizontalMoves--;
@@ -107,6 +122,7 @@ public class BeaconRedirectionModule extends QuarkModule {
 					currColor = mixedColor;
 					alpha = 1F;
 					didRedirection = true;
+					lastDir = currSegment.dir;
 					currSegment = new ExtendedBeamSegment(dir, currPos.subtract(beaconPos), currColor, alpha);
 				}
 			} else if(targetColor != null || targetAlpha != -1) {
@@ -131,24 +147,30 @@ public class BeaconRedirectionModule extends QuarkModule {
 					if(targetAlpha != -1)
 						alpha = targetAlpha;
 					
+					lastDir = currSegment.dir;
 					currSegment = new ExtendedBeamSegment(currSegment.dir, currPos.subtract(beaconPos), mixedColor, alpha);
 				}
 			} else {
-				if (block == Blocks.BEDROCK)
-					continue; //Bedrock blocks don't stop beacon beams
-				else if (blockstate.getLightBlock(world, currPos) >= 15) {
+				boolean bedrock = block == Blocks.BEDROCK; //Bedrock blocks don't stop beacon beams
+				
+				if(!bedrock && blockstate.getLightBlock(world, currPos) >= 15) {
 					broke = true;
 					break;
 				}
 
 				currSegment.increaseHeight();
+				
+				if(bedrock)
+					continue;
 			}
 			
 			if(check) {
-				if(seenPositions.contains(currPos)) {
+				boolean added = seenPositions.add(currPos);
+				if(!added) {
 					broke = true;
 					break;
-				} else seenPositions.add(currPos);
+				}
+				
 			}
 		}
 		
@@ -214,6 +236,10 @@ public class BeaconRedirectionModule extends QuarkModule {
 		@Override
 		public void increaseHeight() { // increase visibility
 			super.increaseHeight();
+		}
+		
+		public void setHeight(int target) {
+			height = target;
 		}
 
 	}
