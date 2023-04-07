@@ -129,7 +129,7 @@
 	"quark.camera.filter.bits": "Pixelize",
 	"quark.camera.filter.blobs": "Blobs",
 	"quark.camera.filter.pencil": "Pencil",
-	"quark.camera.filter.watercolor": "Watercolor",
+	"quark.camera.filter.watercolor": "Outline",
 	"quark.camera.filter.sobel": "Sobel",
 	"quark.camera.filter.deuteranopia": "Simulated Deuteranopia",
 	"quark.camera.filter.protanopia": "Simulated Protanopia",
