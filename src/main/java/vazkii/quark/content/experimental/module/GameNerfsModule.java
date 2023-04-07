@@ -83,7 +83,7 @@ public class GameNerfsModule extends QuarkModule {
 	
 	@SubscribeEvent
 	public void onMobGriefing(EntityMobGriefingEvent event) {
-		if(!enableSelectiveMobGriefing)
+		if(!enableSelectiveMobGriefing || event.getEntity() == null)
 			return;
 		
 		String name = Registry.ENTITY_TYPE.getKey(event.getEntity().getType()).toString();
