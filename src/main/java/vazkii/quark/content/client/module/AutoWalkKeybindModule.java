@@ -79,6 +79,7 @@ public class AutoWalkKeybindModule extends QuarkModule {
 		}
 	}
 
+	@OnlyIn(Dist.CLIENT)
 	private void acceptInput() {
 		Minecraft mc = Minecraft.getInstance();
 
