@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 
 public final class FlanIntegration implements IClaimIntegration{
 
+	@Override
     public boolean canBreak(@Nonnull Player player, @Nonnull BlockPos pos) {
         if (player.level.isClientSide) return true; //should only be used from server but client can call too
         try {
@@ -26,6 +27,7 @@ public final class FlanIntegration implements IClaimIntegration{
         }
     }
 
+	@Override
     public boolean canPlace(@Nonnull Player player, @Nonnull BlockPos pos) {
         if (player.level.isClientSide) return true; //should only be used from server but client can call too
         try {
@@ -38,6 +40,7 @@ public final class FlanIntegration implements IClaimIntegration{
         }
     }
 
+	@Override
     public boolean canReplace(@Nonnull Player player, @Nonnull BlockPos pos) {
         if (player.level.isClientSide) return true; //should only be used from server but client can call too
         try {
@@ -50,6 +53,7 @@ public final class FlanIntegration implements IClaimIntegration{
         }
     }
 
+	@Override
     public boolean canAttack(@Nonnull Player player, @Nonnull Entity victim) {
         if (player.level.isClientSide) return true; //should only be used from server but client can call too
         try {
@@ -62,6 +66,7 @@ public final class FlanIntegration implements IClaimIntegration{
         }
     }
 
+	@Override
     public boolean canInteract(@Nonnull Player player, @Nonnull BlockPos targetPos) {
         if (player.level.isClientSide) return true; //should only be used from server but client can call too
         try {
