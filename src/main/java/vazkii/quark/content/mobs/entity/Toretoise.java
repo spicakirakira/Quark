@@ -144,14 +144,16 @@ public class Toretoise extends Animal {
 	}
 
 	@Override
+	protected AABB makeBoundingBox() {
+		AABB aabb = super.makeBoundingBox();
+		
+		double rheight = getOreType() == 0 ? 0 : 0.4;
+		return new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY + rheight, aabb.maxZ);
+	}
+	
+	@Override
 	public void tick() {
 		super.tick();
-
-		
-		AABB aabb = getBoundingBox();
-		double rheight = getOreType() == 0 ? 1 : 1.4;
-		aabb = new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.minY + rheight, aabb.maxZ);
-		setBoundingBox(aabb);
 
 		Entity riding = getVehicle();
 		if (riding != null)
