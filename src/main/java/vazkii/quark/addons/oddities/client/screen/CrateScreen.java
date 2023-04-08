@@ -1,8 +1,13 @@
 package vazkii.quark.addons.oddities.client.screen;
 
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Rect2i;
@@ -17,12 +22,13 @@ import vazkii.quark.base.client.handler.InventoryButtonHandler.ButtonTargetType;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.content.client.module.ChestSearchingModule;
 
-import javax.annotation.Nonnull;
-import java.util.List;
-
 public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 
 	private static final ResourceLocation TEXTURE = new ResourceLocation(Quark.MOD_ID, "textures/gui/crate.png");
+
+	private int lastScroll;
+	private int scrollOffs;
+	private boolean scrolling;
 
 	private List<Rect2i> extraAreas;
 
@@ -54,10 +60,78 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 		renderTooltip(matrixStack, mouseX, mouseY);
 	}
 
+	private boolean canScroll() {
+		return (menu.getStackCount() / CrateMenu.numCols) > 0;
+	}
+	
+	private float getPxPerScroll() {
+		return 95F / (menu.getStackCount() / CrateMenu.numCols);
+	}
+
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
 		menu.scroll(delta < 0, true);
+		lastScroll = scrollOffs = (int) Math.round((menu.scroll / CrateMenu.numCols) * getPxPerScroll());
+
 		return true;
+	}
+
+	@Override
+	public boolean mouseClicked(double p_98531_, double p_98532_, int p_98533_) {
+		if(p_98533_ == 0 && insideScrollbar(p_98531_, p_98532_)) {
+			scrolling = canScroll();
+			
+			return true;
+		}
+
+		return super.mouseClicked(p_98531_, p_98532_, p_98533_);
+	}
+
+	protected boolean insideScrollbar(double mouseX, double mouseY) {
+		int left = leftPos + 175;
+		int top = topPos + 18;
+		int right = left + 14;
+		int bottom = top + 112;
+
+		return mouseX >= left && mouseY >= top && mouseX < right && mouseY < bottom;
+	}
+
+	@Override
+	public boolean mouseDragged(double mouseX, double mouseY, int p_98537_, double p_98538_, double p_98539_) {
+		if(scrolling) {
+			int top = topPos + 18;
+			
+			double relative = mouseY - top - 6;
+			if(relative < 0)
+				relative = 0;
+			else if(relative > 95)
+				relative = 95;
+			
+			scrollOffs = (int) relative;
+			
+			float diff = (float) (scrollOffs - lastScroll);
+			float pixelsNeeded = getPxPerScroll();
+			
+			while(Math.abs(diff) >= pixelsNeeded) {
+				boolean up = diff > 0;
+				
+				menu.scroll(up, true);
+				lastScroll = (int) Math.round((menu.scroll / CrateMenu.numCols) * pixelsNeeded);
+				diff = (float) (scrollOffs - lastScroll);
+			}
+			
+			return true;
+		} 
+		
+		else return super.mouseDragged(mouseX, mouseY, p_98537_, p_98538_, p_98539_);
+	}
+
+	@Override
+	public boolean mouseReleased(double p_98622_, double p_98623_, int p_98624_) {
+		if(p_98624_ == 0)
+			scrolling = false;
+
+		return super.mouseReleased(p_98622_, p_98623_, p_98624_);
 	}
 
 	@Override
@@ -71,10 +145,9 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 		blit(matrixStack, i, j, 0, 0, imageWidth + 20, imageHeight);
 
 		int maxScroll = (menu.getStackCount() / CrateMenu.numCols) * CrateMenu.numCols;
-		int currScroll = (menu.scroll * 95) / Math.max(1, maxScroll);
 
 		int u = 232 + (maxScroll == 0 ? 12 : 0);
-		int by = j + 18 + currScroll;
+		int by = j + 18 + scrollOffs;
 		blit(matrixStack, i + imageWidth, by, u, 0, 12, 15);
 
 		if(!ChestSearchingModule.searchEnabled) {
