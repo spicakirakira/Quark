@@ -124,7 +124,7 @@ public class ContributorRewardHandler {
 		@Override
 		public void run() {
 			try {
-				URL url = new URL("https://raw.githubusercontent.com/Vazkii/Quark/master/contributors.properties");
+				URL url = new URL("https://raw.githubusercontent.com/VazkiiMods/Quark/master/contributors.properties");
 				URLConnection conn = url.openConnection();
 				conn.setConnectTimeout(10*1000);
 				conn.setReadTimeout(10*1000);
