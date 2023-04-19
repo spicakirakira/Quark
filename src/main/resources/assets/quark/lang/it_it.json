@@ -292,6 +292,7 @@
 	"quark.misc.celebration": "Festeggiando 10 anni di mod di Vazkii (2021)",
 	"quark.misc.ancient_tome_tooltip": "+I %s (Massimo %s)",
 	"quark.misc.ancient_tome_tooltip_curse": "Applica una maledizione casuale",
+	"quark.misc.ancient_tome_tooltip_any": "(Qualsiasi incantesimo)",
 	"quark.misc.autowalking": "Camminata automatica",
 	"quark.misc.rightclick_to_craft": "Fare clic con il tasto destro per fabbricare",
 	"quark.misc.opened_screen": "Schermo aperto %s",
@@ -1225,7 +1226,7 @@
 	"block.quark.potted_vine": "Vaso con rampicante",
 	"block.quark.potted_weeping_vines": "Vaso con rampicante piangente",
 	"block.quark.potted_wheat": "Vaso con grano",
-	"block.quark.potted_yellow_blossom_sapling": "Vaso con arboscello di fiori del sole"
+	"block.quark.potted_yellow_blossom_sapling": "Vaso con arboscello di fiori del sole",
 	"block.quark.potted_glow_lichen_growth": "Vaso con lichene luminescente",
 	"block.quark.potted_glow_shroom": "Vaso con fungo luminescente",
 	"block.quark.potted_chorus_weeds": "Vaso con erbacce di chorus",
