@@ -11,15 +11,13 @@ import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Lists;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -78,6 +76,9 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	@Config
 	private boolean unstackablesOnly = false;
 
+	@Config(description = "Any items you place in this list will be ignored by the restock feature")
+	private List<String> ignoredItems = Lists.newArrayList("botania:exchange_rod", "botania:dirt_rod", "botania:skydirt_rod", "botania:cobble_rod");
+	
 	private Object mutex = new Object();
 	
 	@Override
@@ -224,10 +225,18 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		ItemStack stackAtPlayerSlot = playerInv.getItem(playerSlot).copy();
 		ItemStack stackProvidingSlot = providingInv.getStackInSlot(providingSlot).copy();
 
+		//Botania rods are only detected in the stackAtPlayerSlot but other tools are only detected in stackProvidingSlot so we check em both
+		if (!stackAtPlayerSlot.is(Items.AIR) && itemIgnored(stackAtPlayerSlot) || !stackProvidingSlot.is(Items.AIR) && itemIgnored(stackProvidingSlot))
+			return;
+
 		providingInv.extractItem(providingSlot, stackProvidingSlot.getCount(), false);
 		providingInv.insertItem(providingSlot, stackAtPlayerSlot, false);
 		
 		playerInv.setItem(playerSlot, stackProvidingSlot);
+	}
+
+	private boolean itemIgnored(ItemStack stack) {
+		return ignoredItems.stream().map(rc -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(rc))).anyMatch(item -> item != null && stack.is(item));
 	}
 
 	private List<Enchantment> getImportantEnchantments(ItemStack stack) {
