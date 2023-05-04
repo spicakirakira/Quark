@@ -422,6 +422,7 @@
 	"item.quark.ancient_boat": "Ancient Boat",
 	"item.quark.ancient_chest_boat": "Ancient Boat with Chest",
 	"item.quark.ancient_fruit": "Ancient Fruit",
+	"item.quark.pathfinders_quill": "Pathfinder's Quill",
 
 	"item.minecraft.potion.effect.quark.resilience": "Potion of Stability",
 	"item.minecraft.splash_potion.effect.quark.resilience": "Splash Potion of Stability",
@@ -430,6 +431,7 @@
 
 	"item.quark.biome_map": "%s Pathfinder Map",
 	"item.quark.biome_map.unknown": "Unknown Biome",
+	"item.quark.pathfinders_quill_unset": "Blank",
 
 	"_biome_map_comment": "The following translation keys are only relevant to maps generated before Quark 354.",
 	"item.quark.biome_map.snowy_plains": "Snowy Plains Pathfinder Map",

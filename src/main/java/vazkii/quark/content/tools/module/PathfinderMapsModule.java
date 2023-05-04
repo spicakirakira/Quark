@@ -12,6 +12,7 @@ import com.mojang.datafixers.util.Pair;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerTrades.ItemListing;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -55,6 +57,7 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.AbstractConfigType;
+import vazkii.quark.content.tools.item.PathfindersQuillItem;
 import vazkii.quark.content.tools.loot.InBiomeCondition;
 import vazkii.quark.content.tools.loot.PathfinderMapFunction;
 
@@ -91,6 +94,8 @@ public class PathfinderMapsModule extends QuarkModule {
 
 	public static QuarkGenericTrigger pathfinderMapTrigger;
 	
+	public static Item pathfinders_quill;
+	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;
 
@@ -117,6 +122,14 @@ public class PathfinderMapsModule extends QuarkModule {
 		Registry.register(Registry.LOOT_CONDITION_TYPE, new ResourceLocation(Quark.MOD_ID, "in_biome"), inBiomeConditionType);
 		
 		pathfinderMapTrigger = QuarkAdvancementHandler.registerGenericTrigger("pathfinder_map_center");
+		
+		pathfinders_quill = new PathfindersQuillItem(this);
+	}
+	
+	@Override
+	public void clientSetup() {
+		enqueue(() -> ItemProperties.register(pathfinders_quill, new ResourceLocation("has_biome"),
+				(stack, world, entity, i) -> (PathfindersQuillItem.getTargetBiome(stack) != null) ? 1 : 0));
 	}
 
 	@SubscribeEvent
@@ -247,7 +260,7 @@ public class PathfinderMapsModule extends QuarkModule {
 
 		return stack;
 	}
-
+	
 	private record PathfinderMapTrade(TradeInfo info) implements ItemListing {
 
 		@Override

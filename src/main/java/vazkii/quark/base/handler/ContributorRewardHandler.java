@@ -38,7 +38,7 @@ public class ContributorRewardHandler {
 			"0d054077-a977-4b19-9df9-8a4d5bf20ec3", // wi0iv
 			"458391f5-6303-4649-b416-e4c0d18f837a", // yrsegal
 			"75c298f9-27c8-415b-9a16-329e3884054b", // minecraftvinnyq
-			"6c175d10-198a-49f9-8e2b-c74f1f0178f3"); // Hielke_K
+			"6c175d10-198a-49f9-8e2b-c74f1f0178f3"); // MilkBringer / Sully
 
 	private static final Set<String> done = Collections.newSetFromMap(new WeakHashMap<>());
 
