@@ -42,12 +42,15 @@ public class QButton extends Button {
 		celebrate("vns", 9, Month.APRIL, ORANGE);
 		celebrate("vazkii", 22, Month.NOVEMBER, ORANGE);
 		celebrate("wire", 23, Month.SEPTEMBER, ORANGE);
-
+		celebrate("anb", 6, Month.JUNE, ORANGE);
+		celebrate("kame", 5, Month.NOVEMBER, ORANGE);
+		
 		celebrate("iad", 6, Month.APRIL, RAINBOW);
 		celebrate("iad2", 26, Month.OCTOBER, RAINBOW);
 		celebrate("idr", 8, Month.NOVEMBER, RAINBOW);
 		celebrate("ld", 8, Month.OCTOBER, RAINBOW);
 		celebrate("lvd", 26, Month.APRIL, RAINBOW);
+		celebrate("edb", 28, Month.APRIL, RAINBOW);
 		celebrate("ncod", 11, Month.OCTOBER, RAINBOW);
 		celebrate("nbpd", 14, Month.JULY, RAINBOW);
 		celebrate("ppad", 24, Month.MAY, RAINBOW);
