@@ -13,9 +13,8 @@ import net.minecraft.world.entity.EquipmentSlot.Type;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.api.distmarker.Dist;
@@ -242,7 +241,7 @@ public class UsageTickerModule extends QuarkModule {
 		}
 
 		private static boolean isProjectileWeapon(ItemStack stack) {
-			return (stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem) && EnchantmentHelper.getTagEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) == 0;
+			return (stack.getItem() instanceof ProjectileWeaponItem) && EnchantmentHelper.getTagEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) == 0;
 		}
 
 		@OnlyIn(Dist.CLIENT)
