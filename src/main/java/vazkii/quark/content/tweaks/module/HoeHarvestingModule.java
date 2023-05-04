@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.Quark;
@@ -49,7 +50,10 @@ public class HoeHarvestingModule extends QuarkModule {
 	}
 
 	public static boolean isHoe(ItemStack itemStack) {
-		return !itemStack.isEmpty() && (itemStack.getItem() instanceof HoeItem || itemStack.is(Tags.Items.TOOLS_HOES));
+		return !itemStack.isEmpty() && 
+				(itemStack.getItem() instanceof HoeItem 
+						|| itemStack.is(Tags.Items.TOOLS_HOES) 
+						|| itemStack.getItem().canPerformAction(itemStack, ToolActions.HOE_DIG));
 	}
 
 	@Override
