@@ -1,5 +1,7 @@
 package vazkii.quark.content.building.block;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
@@ -27,8 +29,6 @@ import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
 
-import javax.annotation.Nonnull;
-
 public class LeafCarpetBlock extends QuarkBlock implements IBlockColorProvider {
 
 	private static final VoxelShape SHAPE = box(0, 0, 0, 16, 1, 16);
@@ -38,7 +38,7 @@ public class LeafCarpetBlock extends QuarkBlock implements IBlockColorProvider {
 
 	public LeafCarpetBlock(String name, Block base, QuarkModule module) {
 		super(name, module, CreativeModeTab.TAB_DECORATIONS,
-				Block.Properties.of(Material.CLOTH_DECORATION)
+				Block.Properties.of(Material.CLOTH_DECORATION, base.defaultBlockState().materialColor)
 						.strength(0F)
 						.sound(SoundType.GRASS)
 						.noOcclusion());
