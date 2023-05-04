@@ -50,7 +50,6 @@ public class QButton extends Button {
 		celebrate("idr", 8, Month.NOVEMBER, RAINBOW);
 		celebrate("ld", 8, Month.OCTOBER, RAINBOW);
 		celebrate("lvd", 26, Month.APRIL, RAINBOW);
-		celebrate("edb", 28, Month.APRIL, RAINBOW);
 		celebrate("ncod", 11, Month.OCTOBER, RAINBOW);
 		celebrate("nbpd", 14, Month.JULY, RAINBOW);
 		celebrate("ppad", 24, Month.MAY, RAINBOW);
@@ -67,6 +66,8 @@ public class QButton extends Button {
 		celebrate("iyd", 12, Month.AUGUST, PURPLE);
 		celebrate("hrd", 9, Month.DECEMBER, PURPLE);
 		celebrate("ny", 1, 3, Month.JANUARY, PURPLE);
+		
+		celebrate("edballs", 28, Month.APRIL, ORANGE);
 		celebrate("doyouremember", 21, Month.SEPTEMBER, ORANGE);
 
 		// Order is important, ensure mutli day ones are at the bottom

@@ -60,7 +60,6 @@
 	"quark.gui.celebration.idr": "Happy Intersex Day of Remembrance!",
 	"quark.gui.celebration.ld": "Happy Lesbian Day!",
 	"quark.gui.celebration.lvd": "Happy Lesbian Visibility Day!",
-	"quark.gui.celebration.edb": "Ed Balls",
 	"quark.gui.celebration.ncod": "Happy National Coming Out Day!",
 	"quark.gui.celebration.nbpd": "Happy Non-Binary People's Day!",
 	"quark.gui.celebration.ppad": "Happy Pan Awareness Day!",
@@ -81,6 +80,8 @@
 	"quark.gui.celebration.wwd": "Happy World Wildlife Day!",
 	"quark.gui.celebration.hrd": "Happy Human Rights Day!",
 	"quark.gui.celebration.ny": "Happy New Year!",
+
+	"quark.gui.celebration.edballs": "Ed Balls",
 	"quark.gui.celebration.doyouremember": "Do you remember?",
 
 	"quark.category.general": "General Settings",
