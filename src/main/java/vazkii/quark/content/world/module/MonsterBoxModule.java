@@ -1,5 +1,7 @@
 package vazkii.quark.content.world.module;
 
+import java.util.ArrayList;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,13 +29,12 @@ import vazkii.quark.content.world.block.be.MonsterBoxBlockEntity;
 import vazkii.quark.content.world.gen.MonsterBoxGenerator;
 import vazkii.quark.mixin.accessor.AccessorLivingEntity;
 
-import java.util.ArrayList;
-
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class MonsterBoxModule extends QuarkModule {
 
 	public static final String TAG_MONSTER_BOX_SPAWNED = "quark:monster_box_spawned";
 	public static final ResourceLocation MONSTER_BOX_LOOT_TABLE = new ResourceLocation(Quark.MOD_ID, "misc/monster_box");
+	public static final ResourceLocation MONSTER_BOX_SPAWNS_LOOT_TABLE = new ResourceLocation(Quark.MOD_ID, "misc/monster_box_spawns");
 
 	public static BlockEntityType<MonsterBoxBlockEntity> blockEntityType;
 
