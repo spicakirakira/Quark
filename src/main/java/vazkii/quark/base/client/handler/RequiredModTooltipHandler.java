@@ -1,5 +1,6 @@
 package vazkii.quark.base.client.handler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import vazkii.quark.base.Quark;
+import vazkii.quark.base.handler.GeneralConfig;
 
 @EventBusSubscriber(modid = Quark.MOD_ID, value = Dist.CLIENT)
 public class RequiredModTooltipHandler {
@@ -32,6 +34,9 @@ public class RequiredModTooltipHandler {
 	}
 
 	public static List<ItemStack> disabledItems() {
+		if(!GeneralConfig.hideDisabledContent)
+			return new ArrayList<>();
+		
 		return ITEMS.entrySet().stream()
 				.filter((entry) -> !ModList.get().isLoaded(entry.getValue()))
 				.map((entry) -> new ItemStack(entry.getKey()))

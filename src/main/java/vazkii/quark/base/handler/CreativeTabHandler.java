@@ -40,7 +40,7 @@ public class CreativeTabHandler {
     //actually registers the tabs
     public static void finalizeTabs() {
         TAB_INFOS.forEach(i -> {
-            if (i.enabled.getAsBoolean()) {
+            if (!GeneralConfig.hideDisabledContent || i.enabled.getAsBoolean()) {
                 RegistryHelper.setCreativeTab((Block) i.block, i.tab);
             }
         });

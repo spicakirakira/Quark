@@ -96,6 +96,9 @@ public class GeneralConfig {
 	@Config(description = "Set to false to disable the popup message telling you that you can config quark in the q menu")
 	public static boolean enableOnboarding = true;
 	
+	@Config(description = "Set to false to disable the behavior where quark will automatically hide any disabled items")
+	public static boolean hideDisabledContent = true;
+	
 	private GeneralConfig() {
 		// NO-OP
 	}

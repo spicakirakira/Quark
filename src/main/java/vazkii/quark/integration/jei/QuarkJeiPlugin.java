@@ -55,6 +55,7 @@ import vazkii.quark.addons.oddities.util.Influence;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.client.handler.RequiredModTooltipHandler;
+import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.item.IQuarkItem;
 import vazkii.quark.base.item.QuarkItem;
@@ -94,6 +95,9 @@ public class QuarkJeiPlugin implements IModPlugin {
 			jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, disabledItems);
 
 		ModuleLoader.INSTANCE.initJEICompat(() -> {
+			if(!GeneralConfig.hideDisabledContent)
+				return;
+			
 			NonNullList<ItemStack> stacks = NonNullList.create();
 			for (Item item : ForgeRegistries.ITEMS.getValues()) {
 				ResourceLocation loc = ForgeRegistries.ITEMS.getKey(item);
