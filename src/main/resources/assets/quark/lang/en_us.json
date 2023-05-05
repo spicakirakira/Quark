@@ -314,6 +314,11 @@
 	"quark.misc.my_children": "Don't talk to me or my children ever again.",
 	"quark.misc.shared_item": "%s shared an item: ",
 	"quark.misc.configure_quark_here": "Configure Quark Here!",
+	"quark.misc.only_one_quill": "A Pathfinder's Quill is already searching...",
+	"quark.misc.quill_finished": "A Pathfinder Map has been completed.",
+	"quark.misc.quill_failed": "A Pathfinder's Quill has failed its search.",
+	"quark.misc.quill_blank": "Blank",
+	"quark.misc.quill_searching": "Searching",
 
 	"quark.misc.you_came_to_the_wrong_neighborhood.0": "Six letter word just to get me along",
 	"quark.misc.you_came_to_the_wrong_neighborhood.1": "It's a intricacy and I'm coding on my mod and I,",
@@ -438,7 +443,6 @@
 
 	"item.quark.biome_map": "%s Pathfinder Map",
 	"item.quark.biome_map.unknown": "Unknown Biome",
-	"item.quark.pathfinders_quill_unset": "Blank",
 
 	"_biome_map_comment": "The following translation keys are only relevant to maps generated before Quark 354.",
 	"item.quark.biome_map.snowy_plains": "Snowy Plains Pathfinder Map",

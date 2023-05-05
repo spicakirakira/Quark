@@ -6,7 +6,11 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.vertex.PoseStack;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -31,9 +35,14 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
@@ -84,8 +93,14 @@ public class PathfinderMapsModule extends QuarkModule {
 	@Config(description = "Set to false to make it so the default quark Pathfinder Map Built-In don't get added, and only the custom ones do")
 	public static boolean applyDefaultTrades = true;
 	
+	@Config(description = "How many steps in the search should the Pathfinder's Quill do per tick? The higher this value, the faster it'll find a result, but the higher chance it'll lag the game while doing so")
+	public static int pathfindersQuillSpeed = 32;
+	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;
+	
+	@Config public static boolean drawHud = true;
+	@Config public static boolean hudOnTop = false;
 
 	@Override
 	public void register() {
@@ -116,6 +131,44 @@ public class PathfinderMapsModule extends QuarkModule {
 	public void clientSetup() {
 		enqueue(() -> ItemProperties.register(pathfinders_quill, new ResourceLocation("has_biome"),
 				(stack, world, entity, i) -> (PathfindersQuillItem.getTargetBiome(stack) != null) ? 1 : 0));
+	}
+	
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void drawHUD(RenderGuiOverlayEvent.Post event) {
+		if(drawHud && event.getOverlay() == VanillaGuiOverlay.HOTBAR.type()) {
+			Minecraft mc = Minecraft.getInstance();
+			if(mc.screen != null)
+				return;
+			
+			ItemStack quill = PathfindersQuillItem.getActiveQuill(mc.player);
+			
+			if(quill != null) {
+				Window window = event.getWindow();
+				int x = 5;
+				int y = PathfinderMapsModule.hudOnTop ? 20 : (window.getGuiScaledHeight() - 15);
+				
+				PoseStack ps = event.getPoseStack();
+				mc.font.drawShadow(ps, PathfindersQuillItem.getSearchingComponent(), x, y, 0xFFFFFF);
+				
+				int qx = x;
+				int qy = y - 15;
+
+				float speed = 0.1F;
+				float total = ClientTicker.total * speed;
+				
+				float offX = (float) (Math.sin(total) + 1) * 20;
+				float offY = (float) (Math.sin(total * 8) - 1);
+				
+				if(Math.cos(total) < 0)
+					offY = 0;
+				
+				qx += (int) offX;
+				qy += (int) offY;
+				
+				mc.getItemRenderer().renderGuiItem(quill, qx, qy);
+			}
+		}
 	}
 
 	@SubscribeEvent

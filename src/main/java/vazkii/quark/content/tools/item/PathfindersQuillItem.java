@@ -2,6 +2,8 @@ package vazkii.quark.content.tools.item;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
@@ -10,9 +12,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.QuartPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -29,9 +34,11 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.interf.IItemColorProvider;
+import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
@@ -82,7 +89,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 		ItemNBTHelper.setBoolean(stack, TAG_UNDERGROUND, underground);
 	}
 
-	public static ItemStack getActiveQuill(Player player) {
+	public static @Nullable ItemStack getActiveQuill(Player player) {
 		for(ItemStack stack : player.getInventory().items)
 			if(stack.getItem() == PathfinderMapsModule.pathfinders_quill) {
 				boolean searching = ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false);
@@ -93,6 +100,11 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
 		return null;
 	}
+	
+	@Override
+	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+		return slotChanged || (oldStack.getItem() != newStack.getItem());
+	}
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -102,8 +114,13 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 			return InteractionResultHolder.pass(stack);
 
 		ItemStack active = getActiveQuill(player);
-		if(active != null)
+		if(active != null) {
+			player.displayClientMessage(Component.translatable("quark.misc.only_one_quill"), true);
 			return InteractionResultHolder.fail(stack);
+		}
+		
+		Vec3 pos = player.getPosition(1F);
+		level.playSound(null, pos.x, pos.y, pos.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.5F, 1F);
 
 		ItemNBTHelper.setBoolean(stack, TAG_IS_SEARCHING, true);
 		ItemNBTHelper.setInt(stack, TAG_SOURCE_X, player.getBlockX());
@@ -119,19 +136,24 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 				&& entity instanceof Player player 
 				&& getActiveQuill(player) == stack) {
 
-			int attempts = 12;
 			ItemStack runningStack = stack;
-			for(int i = 0; i < attempts; i++) {
+			for(int i = 0; i < PathfinderMapsModule.pathfindersQuillSpeed; i++) {
 				runningStack = search(runningStack, sl, player, slot);
 				
 				if(runningStack != stack) {
+					String msg = "quark.misc." + (runningStack.isEmpty() ? "quill_failed" : "quill_finished");
+					player.displayClientMessage(Component.translatable(msg), true);
+					
+					Vec3 pos = player.getPosition(1F);
+					level.playSound(null, pos.x, pos.y, pos.z, SoundEvents.NOTE_BLOCK_CHIME, SoundSource.PLAYERS, 0.5F, 1F);
+					
 					player.getInventory().setItem(slot, runningStack);
 					return;
 				}
 			}
 		}
 	}
-
+	
 	private ItemStack search(ItemStack stack, ServerLevel level, Player player, int slot) {
 		final int height = 64;
 		
@@ -158,7 +180,6 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
 			if(holder.is(searchKey)) {
 				BlockPos mapPos = new BlockPos(testX, testY, testZ);
-				System.out.println("FOUND AT  " + mapPos);
 				ItemStack map = createMap(level, mapPos, searchKey, getOverlayColor(stack));
 				return map;
 			}
@@ -225,6 +246,17 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 		return stack;
 	}
 
+	@OnlyIn(Dist.CLIENT)
+	public static MutableComponent getSearchingComponent() {
+		MutableComponent comp = Component.translatable("quark.misc.quill_searching");
+		
+		int dots = ((ClientTicker.ticksInGame / 10) % 4);
+		for(int i = 0; i < dots; i++)
+			comp.append(".");
+		
+		return comp;
+	}
+	
 	@Override
 	public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items) {
 		if((isEnabled() && allowedIn(group)) || group == CreativeModeTab.TAB_SEARCH) {
@@ -234,11 +266,15 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 	}
 
 	@Override
+	@OnlyIn(Dist.CLIENT)
 	public void appendHoverText(ItemStack stack, Level level, List<Component> comps, TooltipFlag flags) {
 		ResourceLocation biome = getTargetBiome(stack); 
-		if(biome != null)
+		if(biome != null) {
+			if(ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false))
+				comps.add(getSearchingComponent().withStyle(ChatFormatting.BLUE));
+
 			comps.add(Component.translatable("biome." + biome.getNamespace() + "." + biome.getPath()).withStyle(ChatFormatting.GRAY));
-		else comps.add(Component.translatable("item.quark.pathfinders_quill_unset").withStyle(ChatFormatting.GRAY));
+		} else comps.add(Component.translatable("quark.misc.quill_blank").withStyle(ChatFormatting.GRAY));
 	}
 
 	@Override
