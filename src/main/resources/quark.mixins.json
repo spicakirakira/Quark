@@ -50,6 +50,7 @@
     "WeatheringCopperMixin",
     "WallBlockMixin",
     "IronBarsBlockMixin",
+    "SlimeMixin",
 
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
