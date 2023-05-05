@@ -44,6 +44,9 @@ public class QButton extends Button {
 		celebrate("wire", 23, Month.SEPTEMBER, ORANGE);
 		celebrate("anb", 6, Month.JUNE, ORANGE);
 		celebrate("kame", 5, Month.NOVEMBER, ORANGE);
+		celebrate("adrian", 4, Month.MAY, ORANGE);
+		celebrate("train", 16, Month.AUGUST, ORANGE);
+		celebrate("zemmy", 9, Month.JUNE, ORANGE);
 		
 		celebrate("iad", 6, Month.APRIL, RAINBOW);
 		celebrate("iad2", 26, Month.OCTOBER, RAINBOW);
