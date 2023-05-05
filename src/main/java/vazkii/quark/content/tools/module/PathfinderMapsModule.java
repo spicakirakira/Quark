@@ -3,6 +3,7 @@ package vazkii.quark.content.tools.module;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -25,11 +26,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerTrades.ItemListing;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
@@ -40,7 +43,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.village.VillagerTradesEvent;
+import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
@@ -59,6 +64,7 @@ import vazkii.quark.content.tools.loot.InBiomeCondition;
 public class PathfinderMapsModule extends QuarkModule {
 	
 	public static final String TAG_IS_PATHFINDER = "quark:is_pathfinder";
+	private static final String TAG_CHECKED_FOR_PATHFINDER = "quark:checked_pathfinder";
 
 	private static final Object mutex = new Object();
 
@@ -98,6 +104,11 @@ public class PathfinderMapsModule extends QuarkModule {
 	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;
+	
+	@Config public static boolean addToCartographer = true;
+	@Config public static boolean addToWanderingTraderForced = true;
+	@Config public static boolean addToWanderingTraderGeneric = false;
+	@Config public static boolean addToWanderingTraderRare = false;
 	
 	@Config public static boolean drawHud = true;
 	@Config public static boolean hudOnTop = false;
@@ -173,13 +184,54 @@ public class PathfinderMapsModule extends QuarkModule {
 
 	@SubscribeEvent
 	public void onTradesLoaded(VillagerTradesEvent event) {
-		if(event.getType() == VillagerProfession.CARTOGRAPHER)
+		if(event.getType() == VillagerProfession.CARTOGRAPHER && addToCartographer)
 			synchronized (mutex) {
 				Int2ObjectMap<List<ItemListing>> trades = event.getTrades();
 				for(TradeInfo info : tradeList)
 					if(info != null)
-						trades.get(info.level).add(new PathfinderQuillTrade(info));
+						trades.get(info.level).add(new PathfinderQuillTrade(info, true));
 			}
+	}
+	
+	@SubscribeEvent
+	public void onWandererTradesLoaded(WandererTradesEvent event) {
+		if(addToWanderingTraderGeneric || addToWanderingTraderRare)
+			synchronized (mutex) {
+				if(!tradeList.isEmpty()) {
+					List<PathfinderQuillTrade> quillTrades = tradeList.stream().map(info -> new PathfinderQuillTrade(info, false)).collect(Collectors.toList());
+					
+					MultiTrade mt = new MultiTrade(quillTrades);
+					if(addToWanderingTraderGeneric)
+						event.getGenericTrades().add(mt);
+					if(addToWanderingTraderRare)
+						event.getRareTrades().add(mt);
+				}
+			}
+	}
+	
+	@SubscribeEvent
+	public void livingTick(LivingTickEvent event) {
+		if(event.getEntity() instanceof WanderingTrader wt && addToWanderingTraderForced && !wt.getPersistentData().getBoolean(TAG_CHECKED_FOR_PATHFINDER)) {
+			boolean hasPathfinder = false;
+			MerchantOffers offers = wt.getOffers();
+			
+			for(MerchantOffer offer : offers) {
+				if(offer.getResult().is(pathfinders_quill)) {
+					hasPathfinder = true;
+					break;
+				}
+			}
+			
+			if(!hasPathfinder && !tradeList.isEmpty()) {
+				TradeInfo info = tradeList.get(wt.level.random.nextInt(tradeList.size()));
+				
+				PathfinderQuillTrade trade = new PathfinderQuillTrade(info, false);
+				MerchantOffer offer = trade.getOffer(wt, wt.level.random);
+				offers.add(0, offer);
+			}
+			
+			wt.getPersistentData().putBoolean(TAG_CHECKED_FOR_PATHFINDER, true);
+		}
 	}
 	
 	@SubscribeEvent
@@ -271,7 +323,18 @@ public class PathfinderMapsModule extends QuarkModule {
 			}
 	}
 	
-	private record PathfinderQuillTrade(TradeInfo info) implements ItemListing {
+	private record MultiTrade(List<? extends ItemListing> parents) implements ItemListing {
+
+		@Override
+		public MerchantOffer getOffer(Entity entity, RandomSource random) {
+			int idx = random.nextInt(parents.size());
+			
+			return parents.get(idx).getOffer(entity, random);
+		}
+		
+	}
+	
+	private record PathfinderQuillTrade(TradeInfo info, boolean hasCompass) implements ItemListing {
 
 		@Override
 		public MerchantOffer getOffer(@Nonnull Entity entity, @Nonnull RandomSource random) {
@@ -284,7 +347,11 @@ public class PathfinderMapsModule extends QuarkModule {
 			if (itemstack.isEmpty())
 				return null;
 
-			return new MerchantOffer(new ItemStack(Items.EMERALD, i), new ItemStack(Items.COMPASS), itemstack, 12, xpFromTrade * Math.max(1, (info.level - 1)), 0.2F);
+			int xp = xpFromTrade * Math.max(1, (info.level - 1));
+			
+			if(hasCompass)
+				return new MerchantOffer(new ItemStack(Items.EMERALD, i), new ItemStack(Items.COMPASS), itemstack, 12, xp, 0.2F);
+			return new MerchantOffer(new ItemStack(Items.EMERALD, i), itemstack, 12, xp, 0.2F);
 		}
 	}
 
