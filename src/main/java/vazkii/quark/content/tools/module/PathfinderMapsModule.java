@@ -2,28 +2,19 @@ package vazkii.quark.content.tools.module;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
-import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -34,20 +25,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.trading.MerchantOffer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
-import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
@@ -59,12 +45,11 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.AbstractConfigType;
 import vazkii.quark.content.tools.item.PathfindersQuillItem;
 import vazkii.quark.content.tools.loot.InBiomeCondition;
-import vazkii.quark.content.tools.loot.PathfinderMapFunction;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class PathfinderMapsModule extends QuarkModule {
 	
-	private static final String TAG_IS_PATHFINDER = "quark:is_pathfinder";
+	public static final String TAG_IS_PATHFINDER = "quark:is_pathfinder";
 
 	private static final Object mutex = new Object();
 
@@ -96,6 +81,9 @@ public class PathfinderMapsModule extends QuarkModule {
 	
 	public static Item pathfinders_quill;
 	
+	@Config(description = "Set to false to make it so the default quark Pathfinder Map Built-In don't get added, and only the custom ones do")
+	public static boolean applyDefaultTrades = true;
+	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;
 
@@ -116,8 +104,6 @@ public class PathfinderMapsModule extends QuarkModule {
 		loadTradeInfo(Biomes.MUSHROOM_FIELDS, true, 5, 20, 26, 0x4D4273);
 		loadTradeInfo(Biomes.ICE_SPIKES, true, 5, 20, 26, 0x1EC0C9);
 
-		pathfinderMapType = new LootItemFunctionType(new PathfinderMapFunction.Serializer());
-		Registry.register(Registry.LOOT_FUNCTION_TYPE, new ResourceLocation(Quark.MOD_ID, "pathfinder_map"), pathfinderMapType);
 		inBiomeConditionType = new LootItemConditionType(new InBiomeCondition.InBiomeSerializer());
 		Registry.register(Registry.LOOT_CONDITION_TYPE, new ResourceLocation(Quark.MOD_ID, "in_biome"), inBiomeConditionType);
 		
@@ -139,7 +125,7 @@ public class PathfinderMapsModule extends QuarkModule {
 				Int2ObjectMap<List<ItemListing>> trades = event.getTrades();
 				for(TradeInfo info : tradeList)
 					if(info != null)
-						trades.get(info.level).add(new PathfinderMapTrade(info));
+						trades.get(info.level).add(new PathfinderQuillTrade(info));
 			}
 	}
 	
@@ -193,7 +179,9 @@ public class PathfinderMapsModule extends QuarkModule {
 
 			loadCustomMaps(customs);
 
-			tradeList.addAll(builtinTrades);
+			if(applyDefaultTrades)
+				tradeList.addAll(builtinTrades);
+			
 			tradeList.addAll(customTrades);
 		}
 	}
@@ -229,39 +217,8 @@ public class PathfinderMapsModule extends QuarkModule {
 				Quark.LOG.warn("[Custom Pathfinder Maps] - {}", e.getMessage());
 			}
 	}
-
-	public static ItemStack createMap(Level world, BlockPos pos, Predicate<Holder<Biome>> predicate, int color) {
-		if(!(world instanceof ServerLevel serverLevel))
-			return ItemStack.EMPTY;
-
-		// from LocateCommand
-		Pair<BlockPos, Holder<Biome>> biomeInfo = serverLevel.findClosestBiome3d(predicate, pos, searchRadius, 32, 64);
-
-		if(biomeInfo == null)
-			return ItemStack.EMPTY;
-
-		BlockPos biomePos = biomeInfo.getFirst();
-		Either<ResourceKey<Biome>, Biome> biome = biomeInfo.getSecond().unwrap();
-		Optional<ResourceKey<Biome>> key = biome.map(Optional::of, ForgeRegistries.BIOMES::getResourceKey);
-
-		Component biomeComponent = key
-				.map(ResourceKey::location)
-				.<MutableComponent>map((it) -> Component.translatable("biome." + it.getNamespace() + "." + it.getPath()))
-				.orElse(Component.translatable("item.quark.biome_map.unknown").withStyle(ChatFormatting.RED));
-
-		ItemStack stack = MapItem.create(world, biomePos.getX(), biomePos.getZ(), (byte) 2, true, true);
-		// fillExplorationMap
-		MapItem.renderBiomePreviewMap(serverLevel, stack);
-		MapItemSavedData.addTargetDecoration(stack, biomePos, "+", Type.RED_X);
-		stack.setHoverName(Component.translatable("item.quark.biome_map", biomeComponent));
-
-		stack.getOrCreateTagElement("display").putInt("MapColor", color);
-		ItemNBTHelper.setBoolean(stack, TAG_IS_PATHFINDER, true);
-
-		return stack;
-	}
 	
-	private record PathfinderMapTrade(TradeInfo info) implements ItemListing {
+	private record PathfinderQuillTrade(TradeInfo info) implements ItemListing {
 
 		@Override
 		public MerchantOffer getOffer(@Nonnull Entity entity, @Nonnull RandomSource random) {
@@ -270,7 +227,7 @@ public class PathfinderMapsModule extends QuarkModule {
 
 			int i = random.nextInt(info.maxPrice - info.minPrice + 1) + info.minPrice;
 
-			ItemStack itemstack = createMap(entity.level, entity.blockPosition(), info, info.color);
+			ItemStack itemstack = PathfindersQuillItem.forBiome(info.biome.toString(), info.color);
 			if (itemstack.isEmpty())
 				return null;
 

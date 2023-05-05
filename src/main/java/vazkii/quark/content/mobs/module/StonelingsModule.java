@@ -2,21 +2,17 @@ package vazkii.quark.content.mobs.module;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacements.Type;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.Tags;
 import vazkii.arl.util.RegistryHelper;
-import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.EntityAttributeHandler;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
@@ -53,17 +49,15 @@ public class StonelingsModule extends QuarkModule {
 	@Config(description = "Disabled if if Pathfinder Maps are disabled.", flag = "stoneling_weald_pathfinder")
 	public static boolean wealdPathfinderMaps = true;
 
-	public static TagKey<Biome> stonelingPathfindingTag;
 	public static QuarkGenericTrigger makeStonelingTrigger;
 	
 	public static Item diamondHeart;
 
 	@Override
 	public void setup() {
-		stonelingPathfindingTag = TagKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(Quark.MOD_ID, "stoneling_pathfinding"));
-		
 		makeStonelingTrigger = QuarkAdvancementHandler.registerGenericTrigger("make_stoneling");
 	}
+	
 	public boolean registered = false;
 
 	@Override
