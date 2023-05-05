@@ -195,7 +195,7 @@ public class PathfinderMapsModule extends QuarkModule {
 	
 	@SubscribeEvent
 	public void onWandererTradesLoaded(WandererTradesEvent event) {
-		if(addToWanderingTraderGeneric || addToWanderingTraderRare)
+		if(!addToWanderingTraderForced && (addToWanderingTraderGeneric || addToWanderingTraderRare))
 			synchronized (mutex) {
 				if(!tradeList.isEmpty()) {
 					List<PathfinderQuillTrade> quillTrades = tradeList.stream().map(info -> new PathfinderQuillTrade(info, false)).collect(Collectors.toList());
