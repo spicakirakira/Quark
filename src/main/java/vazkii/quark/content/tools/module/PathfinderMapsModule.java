@@ -139,6 +139,7 @@ public class PathfinderMapsModule extends QuarkModule {
 	}
 	
 	@Override
+	@OnlyIn(Dist.CLIENT)
 	public void clientSetup() {
 		enqueue(() -> ItemProperties.register(pathfinders_quill, new ResourceLocation("has_biome"),
 				(stack, world, entity, i) -> (PathfindersQuillItem.getTargetBiome(stack) != null) ? 1 : 0));
