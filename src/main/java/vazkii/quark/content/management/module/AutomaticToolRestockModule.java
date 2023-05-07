@@ -34,6 +34,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.InventoryIIH;
 import vazkii.quark.addons.oddities.module.BackpackModule;
 import vazkii.quark.api.event.GatherToolClassesEvent;
+import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -59,6 +60,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	private static final WeakHashMap<Player, Stack<QueuedRestock>> replacements = new WeakHashMap<>();
 
 	public List<Enchantment> importantEnchants = new ArrayList<>();
+	public List<Item> itemsToIgnore = new ArrayList<>();
 
 	@Config(name = "Important Enchantments",
 			description = "Enchantments deemed important enough to have special priority when finding a replacement")
@@ -84,6 +86,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	@Override
 	public void configChanged() {
 		importantEnchants = MiscUtil.massRegistryGet(enchantNames, ForgeRegistries.ENCHANTMENTS);
+		itemsToIgnore = MiscUtil.massRegistryGet(ignoredItems, ForgeRegistries.ITEMS);
 	}
 
 	@SubscribeEvent
@@ -226,7 +229,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		ItemStack stackProvidingSlot = providingInv.getStackInSlot(providingSlot).copy();
 
 		//Botania rods are only detected in the stackAtPlayerSlot but other tools are only detected in stackProvidingSlot so we check em both
-		if (!stackAtPlayerSlot.is(Items.AIR) && itemIgnored(stackAtPlayerSlot) || !stackProvidingSlot.is(Items.AIR) && itemIgnored(stackProvidingSlot))
+		if (itemIgnored(stackAtPlayerSlot) || itemIgnored(stackProvidingSlot))
 			return;
 
 		providingInv.extractItem(providingSlot, stackProvidingSlot.getCount(), false);
@@ -236,7 +239,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	}
 
 	private boolean itemIgnored(ItemStack stack) {
-		return ignoredItems.stream().map(rc -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(rc))).anyMatch(item -> item != null && stack.is(item));
+		return stack != null && !stack.is(Items.AIR) && itemsToIgnore.contains(stack.getItem());
 	}
 
 	private List<Enchantment> getImportantEnchantments(ItemStack stack) {
