@@ -11,15 +11,13 @@ import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Lists;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -36,6 +34,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.InventoryIIH;
 import vazkii.quark.addons.oddities.module.BackpackModule;
 import vazkii.quark.api.event.GatherToolClassesEvent;
+import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -61,6 +60,7 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	private static final WeakHashMap<Player, Stack<QueuedRestock>> replacements = new WeakHashMap<>();
 
 	public List<Enchantment> importantEnchants = new ArrayList<>();
+	public List<Item> itemsToIgnore = new ArrayList<>();
 
 	@Config(name = "Important Enchantments",
 			description = "Enchantments deemed important enough to have special priority when finding a replacement")
@@ -78,11 +78,15 @@ public class AutomaticToolRestockModule extends QuarkModule {
 	@Config
 	private boolean unstackablesOnly = false;
 
+	@Config(description = "Any items you place in this list will be ignored by the restock feature")
+	private List<String> ignoredItems = Lists.newArrayList("botania:exchange_rod", "botania:dirt_rod", "botania:skydirt_rod", "botania:cobble_rod");
+	
 	private Object mutex = new Object();
 	
 	@Override
 	public void configChanged() {
 		importantEnchants = MiscUtil.massRegistryGet(enchantNames, ForgeRegistries.ENCHANTMENTS);
+		itemsToIgnore = MiscUtil.massRegistryGet(ignoredItems, ForgeRegistries.ITEMS);
 	}
 
 	@SubscribeEvent
@@ -224,10 +228,18 @@ public class AutomaticToolRestockModule extends QuarkModule {
 		ItemStack stackAtPlayerSlot = playerInv.getItem(playerSlot).copy();
 		ItemStack stackProvidingSlot = providingInv.getStackInSlot(providingSlot).copy();
 
+		//Botania rods are only detected in the stackAtPlayerSlot but other tools are only detected in stackProvidingSlot so we check em both
+		if (itemIgnored(stackAtPlayerSlot) || itemIgnored(stackProvidingSlot))
+			return;
+
 		providingInv.extractItem(providingSlot, stackProvidingSlot.getCount(), false);
 		providingInv.insertItem(providingSlot, stackAtPlayerSlot, false);
 		
 		playerInv.setItem(playerSlot, stackProvidingSlot);
+	}
+
+	private boolean itemIgnored(ItemStack stack) {
+		return stack != null && !stack.is(Items.AIR) && itemsToIgnore.contains(stack.getItem());
 	}
 
 	private List<Enchantment> getImportantEnchantments(ItemStack stack) {
