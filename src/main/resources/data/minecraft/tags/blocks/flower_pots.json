@@ -30,6 +30,11 @@
     "quark:potted_weeping_vines",
     "quark:potted_wheat",
     "quark:potted_yellow_blossom_sapling",
-    "quark:potted_ancient_sapling"
+    "quark:potted_ancient_sapling",
+    "quark:potted_cave_vines",
+    "quark:potted_chorus_twist",
+    "quark:potted_chorus_weeds",
+    "quark:potted_glow_lichen_growth",
+    "quark:potted_glow_shroom"
   ]
 }
