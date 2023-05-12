@@ -149,7 +149,11 @@ public class ConfigResolver {
         Map<QuarkModule, Runnable> setEnabledRunnables = new HashMap<>();
 
         for (QuarkModule module : modules) {
+            if (!module.description.isEmpty())
+                builder.comment(module.description);
+            
             ForgeConfigSpec.ConfigValue<Boolean> value = builder.defineBool(module.displayName, () -> module.configEnabled, module.enabledByDefault);
+            
             setEnabledRunnables.put(module, () -> {
                 module.setEnabled(value.get() && category.enabled);
                 flagManager.putEnabledFlag(module);
@@ -163,9 +167,6 @@ public class ConfigResolver {
     }
 
     private void buildModule(IConfigBuilder builder, QuarkModule module, Runnable setEnabled) {
-        if (!module.description.isEmpty())
-            builder.comment(module.description);
-
         builder.push(module.lowercaseName, module);
 
         if (module.antiOverlap != null && module.antiOverlap.size() > 0)
