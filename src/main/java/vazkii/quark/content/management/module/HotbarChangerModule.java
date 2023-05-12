@@ -58,16 +58,16 @@ public class HotbarChangerModule extends QuarkModule {
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void onMouseInput(InputEvent.MouseButton event) {
-		acceptInput();
+		acceptInput(-1);
 	}
 
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void onKeyInput(InputEvent.Key event) {
-		acceptInput();
+		acceptInput(event.getKey());
 	}
 
-	private void acceptInput() {
+	private void acceptInput(int currInput) {
 		Minecraft mc = Minecraft.getInstance();
 		boolean down = changeHotbarKey.isDown();
 		boolean wasDown = keyDown;
@@ -77,7 +77,7 @@ public class HotbarChangerModule extends QuarkModule {
 				hotbarChangeOpen = !hotbarChangeOpen;
 			else if(hotbarChangeOpen)
 				for(int i = 0; i < 3; i++)
-					if(mc.options.keyHotbarSlots[i].isDown()) {
+					if(isKeyDownOrFallback(mc.options.keyHotbarSlots[i], 49 + i, currInput)) {
 						QuarkNetwork.sendToServer(new ChangeHotbarMessage(i + 1));
 						hotbarChangeOpen = false;
 						currentHeldItem = mc.player.getInventory().selected;
@@ -85,6 +85,13 @@ public class HotbarChangerModule extends QuarkModule {
 					}
 
 		}
+	}
+	
+	private boolean isKeyDownOrFallback(KeyMapping key, int input, int currInput) {
+		if(key.isUnbound())
+			return currInput != -1 && input == currInput;
+		
+		return key.isDown();
 	}
 
 	@SubscribeEvent
@@ -136,8 +143,17 @@ public class HotbarChangerModule extends QuarkModule {
 
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-			for(int i = 0; i < 3; i++)
-				mc.font.drawShadow(matrix, ChatFormatting.BOLD + Integer.toString(i + 1), xStart - 9, yStart + i * 21 + 7, 0xFFFFFF);
+			for(int i = 0; i < 3; i++) {
+				String draw = Integer.toString(i + 1);
+				KeyMapping key = mc.options.keyHotbarSlots[i];
+				if(!key.isUnbound()) {
+					draw = key.getTranslatedKeyMessage().getString();
+				}
+				
+				draw = ChatFormatting.BOLD + draw;
+				
+				mc.font.drawShadow(matrix, draw, xStart - mc.font.width(draw) - 2, yStart + i * 21 + 7, 0xFFFFFF);
+			}
 
 			for(int i = 0; i < 27; i++) {
 				ItemStack invStack = player.getInventory().getItem(i + 9);
