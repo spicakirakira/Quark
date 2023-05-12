@@ -41,7 +41,7 @@ import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
-import vazkii.quark.addons.oddities.inventory.SlotCachingItemHandler;
+import vazkii.quark.addons.oddities.inventory.slot.CachedItemHandlerSlot;
 import vazkii.quark.api.ICustomSorting;
 import vazkii.quark.api.ISortingLockedSlots;
 import vazkii.quark.api.QuarkCapabilities;
@@ -116,8 +116,8 @@ public final class SortingHandler {
 
 		if(backpack)
 			for (Slot s : c.slots)
-				if (s instanceof SlotCachingItemHandler) {
-					sortInventory(((SlotCachingItemHandler) s).getItemHandler(), lockedSlots);
+				if (s instanceof CachedItemHandlerSlot) {
+					sortInventory(((CachedItemHandlerSlot) s).getItemHandler(), lockedSlots);
 					break;
 				}
 	}

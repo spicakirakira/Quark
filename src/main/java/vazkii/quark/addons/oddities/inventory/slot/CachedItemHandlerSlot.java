@@ -1,4 +1,4 @@
-package vazkii.quark.addons.oddities.inventory;
+package vazkii.quark.addons.oddities.inventory.slot;
 
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -8,8 +8,8 @@ import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
-public class SlotCachingItemHandler extends SlotItemHandler {
-	public SlotCachingItemHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+public class CachedItemHandlerSlot extends SlotItemHandler {
+	public CachedItemHandlerSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
 		super(itemHandler, index, xPosition, yPosition);
 	}
 
@@ -47,7 +47,7 @@ public class SlotCachingItemHandler extends SlotItemHandler {
 
 	public static void cache(AbstractContainerMenu container) {
 		for (Slot slot : container.slots) {
-			if (slot instanceof SlotCachingItemHandler thisSlot) {
+			if (slot instanceof CachedItemHandlerSlot thisSlot) {
 				thisSlot.cached = slot.getItem();
 				thisSlot.caching = true;
 			}
@@ -56,7 +56,7 @@ public class SlotCachingItemHandler extends SlotItemHandler {
 
 	public static void applyCache(AbstractContainerMenu container) {
 		for (Slot slot : container.slots) {
-			if (slot instanceof SlotCachingItemHandler thisSlot) {
+			if (slot instanceof CachedItemHandlerSlot thisSlot) {
 				if (thisSlot.caching) {
 					slot.set(thisSlot.cached);
 					thisSlot.caching = false;
