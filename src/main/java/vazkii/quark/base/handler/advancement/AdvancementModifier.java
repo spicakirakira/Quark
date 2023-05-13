@@ -6,6 +6,7 @@ import com.google.common.base.Supplier;
 
 import net.minecraft.resources.ResourceLocation;
 import vazkii.quark.api.IAdvancementModifier;
+import vazkii.quark.api.IMutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
 
 public abstract class AdvancementModifier implements IAdvancementModifier {
@@ -13,7 +14,7 @@ public abstract class AdvancementModifier implements IAdvancementModifier {
 	public final QuarkModule module;
 	private Supplier<Boolean> cond;
 	
-	public AdvancementModifier(@Nullable QuarkModule module) {
+	protected AdvancementModifier(@Nullable QuarkModule module) {
 		this.module = module;
 	}
 
@@ -26,7 +27,5 @@ public abstract class AdvancementModifier implements IAdvancementModifier {
 	public boolean isActive() {
 		return (module == null || module.enabled) && (cond == null || cond.get());
 	}
-	
-	public abstract boolean apply(ResourceLocation res, MutableAdvancement adv);
-	
+
 }

@@ -3,12 +3,15 @@ package vazkii.quark.base.handler.advancement.mod;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.ItemInteractWithBlockTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import vazkii.quark.api.IAdvancementModifier;
+import vazkii.quark.api.IMutableAdvancement;
 import vazkii.quark.base.handler.advancement.AdvancementModifier;
 import vazkii.quark.base.handler.advancement.MutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
@@ -26,6 +29,9 @@ public class WaxModifier  extends AdvancementModifier {
 		
 		this.unwaxed = unwaxed;
 		this.waxed = waxed;
+
+		Preconditions.checkArgument(!unwaxed.isEmpty() || !waxed.isEmpty(), "Advancement modifier list cant be empty");
+
 	}
 
 	@Override
@@ -34,9 +40,9 @@ public class WaxModifier  extends AdvancementModifier {
 	}
 
 	@Override
-	public boolean apply(ResourceLocation res, MutableAdvancement adv) {
+	public boolean apply(ResourceLocation res, IMutableAdvancement adv) {
 		String title = res.getPath().replaceAll(".+/", "");
-		Criterion criterion = adv.criteria.get(title);
+		Criterion criterion = adv.getCriteria(title);
 		if(criterion != null && criterion.getTrigger() instanceof ItemInteractWithBlockTrigger.TriggerInstance iib) {
 			Set<Block> blockSet = iib.location.block.blocks;
 			if(blockSet != null) {

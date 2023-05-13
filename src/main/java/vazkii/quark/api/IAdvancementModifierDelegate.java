@@ -1,23 +1,26 @@
 package vazkii.quark.api;
 
 import java.util.Set;
-
-import com.google.common.base.Supplier;
+import java.util.function.BooleanSupplier;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 public interface IAdvancementModifierDelegate {
 
-	IAdvancementModifier modifyAdventuringTime(Set<ResourceKey<Biome>> locations);
-	IAdvancementModifier modifyBalancedDiet(Set<Item> items);
-	IAdvancementModifier modifyFuriousCocktail(Supplier<Boolean> isPotion, Set<MobEffect> effects);
-	IAdvancementModifier modifyMonsterHunter(Set<EntityType<?>> types);
-	IAdvancementModifier modifyTwoByTwo(Set<EntityType<?>> types);
-	IAdvancementModifier modifyWaxOnWaxOff(Set<Block> unwaxed, Set<Block> waxed);
-	
+	IAdvancementModifier createAdventuringTime(Set<ResourceKey<Biome>> locations);
+	IAdvancementModifier createBalancedDietMod(Set<ItemLike> items);
+	IAdvancementModifier createFuriousCocktailMod(BooleanSupplier isPotion, Set<MobEffect> effects);
+	IAdvancementModifier createMonsterHunterMod(Set<EntityType<?>> types);
+	IAdvancementModifier createTwoByTwoMod(Set<EntityType<?>> types);
+	IAdvancementModifier createWaxOnWaxOffMod(Set<Block> unwaxed, Set<Block> waxed);
+	IAdvancementModifier createFishyBusinessMod(Set<ItemLike> fishes);
+	IAdvancementModifier createTacticalFishingMod(Set<BucketItem> buckets);
+	IAdvancementModifier createASeedyPlaceMod(Set<Block> seeds);
+	IAdvancementModifier createGlowAndBeholdMod(Set<Block> seeds);
 }

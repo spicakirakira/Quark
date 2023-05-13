@@ -11,8 +11,9 @@ import com.google.common.collect.Maps;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.Criterion;
+import vazkii.quark.api.IMutableAdvancement;
 
-public class MutableAdvancement {
+public class MutableAdvancement implements IMutableAdvancement {
 	
 	final Advancement advancement;
 	

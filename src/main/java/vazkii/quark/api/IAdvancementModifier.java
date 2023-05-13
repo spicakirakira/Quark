@@ -8,7 +8,16 @@ import net.minecraft.resources.ResourceLocation;
 
 public interface IAdvancementModifier {
 
-	IAdvancementModifier setCondition(Supplier<Boolean> cond);
 	Set<ResourceLocation> getTargets();
-	
+	boolean apply(ResourceLocation res, IMutableAdvancement adv);
+
+
+	default IAdvancementModifier setCondition(Supplier<Boolean> cond){
+		return this;
+	}
+
+	default boolean isActive(){
+		return true;
+	}
+
 }

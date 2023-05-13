@@ -1,34 +1,31 @@
 package vazkii.quark.base.handler.advancement.mod;
 
-import java.util.Set;
-
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.BredAnimalsTrigger;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.EntityTypePredicate;
+import net.minecraft.advancements.critereon.PlacedBlockTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
-import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.api.IMutableAdvancement;
 import vazkii.quark.base.handler.advancement.AdvancementModifier;
 import vazkii.quark.base.handler.advancement.MutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
 
-public class TwoByTwoModifier extends AdvancementModifier {
+import java.util.Set;
 
-	private static final ResourceLocation TARGET = new ResourceLocation("husbandry/bred_all_animals");
-	
-	final Set<EntityType<?>> entityTypes;
-	
-	public TwoByTwoModifier(QuarkModule module, Set<EntityType<?>> entityTypes) {
+public class ASeedyPlaceModifier extends AdvancementModifier {
+
+	private static final ResourceLocation TARGET = new ResourceLocation("husbandry/plant_seed");
+
+	final Set<Block> seeds;
+
+	public ASeedyPlaceModifier(QuarkModule module, Set<Block> seeds) {
 		super(module);
-		
-		this.entityTypes = entityTypes;
-		Preconditions.checkArgument(!entityTypes.isEmpty(), "Advancement modifier list cant be empty");
+		this.seeds = seeds;
 
 	}
 
@@ -39,12 +36,11 @@ public class TwoByTwoModifier extends AdvancementModifier {
 
 	@Override
 	public boolean apply(ResourceLocation res, IMutableAdvancement adv) {
-		for(EntityType<?> type : entityTypes) {
-			Criterion criterion = new Criterion(BredAnimalsTrigger.TriggerInstance
-					.bredAnimals(EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(type))));
+		for(var block : seeds) {
+			Criterion criterion = new Criterion(PlacedBlockTrigger.TriggerInstance.placedBlock(block));
 			
-			String name = ForgeRegistries.ENTITY_TYPES.getKey(type).toString();
-			adv.addRequiredCriterion(name, criterion);
+			String name = ForgeRegistries.BLOCKS.getKey(block).toString();
+			adv.addOrCriterion(name, criterion);
 		}
 		
 		return true;

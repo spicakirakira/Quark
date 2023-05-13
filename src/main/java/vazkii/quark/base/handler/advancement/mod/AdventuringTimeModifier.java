@@ -10,6 +10,7 @@ import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
+import vazkii.quark.api.IMutableAdvancement;
 import vazkii.quark.base.handler.advancement.AdvancementModifier;
 import vazkii.quark.base.handler.advancement.MutableAdvancement;
 import vazkii.quark.base.module.QuarkModule;
@@ -31,11 +32,12 @@ public class AdventuringTimeModifier extends AdvancementModifier {
 	}
 
 	@Override
-	public boolean apply(ResourceLocation res, MutableAdvancement adv) {
+	public boolean apply(ResourceLocation res, IMutableAdvancement adv) {
 		for(ResourceKey<Biome> key : locations) {
 			String name = key.location().toString();
 			
-			Criterion criterion = new Criterion(PlayerTrigger.TriggerInstance.located(LocationPredicate.inBiome(key)));
+			Criterion criterion = new Criterion(PlayerTrigger.TriggerInstance.located(
+					LocationPredicate.inBiome(key)));
 			adv.addRequiredCriterion(name, criterion);
 		}
 		
