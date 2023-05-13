@@ -23,7 +23,8 @@ public abstract class AdvancementModifier implements IAdvancementModifier {
 		this.cond = cond;
 		return this;
 	}
-	
+
+	@Override
 	public boolean isActive() {
 		return (module == null || module.enabled) && (cond == null || cond.get());
 	}

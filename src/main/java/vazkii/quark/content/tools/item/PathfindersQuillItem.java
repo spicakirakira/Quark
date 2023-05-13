@@ -53,13 +53,13 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 	public static final String TAG_COLOR = "targetBiomeColor";
 	public static final String TAG_UNDERGROUND = "targetBiomeUnderground";
 
-	private static final String TAG_IS_SEARCHING = "isSearchingForBiome";
-	private static final String TAG_SOURCE_X = "searchSourceX";
-	private static final String TAG_SOURCE_Z = "searchSourceZ";
-	private static final String TAG_POS_X = "searchPosX";
-	private static final String TAG_POS_Z = "searchPosZ";
-	private static final String TAG_POS_LEG = "searchPosLeg";
-	private static final String TAG_POS_LEG_INDEX = "searchPosLegIndex";
+	protected static final String TAG_IS_SEARCHING = "isSearchingForBiome";
+	protected static final String TAG_SOURCE_X = "searchSourceX";
+	protected static final String TAG_SOURCE_Z = "searchSourceZ";
+	protected static final String TAG_POS_X = "searchPosX";
+	protected static final String TAG_POS_Z = "searchPosZ";
+	protected static final String TAG_POS_LEG = "searchPosLeg";
+	protected static final String TAG_POS_LEG_INDEX = "searchPosLegIndex";
 
 	public PathfindersQuillItem(QuarkModule module) {
 		super("pathfinders_quill", module, new Item.Properties().tab(CreativeModeTab.TAB_TOOLS).stacksTo(1));
@@ -91,7 +91,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
 	public static @Nullable ItemStack getActiveQuill(Player player) {
 		for(ItemStack stack : player.getInventory().items)
-			if(stack.getItem() == PathfinderMapsModule.pathfinders_quill) {
+			if(stack.getItem() instanceof PathfindersQuillItem) {
 				boolean searching = ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false);
 
 				if(searching)
@@ -109,9 +109,8 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
-		ResourceLocation target = getTargetBiome(stack);
-		if(target == null)
-			return InteractionResultHolder.pass(stack);
+
+		if (!isNBTValid(stack)) return InteractionResultHolder.pass(stack);
 
 		ItemStack active = getActiveQuill(player);
 		if(active != null) {
@@ -126,6 +125,10 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 		ItemNBTHelper.setInt(stack, TAG_SOURCE_X, player.getBlockX());
 		ItemNBTHelper.setInt(stack, TAG_SOURCE_Z, player.getBlockZ());
 		return InteractionResultHolder.success(stack);
+	}
+
+	private static boolean isNBTValid(ItemStack stack) {
+		return getTargetBiome(stack) != null;
 	}
 
 	@Override
@@ -154,7 +157,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 		}
 	}
 	
-	private ItemStack search(ItemStack stack, ServerLevel level, Player player, int slot) {
+	protected ItemStack search(ItemStack stack, ServerLevel level, Player player, int slot) {
 		final int height = 64;
 		
 		ResourceLocation searchKey = getTargetBiome(stack);
@@ -188,7 +191,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 		return stack;
 	}
 
-	private static BlockPos nextPos(ItemStack stack) {
+	protected static BlockPos nextPos(ItemStack stack) {
 		final int step = 32;
 		
 		int sourceX = ItemNBTHelper.getInt(stack, TAG_SOURCE_X, 0);

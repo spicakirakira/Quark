@@ -1,6 +1,5 @@
 package vazkii.quark.api;
 
-import com.google.common.collect.Lists;
 import net.minecraft.advancements.Criterion;
 
 public interface IMutableAdvancement {
@@ -9,5 +8,5 @@ public interface IMutableAdvancement {
 
     void addOrCriterion(String name, Criterion criterion);
 
-    Criterion getCriteria(String title);
+    Criterion getCriterion(String title);
 }

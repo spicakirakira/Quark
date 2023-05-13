@@ -24,21 +24,28 @@ public class MutableAdvancement implements IMutableAdvancement {
 		this.advancement = advancement;
 		mutabilize();
 	}
-	
+
+	@Override
 	public void addRequiredCriterion(String name, Criterion criterion) {
 		criteria.put(name, criterion);
 		requirements.add(Lists.newArrayList(name));
 	}
-	
+
+	@Override
 	public void addOrCriterion(String name, Criterion criterion) {
 		criteria.put(name, criterion);
 		requirements.get(0).add(name);	
 	}
-	
+
+	@Override
+	public Criterion getCriterion(String title) {
+		return criteria.get(title);
+	}
+
 	private void mutabilize() {
 		this.criteria = Maps.newHashMap(advancement.criteria);
 		this.requirements = new ArrayList<>();
-		
+
 		String[][] arr = advancement.requirements;
 		for(String[] req : arr) {
 			List<String> reqList = new ArrayList<>(Arrays.asList(req));
