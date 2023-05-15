@@ -12,8 +12,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 public interface IAdvancementModifierDelegate {
-
-	IAdvancementModifier createAdventuringTime(Set<ResourceKey<Biome>> locations);
+	IAdvancementModifier createAdventuringTimeMod(Set<ResourceKey<Biome>> locations);
 	IAdvancementModifier createBalancedDietMod(Set<ItemLike> items);
 	IAdvancementModifier createFuriousCocktailMod(BooleanSupplier isPotion, Set<MobEffect> effects);
 	IAdvancementModifier createMonsterHunterMod(Set<EntityType<?>> types);

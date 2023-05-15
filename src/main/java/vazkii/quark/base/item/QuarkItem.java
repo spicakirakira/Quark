@@ -19,7 +19,7 @@ public class QuarkItem extends BasicItem implements IQuarkItem {
 		super(regname, properties);
 		this.module = module;
 
-		if(module.category.isAddon())
+		if(module != null && module.category.isAddon())
 			RequiredModTooltipHandler.map(this, module.category.requiredMod);
 	}
 

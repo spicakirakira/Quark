@@ -37,8 +37,8 @@ public class GatherAdvancementModifiersEvent extends Event implements IAdvanceme
 	}
 
 	@Override
-	public IAdvancementModifier createAdventuringTime(Set<ResourceKey<Biome>> locations) {
-		return delegate.createAdventuringTime(locations);
+	public IAdvancementModifier createAdventuringTimeMod(Set<ResourceKey<Biome>> locations) {
+		return delegate.createAdventuringTimeMod(locations);
 	}
 
 	@Override

@@ -71,7 +71,7 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
 		menu.scroll(delta < 0, true);
-		lastScroll = scrollOffs = (int) Math.round((menu.scroll / CrateMenu.numCols) * getPxPerScroll());
+		lastScroll = scrollOffs = Math.round((menu.scroll / CrateMenu.numCols) * getPxPerScroll());
 
 		return true;
 	}
@@ -116,7 +116,7 @@ public class CrateScreen extends AbstractContainerScreen<CrateMenu> {
 				boolean up = diff > 0;
 				
 				menu.scroll(up, true);
-				lastScroll = (int) Math.round((menu.scroll / CrateMenu.numCols) * pixelsNeeded);
+				lastScroll = Math.round((menu.scroll / CrateMenu.numCols) * pixelsNeeded);
 				diff = (float) (scrollOffs - lastScroll);
 			}
 			

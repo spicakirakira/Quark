@@ -108,7 +108,7 @@ public final class QuarkAdvancementHandler {
 	private static class Delegate implements IAdvancementModifierDelegate {
 
 		@Override
-		public IAdvancementModifier createAdventuringTime(Set<ResourceKey<Biome>> locations) {
+		public IAdvancementModifier createAdventuringTimeMod(Set<ResourceKey<Biome>> locations) {
 			return new AdventuringTimeModifier(null, locations);
 		}
 

@@ -101,6 +101,9 @@ public class PathfinderMapsModule extends QuarkModule {
 	
 	@Config(description = "How many steps in the search should the Pathfinder's Quill do per tick? The higher this value, the faster it'll find a result, but the higher chance it'll lag the game while doing so")
 	public static int pathfindersQuillSpeed = 32;
+
+	@Config(description = "Experimental. Determines if quills should be multithreaded instead. Will ignore quill speed. This could drastically improve performance as it execute the logic off the main thread ideally causing no lag at all")
+	public static boolean multiThreaded = true;
 	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;
