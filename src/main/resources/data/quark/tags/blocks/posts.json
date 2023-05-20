@@ -1,0 +1,28 @@
+{
+  "values": [
+    {"id":"quark:oak_post","required":false},
+    {"id":"quark:birch_post","required":false},
+    {"id":"quark:spruce_post","required":false},
+    {"id":"quark:acacia_post","required":false},
+    {"id":"quark:dark_oak_post","required":false},
+    {"id":"quark:jungle_post","required":false},
+    {"id":"quark:warped_post","required":false},
+    {"id":"quark:crimson_post","required":false},
+    {"id":"quark:azalea_post","required":false},
+    {"id":"quark:blossom_post","required":false},
+    {"id":"quark:mangrove_post","required":false},
+    {"id":"quark:ancient_post","required":false},
+    {"id":"quark:stripped_oak_post","required":false},
+    {"id":"quark:stripped_birch_post","required":false},
+    {"id":"quark:stripped_spruce_post","required":false},
+    {"id":"quark:stripped_acacia_post","required":false},
+    {"id":"quark:stripped_dark_oak_post","required":false},
+    {"id":"quark:stripped_jungle_post","required":false},
+    {"id":"quark:stripped_warped_post","required":false},
+    {"id":"quark:stripped_crimson_post","required":false},
+    {"id":"quark:stripped_azalea_post","required":false},
+    {"id":"quark:stripped_blossom_post","required":false},
+    {"id":"quark:stripped_ancient_post","required":false},
+    {"id":"quark:stripped_mangrove_post","required":false}
+  ]
+}

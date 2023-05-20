@@ -26,6 +26,7 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.extensions.IForgeItem;
 import vazkii.arl.interf.IItemColorProvider;
 import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
@@ -33,6 +34,7 @@ import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule.TradeInfo;
+import vazkii.quark.mixin.BeaconBlockEntityMixin;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -111,7 +113,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (getTarget(stack) == null) return InteractionResultHolder.pass(stack);
+        if (this.getTarget(stack) == null) return InteractionResultHolder.pass(stack);
 
         ItemStack active = getActiveQuill(player);
         if (active != null) {
@@ -130,6 +132,14 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
     public ResourceLocation getTarget(ItemStack stack) {
         return getTargetBiome(stack);
+    }
+
+    protected int getIterations() {
+        return PathfinderMapsModule.pathfindersQuillSpeed;
+    }
+
+    protected boolean isMultiThreaded() {
+        return PathfinderMapsModule.multiThreaded;
     }
 
     @Override
@@ -155,14 +165,14 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
     }
 
     protected ItemStack search(ItemStack stack, ServerLevel level, Player player, int slot) {
-        ResourceLocation searchKey = getTarget(stack);
+        ResourceLocation searchKey = this.getTarget(stack);
         if (searchKey == null) return ItemStack.EMPTY;
 
         InteractionResultHolder<BlockPos> result;
-        if (PathfinderMapsModule.multiThreaded) {
-            result = searchConcurrent(searchKey, stack, level, player);
+        if (isMultiThreaded()) {
+            result = this.searchConcurrent(searchKey, stack, level, player);
         } else {
-            result = searchIterative(searchKey, stack, level, player.getBlockY(), PathfinderMapsModule.pathfindersQuillSpeed);
+            result = this.searchIterative(searchKey, stack, level, player, getIterations());
         }
 
         if (result.getResult() == InteractionResult.FAIL) {
@@ -171,7 +181,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
             return stack;
         } else {
             BlockPos found = result.getObject();
-            return createMap(level, found, searchKey, getOverlayColor(stack));
+            return this.createMap(level, found, searchKey, stack);
         }
     }
 
@@ -184,16 +194,20 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
         if (COMPUTING.contains(key)) {
             return InteractionResultHolder.pass(BlockPos.ZERO);
         } else if (RESULTS.containsKey(key)) {
-            //var ret = RESULTS.get(key);
+            //we could use remove here instead but this serves as a cache since the result is always the same
+            var ret = RESULTS.get(key);
             //EXECUTORS.submit(() -> RESULTS.remove(key)); //lmao. no lag spikes allowed. write is slow
-            return RESULTS.remove(key);
+            if(ret.getResult() == InteractionResult.PASS){
+                //this should never happen
+                return InteractionResultHolder.fail(BlockPos.ZERO);
+            }
+            return ret;
         } else {
-            int y = player.getBlockY();
             //we don't want to alter the original stack here
             ItemStack dummy = stack.copy();
             EXECUTORS.submit(() -> {
                 COMPUTING.add(key);
-                RESULTS.put(key, searchIterative(searchKey, dummy, level, y, Integer.MAX_VALUE));
+                RESULTS.put(key, searchIterative(searchKey, dummy, level, player, Integer.MAX_VALUE));
                 COMPUTING.remove(key);
             });
             return InteractionResultHolder.pass(BlockPos.ZERO);
@@ -204,8 +218,9 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
     //pass = not done
     //fail = failed
     //present = success
-    protected static InteractionResultHolder<BlockPos> searchIterative(
-            ResourceLocation searchKey, ItemStack stack, ServerLevel level, int y, int maxIter) {
+    protected InteractionResultHolder<BlockPos> searchIterative(
+            ResourceLocation searchKey, ItemStack stack, ServerLevel level, Player player, int maxIter) {
+        int y = player.getBlockY();
         for (int i = 0; i < maxIter; i++) {
 
             final int height = 64;
@@ -279,16 +294,14 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
         return new BlockPos(retX, 0, retZ);
     }
 
-    public static ItemStack createMap(Level world, BlockPos biomePos, ResourceLocation biome, int color) {
-        if (!(world instanceof ServerLevel serverLevel))
-            return ItemStack.EMPTY;
+    public ItemStack createMap(ServerLevel level, BlockPos targetPos, ResourceLocation target, ItemStack original) {
+        int color = getOverlayColor(original);
+        Component biomeComponent = Component.translatable("biome." + target.getNamespace() + "." + target.getPath());
 
-        Component biomeComponent = Component.translatable("biome." + biome.getNamespace() + "." + biome.getPath());
+        ItemStack stack = MapItem.create(level, targetPos.getX(), targetPos.getZ(), (byte) 2, true, true);
 
-        ItemStack stack = MapItem.create(world, biomePos.getX(), biomePos.getZ(), (byte) 2, true, true);
-
-        MapItem.renderBiomePreviewMap(serverLevel, stack);
-        MapItemSavedData.addTargetDecoration(stack, biomePos, "+", Type.RED_X);
+        MapItem.renderBiomePreviewMap(level, stack);
+        MapItemSavedData.addTargetDecoration(stack, targetPos, "+", Type.RED_X);
         stack.setHoverName(Component.translatable("item.quark.biome_map", biomeComponent));
 
         stack.getOrCreateTagElement("display").putInt("MapColor", color);
@@ -319,7 +332,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
     @Override
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack stack, Level level, List<Component> comps, TooltipFlag flags) {
-        ResourceLocation biome = getTarget(stack);
+        ResourceLocation biome = this.getTarget(stack);
         if (biome != null) {
             if (ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false))
                 comps.add(getSearchingComponent().withStyle(ChatFormatting.BLUE));

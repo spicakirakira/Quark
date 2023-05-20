@@ -9,7 +9,11 @@ import com.ibm.icu.util.Currency.CurrencyUsage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
@@ -30,6 +35,8 @@ import vazkii.quark.content.world.module.CorundumModule;
 
 @LoadModule(category = ModuleCategory.TOOLS)
 public class BeaconRedirectionModule extends QuarkModule {
+
+	private static final TagKey<Block> BEACON_TRANSPARENT = BlockTags.create(new ResourceLocation("quark:beacon_transparent"));
 
 	@Config 
 	public static int horizontalMoveLimit = 64;
@@ -151,7 +158,7 @@ public class BeaconRedirectionModule extends QuarkModule {
 					currSegment = new ExtendedBeamSegment(currSegment.dir, currPos.subtract(beaconPos), mixedColor, alpha);
 				}
 			} else {
-				boolean bedrock = block == Blocks.BEDROCK; //Bedrock blocks don't stop beacon beams
+				boolean bedrock = blockstate.is(BEACON_TRANSPARENT); //Bedrock blocks don't stop beacon beams
 				
 				if(!bedrock && blockstate.getLightBlock(world, currPos) >= 15) {
 					broke = true;
@@ -174,7 +181,7 @@ public class BeaconRedirectionModule extends QuarkModule {
 			}
 		}
 		
-		if(horizontalMoves == 0 || currPos.getY() <= 0)
+		if(horizontalMoves == 0 || currPos.getY() <= world.getMinBuildHeight())
 			broke = true;
 
 		final String tag = "quark:redirected"; 
@@ -207,7 +214,7 @@ public class BeaconRedirectionModule extends QuarkModule {
 	}
 	
 	private static float[] getTargetColor(Block block) {
-		return block instanceof CorundumClusterBlock ? ((CorundumClusterBlock) block).base.colorComponents : new float[] { 1F, 1F, 1F };
+		return block instanceof CorundumClusterBlock cc? cc.base.colorComponents : new float[] { 1F, 1F, 1F };
 	}
 
 	public static class ExtendedBeamSegment extends BeaconBeamSection {

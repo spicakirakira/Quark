@@ -27,6 +27,7 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.addons.oddities.module.MatrixEnchantingModule;
 import vazkii.quark.content.experimental.module.EnchantmentsBegoneModule;
+import vazkii.quark.content.tools.item.PathfindersQuillItem;
 
 public class EnchantmentMatrix {
 
@@ -150,9 +151,16 @@ public class EnchantmentMatrix {
 
 		List<EnchantmentDataWrapper> validEnchants = new ArrayList<>();
 		ForgeRegistries.ENCHANTMENTS.forEach(enchantment -> {
-			if ((!enchantment.isTreasureOnly() || MatrixEnchantingModule.allowTreasures)
+			String id = ForgeRegistries.ENCHANTMENTS.getKey(enchantment).toString();
+			boolean isValid = true;
+			if(enchantment.isTreasureOnly()){
+				isValid = MatrixEnchantingModule.allowTreasures ||
+						MatrixEnchantingModule.treasureWhitelist.contains(id);
+			}
+
+			if (isValid
 					&& !EnchantmentsBegoneModule.shouldBegone(enchantment)
-					&& !MatrixEnchantingModule.disallowedEnchantments.contains(Objects.toString(Registry.ENCHANTMENT.getKey(enchantment)))
+					&& !MatrixEnchantingModule.disallowedEnchantments.contains(id)
 					&& (enchantment.canApplyAtEnchantingTable(target) || (book && enchantment.isAllowedOnBooks()))) {
 				int enchantLevel = 1;
 				if (book) {
