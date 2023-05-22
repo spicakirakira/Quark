@@ -104,7 +104,7 @@ public class VerticalSlabsModule extends QuarkModule {
 	
 	@Override
 	public void setup() {
-		verticalSlabTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "vertical_slab"));
+		verticalSlabTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "vertical_slabs"));
 	}
 	
 	@Override
