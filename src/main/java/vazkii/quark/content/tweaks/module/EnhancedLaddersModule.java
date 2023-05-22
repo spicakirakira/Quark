@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -131,15 +132,14 @@ public class EnhancedLaddersModule extends QuarkModule {
 							world.setBlockAndUpdate(posDown, copyState.setValue(BlockStateProperties.WATERLOGGED, water));
 							world.playSound(null, posDown.getX(), posDown.getY(), posDown.getZ(), SoundEvents.LADDER_PLACE, SoundSource.BLOCKS, 1F, 1F);
 
-							if(world.isClientSide)
-								player.swing(hand);
-
 							if(!player.getAbilities().instabuild) {
 								stack.shrink(1);
 
 								if(stack.getCount() <= 0)
 									player.setItemInHand(hand, ItemStack.EMPTY);
 							}
+
+							event.setCancellationResult(InteractionResult.sidedSuccess(world.isClientSide));
 						}
 					}
 					break;
