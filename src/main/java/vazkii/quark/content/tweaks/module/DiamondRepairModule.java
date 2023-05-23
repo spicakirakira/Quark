@@ -42,6 +42,8 @@ public class DiamondRepairModule extends QuarkModule {
 
 	@Config(name = "Unrepairable Items")
 	public static List<String> unrepairableItemsList = Arrays.asList();
+	
+	@Config private static boolean enableJeiHints = true;
 
 	private static boolean staticEnabled;
 	public static Multimap<Item, Item> repairChanges = HashMultimap.create();
@@ -78,6 +80,9 @@ public class DiamondRepairModule extends QuarkModule {
 	
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		if(!enableJeiHints)
+			return;
+		
 		Component removed = Component.translatable("quark.jei.hint.repair_item_removed");
 		for(Item item : unrepairableItems)
 			consumer.accept(item, removed);
