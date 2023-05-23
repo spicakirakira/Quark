@@ -3,6 +3,7 @@ package vazkii.quark.content.tweaks.module;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,6 +15,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tweaks.client.item.ClockTimeGetter;
 import vazkii.quark.content.tweaks.client.item.CompassAngleGetter;
 
@@ -21,10 +23,13 @@ import vazkii.quark.content.tweaks.client.item.CompassAngleGetter;
 public class CompassesWorkEverywhereModule extends QuarkModule {
 
 	@Config public static boolean enableCompassNerf = true;
-	@Config public static boolean enableClockNerf = true;
+	@Config(flag = "clock_nerf") 
+	public static boolean enableClockNerf = true;
 
 	@Config public static boolean enableNether = true;
 	@Config public static boolean enableEnd = true;
+	
+	@Hint("clock_nerf") Item clock = Items.CLOCK;
 
 	@Override
 	@OnlyIn(Dist.CLIENT)

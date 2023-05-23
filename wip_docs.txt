@@ -1,32 +1,32 @@
-potted stuff - Can now be added to a Flower Pot.
+
 stools - Can be sat on, and stay sat on when moved by a piston. Placing a block on top will change the stool to a table.
 posts - Can be placed in any axis. Chains and Lanaterns can connect to this block.
-candles - When placed on any block that can produce Soul Fire when lit, it'll do so as well.
-wool - Can be used to silence minecarts if placed under the rail.
-shulker boxes - Items can be right clicked onto the Shulker Box much like you would for a Bundle.
-armor_stand - Right click a placed Armor Stand while sneaking to quickly swap all your armor with it.
-crab_leg and crab_shell - Crabs can be found in Beaches, and bred with Wheat, Chicken, or any type of Fish.
+soul_fire_candles - When placed on any block that can produce Soul Fire when lit, it'll do so as well.
+wool_muffling - Can be used to silence minecarts if placed under the rail.
+shulker_box_right_click - Items can be right clicked onto the Shulker Box much like you would for a Bundle.
+crab_info - Crabs can be found in Beaches, and bred with Wheat, Chicken, or any type of Fish.
 ambience_discs - Ambience Discs can be gotten when a Skeleton kills a Spider. Unlike Music Discs, these loop infinitely.
-color_runes - Combine in an Anvil with an enchanted item to change its color. This is purely visual.
+runes - Combine in an Anvil with an enchanted item to change its color. This is purely visual.
 parrot_eggs - Throw to create a baby parrot. Feed a parrot many Beetroot Seeds until it loves you, and then it'll hatch one after 10 minutes.
-rocket - Can be used to start flying with an Elytra without needing to jump first.
-clock - Must be crafted before it does anything to prevent funny recipe book cheese.
-doors - When creating a double door, they'll open/close together.
-fence_gates - When another fence gate is placed above or below it, they'll open/close together.
-item_frame, glow_item_frame - Can be dyed the same way you'd dye leather armor.
-gold_tools - Gold tools come with a baked in Fortune or Looting II effect. This does not stack with the enchantment version of it, only the highest will apply.
-hoes - Hoes can now break a 3 wide area of vegetation at once. Higher tier hoes such as Diamond or Netherrack can break 5.
-banner - Banners have been upgraded to have up to %d layers now.
-mob heads - Any monster head can be placed on the side of a Note Block to emit its sound when the Note Block is powered.
-amethyst block - Can be placed under a Note Block to make it emit the iconic Amethyst sound.
-porkchop - Pigs now breed in litters of 2-3, upwards of 5 when bred with a Golden Carrot.
-shulker_shell and all shulker boxes - Chests can be converted to Shulker Boxes without breaking them by using two Shulker Shells on one at once, one in each hand.
-all signs - Signs can be edited by right clicking on them.
-player_head and name_tag - Having a Witch kill a named Snow Golen will drop the Player Head matching the golem's name.
-azalea, flowering_azalea - Now produces Azalea Wood instead of Oak.
-chorus_weeds, chorus_twist - Uncommon spawns in the barrens of the outer end. Will randomly teleport and reproduce over time or if forced via trampling, bone meal, or adajcent water. May also spawn Endermites when trampled. 
+doors_open_together - When creating a double door, they'll open/close together.
+fence_gates_open_together - When another fence gate is placed above or below it, they'll open/close together.
+item_frame_dyeing - Can be dyed the same way you'd dye leather armor.
+gold_tool_fortune - Gold tools come with a baked in Fortune or Looting II effect. This does not stack with the enchantment version of it, only the highest will apply.
+hoe_harvesting - Hoes can now break a 3 wide area of vegetation at once. Higher tier hoes such as Diamond or Netherrack can break 5.
+banner_layer_buff - Banners have been upgraded to have up to %d layers now.
+mob head_sfx - Any monster head can be placed on the side of a Note Block to emit its sound when the Note Block is powered.
+sign_editing - Signs can be edited by right clicking on them.
+chorus_weeds - Uncommon spawns in the barrens of the outer end. Will randomly teleport and reproduce over time or if forced via trampling, bone meal, or adajcent water. May also spawn Endermites when trampled. 
 corundum - Can be found underground in large clusters of two colors each. Will slowly grow upwards if placed deep underground. Can be waxed to prevent growth and particle emission.
-amethyst_cluster - Can redirect Beacon beams. Check the Beacon item for info.
+snow_golem_player_heads - Having a Witch kill a named Snow Golem will drop the Player Head matching the golem's name.
+
+minecraft.clock - Must be crafted before it does anything to prevent funny recipe book cheese.
+minecraft.amethyst block - Can be placed under a Note Block to make it emit the iconic Amethyst sound.
+minecraft.shulker_shell - Chests can be converted to Shulker Boxes without breaking them by using two Shulker Shells on one at once, one in each hand.
+
+
+=====================
+
 crate - Can hold up to %d items, regardless of their stack size. Not that great for bulk storage, but fantastic for unstackables or a large variety of random items.
 
 piston and sticky_piston 
@@ -38,6 +38,9 @@ beacon
 - The beacon beam can be redirected with %s by placing it in the beam's path. Note that the final one must always face towards the sky, and that the beam has a limited horizontal distance it can cover.
 - Amethyst
 - Corundum
+
+amethyst_cluster - Can redirect Beacon beams. Check the Beacon item for info.
+
 
 compass
 - Can work in other dimensions, pointing towards the entrance portal.

@@ -22,6 +22,7 @@ import vazkii.quark.base.handler.ToolInteractionHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.world.block.CorundumBlock;
 import vazkii.quark.content.world.block.CorundumClusterBlock;
 import vazkii.quark.content.world.undergroundstyle.CorundumStyle;
@@ -62,7 +63,7 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 	public static boolean staticEnabled;
 
 	public static List<CorundumBlock> crystals = Lists.newArrayList();
-	public static TagKey<Block> corundumTag;
+	@Hint public static TagKey<Block> corundumTag;
 
 	@Override
 	public void register() {

@@ -7,10 +7,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -37,6 +39,7 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.DoubleDoorMessage;
 import vazkii.quark.integration.claim.IClaimIntegration;
@@ -44,12 +47,21 @@ import vazkii.quark.integration.claim.IClaimIntegration;
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true, subscribeOn = Dist.CLIENT, antiOverlap = "utilitix")
 public class DoubleDoorOpeningModule extends QuarkModule {
 
-	@Config public static boolean enableDoors = true;
-	@Config public static boolean enableFenceGates = true;
+	@Config(flag = "doors_open_together")
+	public static boolean enableDoors = true;
+	
+	@Config(flag = "fence_gates_open_together") 
+	public static boolean enableFenceGates = true;
 	
 	public static TagKey<Block> nonDoubleDoorTag;
 	private static boolean handling = false;
 	
+	@Hint(key = "doors_open_together", value = "doors_open_together") 
+	TagKey<Item> doors = ItemTags.DOORS;
+	
+	@Hint(key = "fence_gates_open_together", value = "fence_gates_open_together") 
+	TagKey<Block> fence_gates = BlockTags.FENCE_GATES;
+
 	@Override
 	public void setup() {
 		nonDoubleDoorTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "non_double_door"));

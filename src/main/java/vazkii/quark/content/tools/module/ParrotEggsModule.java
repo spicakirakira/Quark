@@ -46,6 +46,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.entity.ParrotEgg;
 import vazkii.quark.content.tools.item.ParrotEggItem;
 
@@ -61,6 +62,7 @@ public class ParrotEggsModule extends QuarkModule {
 
 	public static TagKey<Item> feedTag;
 
+	@Hint(key = "parrot_eggs")
 	public static List<Item> parrotEggs;
 
 	@Config(description = "The chance feeding a parrot will produce an egg")

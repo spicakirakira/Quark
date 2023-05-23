@@ -1,5 +1,8 @@
 package vazkii.quark.content.tweaks.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
@@ -11,9 +14,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.decoration.HangingEntity;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemFrameItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -32,6 +34,7 @@ import vazkii.quark.base.handler.DyeHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tweaks.client.render.entity.DyedItemFrameRenderer;
 import vazkii.quark.content.tweaks.entity.DyedItemFrame;
 
@@ -39,6 +42,9 @@ import vazkii.quark.content.tweaks.entity.DyedItemFrame;
 public class DyeableItemFramesModule extends QuarkModule {
 
 	public static EntityType<DyedItemFrame> entityType;
+	
+	@Hint(key = "item_frame_dyeing") 
+	List<Item> itemFrames = Arrays.asList(Items.ITEM_FRAME, Items.GLOW_ITEM_FRAME);
 
 	@Override
 	public void register() {

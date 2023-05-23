@@ -50,6 +50,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.UpdateTridentMessage;
 import vazkii.quark.content.tools.client.render.GlintRenderTypes;
@@ -69,7 +70,8 @@ public class ColorRunesModule extends QuarkModule {
 	public static final int RUNE_TYPES = 17;
 
 	private static final ThreadLocal<ItemStack> targetStack = new ThreadLocal<>();
-	public static TagKey<Item> runesTag, runesLootableTag;
+	@Hint public static TagKey<Item> runesTag;
+	public static TagKey<Item> runesLootableTag;
 	public static List<RuneItem> runes;
 	public static Item rainbow_rune;
 	public static Item blank_rune;

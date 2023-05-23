@@ -1,5 +1,8 @@
 package vazkii.quark.content.tweaks.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
@@ -8,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
@@ -26,6 +30,7 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.Config.Max;
 import vazkii.quark.base.module.config.Config.Min;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class GoldToolsHaveFortuneModule extends QuarkModule {
@@ -46,6 +51,9 @@ public class GoldToolsHaveFortuneModule extends QuarkModule {
 	@Config public static boolean displayFortuneInTooltip = true;
 	@Config public static boolean italicTooltip = true;
 
+	@Hint(key = "gold_tool_fortune")
+	List<Item> gold_tools = Arrays.asList(Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD);
+	
 	private static boolean staticEnabled;
 
 	@Override

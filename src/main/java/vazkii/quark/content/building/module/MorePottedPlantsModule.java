@@ -1,7 +1,10 @@
 package vazkii.quark.content.building.module;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.compress.utils.Lists;
 
 import com.google.common.base.Functions;
 
@@ -17,11 +20,15 @@ import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.BUILDING)
 public class MorePottedPlantsModule extends QuarkModule {
 
 	private static Map<Block, Block> tintedBlocks = new HashMap<>();
+	
+	@Hint(key = "pottable_stuff")
+	List<Block> pottableBlocks = Lists.newArrayList();
 	
 	@Override
 	public void register() {
@@ -58,6 +65,7 @@ public class MorePottedPlantsModule extends QuarkModule {
 	}
 	
 	private FlowerPotBlock add(Block block, String name) {
+		pottableBlocks.add(block);
 		return VariantHandler.addFlowerPot(block, name, Functions.identity());
 	}
 	

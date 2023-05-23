@@ -31,10 +31,14 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class HoeHarvestingModule extends QuarkModule {
 
+	@Hint(key = "hoe_harvesting")
+	TagKey<Item> hoes = Tags.Items.TOOLS_HOES;
+	
 	public static TagKey<Item> bigHarvestingHoesTag;
 
 	public static int getRange(ItemStack hoe) {

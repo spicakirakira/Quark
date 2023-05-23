@@ -48,9 +48,12 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.EmptyHandler;
 import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
+import vazkii.quark.base.handler.GeneralConfig;
+import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -66,7 +69,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 
 	@Config
 	public static boolean enableArmorInteraction = true;
-	@Config
+	@Config(flag = "shulker_box_interaction")
 	public static boolean enableShulkerBoxInteraction = true;
 	@Config(flag = "lava_interaction")
 	public static boolean enableLavaInteraction = true;
@@ -74,6 +77,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	public static boolean allowOpeningShulkerBoxes = true;
 
 	@Hint("lava_interaction") Item lava_bucket = Items.LAVA_BUCKET;
+	@Hint(value = "shulker_box_interaction", key = "shulker_box_right_click") 
+	List<Item> shulkers;
 	
 	private static boolean staticEnabled = false;
 
@@ -93,6 +98,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	@Override
 	public void configChanged() {
 		staticEnabled = configEnabled;
+		
+		shulkers = MiscUtil.massRegistryGet(GeneralConfig.shulkerBoxes, ForgeRegistries.ITEMS);
 	}
 
 	public static boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction action, Player player) {

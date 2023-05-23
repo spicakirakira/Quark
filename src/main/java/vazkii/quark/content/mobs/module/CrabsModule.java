@@ -38,6 +38,7 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.CompoundBiomeConfig;
 import vazkii.quark.base.module.config.type.EntitySpawnConfig;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.recipe.ingredient.FlagIngredient;
 import vazkii.quark.base.util.QuarkEffect;
 import vazkii.quark.base.world.EntitySpawnHandler;
@@ -64,10 +65,13 @@ public class CrabsModule extends QuarkModule {
 	
 	@Config
 	public static boolean enableResillienceEffect = true;
+	
+	@Hint(key = "crab_info") Item crab_leg;
+	@Hint(key = "crab_info") Item crab_shell;
 
 	@Override
 	public void register() {
-		Item crabLeg = new QuarkItem("crab_leg", this, new Item.Properties()
+		crab_leg = new QuarkItem("crab_leg", this, new Item.Properties()
 				.tab(CreativeModeTab.TAB_FOOD)
 				.food(new FoodProperties.Builder()
 						.meat()
@@ -83,14 +87,14 @@ public class CrabsModule extends QuarkModule {
 						.saturationMod(0.8F)
 						.build()));
 
-		Item shell = new QuarkItem("crab_shell", this, new Item.Properties().tab(CreativeModeTab.TAB_BREWING))
+		crab_shell = new QuarkItem("crab_shell", this, new Item.Properties().tab(CreativeModeTab.TAB_BREWING))
 				.setCondition(() -> enableBrewing);
 
 		resilience = new QuarkEffect("resilience", MobEffectCategory.BENEFICIAL, 0x5b1a04);
 		resilience.addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, "2ddf3f0a-f386-47b6-aeb0-6bd32851f215", 0.5, AttributeModifier.Operation.ADDITION);
 
 		BrewingHandler.addPotionMix("crab_brewing",
-				() -> new FlagIngredient(Ingredient.of(shell), "crab_brewing"), resilience);
+				() -> new FlagIngredient(Ingredient.of(crab_shell), "crab_brewing"), resilience);
 
 		crabType = EntityType.Builder.<Crab>of(Crab::new, MobCategory.CREATURE)
 				.sized(0.9F, 0.5F)
@@ -107,7 +111,7 @@ public class CrabsModule extends QuarkModule {
 		QuarkAdvancementHandler.addModifier(new FuriousCocktailModifier(this, () -> enableBrewing, ImmutableSet.of(resilience))
 				.setCondition(() -> enableResillienceEffect));
 		QuarkAdvancementHandler.addModifier(new TwoByTwoModifier(this, ImmutableSet.of(crabType)));
-		QuarkAdvancementHandler.addModifier(new BalancedDietModifier(this, ImmutableSet.of(crabLeg, cookedCrabLeg)));
+		QuarkAdvancementHandler.addModifier(new BalancedDietModifier(this, ImmutableSet.of(crab_leg, cookedCrabLeg)));
 	}
 
 	@Override

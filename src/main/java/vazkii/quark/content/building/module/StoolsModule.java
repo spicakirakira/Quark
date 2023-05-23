@@ -3,19 +3,25 @@ package vazkii.quark.content.building.module;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.building.block.StoolBlock;
 import vazkii.quark.content.building.client.render.entity.StoolEntityRenderer;
 import vazkii.quark.content.building.entity.Stool;
@@ -24,6 +30,8 @@ import vazkii.quark.content.building.entity.Stool;
 public class StoolsModule extends QuarkModule {
 
 	public static EntityType<Stool> stoolEntity;
+	
+	@Hint TagKey<Item> stoolsTag;
 
 	@Override
 	public void register() {
@@ -38,6 +46,11 @@ public class StoolsModule extends QuarkModule {
 				.setCustomClientFactory((spawnEntity, world) -> new Stool(stoolEntity, world))
 				.build("stool");
 		RegistryHelper.register(stoolEntity, "stool", Registry.ENTITY_TYPE_REGISTRY);
+	}
+	
+	@Override
+	public void setup() {
+		stoolsTag = ItemTags.create(new ResourceLocation(Quark.MOD_ID, "stools"));
 	}
 
 	@SubscribeEvent

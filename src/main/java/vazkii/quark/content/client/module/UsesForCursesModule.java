@@ -1,9 +1,13 @@
 package vazkii.quark.content.client.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.client.renderer.entity.ArmorStandRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -15,6 +19,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tweaks.client.layer.ArmorStandFakePlayerLayer;
 
 @LoadModule(category = ModuleCategory.CLIENT)
@@ -24,11 +29,17 @@ public class UsesForCursesModule extends QuarkModule {
 
 	public static boolean staticEnabled;
 
-	@Config
+	@Config(flag = "use_for_vanishing")
 	public static boolean vanishPumpkinOverlay = true;
 
-	@Config
+	@Config(flag = "use_for_binding")
 	public static boolean bindArmorStandsWithPlayerHeads = true;
+	
+	@Hint(key = "use_for_vanishing", value = "use_for_vanishing")
+	Item pumpkin = Items.CARVED_PUMPKIN;
+	
+	@Hint(key = "use_for_binding", value = "use_for_binding")
+	List<Item> bindingItems = Arrays.asList(Items.ARMOR_STAND, Items.PLAYER_HEAD);
 
 	@Override
 	public void configChanged() {

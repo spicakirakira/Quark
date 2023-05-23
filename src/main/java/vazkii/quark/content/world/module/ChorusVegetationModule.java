@@ -9,6 +9,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.content.world.block.ChorusVegetationBlock;
@@ -28,7 +29,8 @@ public class ChorusVegetationModule extends QuarkModule {
 	@Config public static double endermiteSpawnChance = 0.01;
 	@Config public static double teleportDuplicationChance = 0.01;
 
-	public static Block chorus_weeds, chorus_twist;
+	@Hint public static Block chorus_weeds;
+	@Hint(key = "chorus_weeds") public static Block chorus_twist;
 	
 	@Override
 	public void register() {

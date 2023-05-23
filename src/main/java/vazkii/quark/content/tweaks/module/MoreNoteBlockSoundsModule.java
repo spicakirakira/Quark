@@ -1,5 +1,8 @@
 package vazkii.quark.content.tweaks.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -7,8 +10,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.Material;
@@ -19,15 +27,20 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class MoreNoteBlockSoundsModule extends QuarkModule {
 
-	@Config
+	@Config(flag = "skull_note_block")
 	public static boolean enableSkullSounds = true;
-	@Config
+	@Config(flag = "amethyst_note_block")
 	public static boolean enableAmethystSound = true;
 
+	@Hint("amethyst_note_block") Item amethyst_block = Items.AMETHYST_BLOCK;
+	@Hint(value = "skull_note_block", key = "head_sfx")
+	List<Item> skulls = Arrays.asList(Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.ZOMBIE_HEAD, Items.CREEPER_HEAD, Items.DRAGON_HEAD);
+	
 	@SubscribeEvent
 	public void noteBlockPlayed(NoteBlockEvent.Play event) {
 		LevelAccessor world = event.getLevel();
