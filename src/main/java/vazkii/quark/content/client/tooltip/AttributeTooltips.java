@@ -49,6 +49,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.MiscUtil;
@@ -209,8 +210,13 @@ public class AttributeTooltips {
 						ChatFormatting color = compareType.getColor(value, otherValue);
 						
 						if(color != ChatFormatting.WHITE) {
-							RenderSystem.setShaderTexture(0, entry.texture());
-							GuiComponent.blit(matrix, x, y, 0, 0, 13, 13, 13, 13);
+							RenderSystem.setShaderTexture(0, color == ChatFormatting.RED ? TEXTURE_DOWNGRADE : TEXTURE_UPGRADE);
+							int xp = x - 2;
+							int yp = y - 2;
+							if(ImprovedTooltipsModule.animateUpDownArrows && ClientTicker.total % 20 < 10)
+								yp++;
+							
+							GuiComponent.blit(matrix, xp, yp, 0, 0, 13, 13, 13, 13);
 						}
 						
 						
