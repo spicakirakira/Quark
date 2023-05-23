@@ -24,6 +24,7 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.CompoundBiomeConfig;
 import vazkii.quark.base.module.config.type.DimensionConfig;
+import vazkii.quark.base.module.hint.HintManager;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.content.world.config.AirStoneClusterConfig;
@@ -65,7 +66,7 @@ public class BigStoneClustersModule extends QuarkModule {
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 		if(calcite.enabled)
-			hintItem(consumer, Items.CALCITE);
+			HintManager.hintItem(consumer, Items.CALCITE);
 	}
 	
 	private void add(BigStoneClusterConfig config, Block block, BooleanSupplier condition) {

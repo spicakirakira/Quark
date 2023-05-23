@@ -8,11 +8,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class RenewableSporeBlossomsModule extends QuarkModule {

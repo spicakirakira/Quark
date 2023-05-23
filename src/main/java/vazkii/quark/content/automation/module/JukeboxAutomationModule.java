@@ -27,10 +27,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.base.Quark;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.AUTOMATION, hasSubscriptions = true)
 public class JukeboxAutomationModule extends QuarkModule {

@@ -21,10 +21,10 @@ import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.handler.MiscUtil;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.building.block.CutVineBlock;
 
 @LoadModule(category = ModuleCategory.BUILDING, hasSubscriptions = true)

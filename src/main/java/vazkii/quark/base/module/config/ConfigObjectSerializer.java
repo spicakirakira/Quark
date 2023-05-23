@@ -8,17 +8,15 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.ForgeConfigSpec;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.type.IConfigType;
+import vazkii.quark.base.module.hint.HintManager;
 
 public final class ConfigObjectSerializer {
 
@@ -33,24 +31,7 @@ public final class ConfigObjectSerializer {
 	
 	public static void loadHints(ConfigFlagManager flagManager, QuarkModule module) {
 		List<Field> fields = recursivelyGetFields(module.getClass());
-		
-		for(Field f : fields) {
-			f.setAccessible(true);
-			Hint hint = f.getDeclaredAnnotation(Hint.class);
-			if(hint != null) {
-				String flag = hint.value();
-				module.hintedItems.add(() -> {
-					if(!flag.isEmpty() && !flagManager.getFlag(flag))
-						return Optional.empty();
-					
-					try {
-						return Optional.of(((ItemLike) f.get(module)).asItem());
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				});
-			}
-		}
+		HintManager.loadHints(fields, flagManager, module);
 	}
 
 	public static List<Field> recursivelyGetFields(Class<?> clazz) {

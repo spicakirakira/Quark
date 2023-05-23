@@ -6,10 +6,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.automation.block.EnderWatcherBlock;
 import vazkii.quark.content.automation.block.be.EnderWatcherBlockEntity;
 

@@ -28,6 +28,7 @@ import vazkii.quark.api.event.ModuleLoadedEvent;
 import vazkii.quark.api.event.ModuleStateChangedEvent;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.module.config.ConfigFlagManager;
+import vazkii.quark.base.module.hint.HintObject;
 
 public class QuarkModule {
 
@@ -40,7 +41,7 @@ public class QuarkModule {
 	public List<Dist> subscriptionTarget = Lists.newArrayList(Dist.CLIENT, Dist.DEDICATED_SERVER);
 	public boolean enabledByDefault = true;
 	public boolean missingDep = false;
-	public List<Supplier<Optional<Item>>> hintedItems = Lists.newArrayList();
+	public List<HintObject> hints = Lists.newArrayList();
 
 	private boolean firstLoad = true;
 	public boolean enabled = false;
@@ -139,31 +140,14 @@ public class QuarkModule {
 		if(!enabled)
 			return;
 		
-		hintedItems.stream()
-		.map(Supplier::get)
-		.filter(Optional::isPresent)
-		.map(Optional::get)
-		.forEach(i -> hintItem(consumer, i));
-
+		for(HintObject hint : hints)
+			hint.apply(consumer);
 		addAdditionalHints(consumer);
 	}
 
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 
 	}	
-
-	public void hintItem(BiConsumer<Item, Component> consumer, Item item) {
-		ResourceLocation res = RegistryHelper.getRegistryName(item, Registry.ITEM);
-		String ns = res.getNamespace();
-		String path = res.getPath();
-		
-		if(ns.equals(Quark.MOD_ID))
-			ns = "";
-		else ns += ".";
-		
-		String hint = String.format("quark.jei.hint.%s%s", ns, path); 
-		consumer.accept(item, Component.translatable(hint));
-	}
 
 	@OnlyIn(Dist.CLIENT)
 	public void firstClientTick() {

@@ -21,6 +21,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.HintManager;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.content.world.block.BlossomLeavesBlock;
@@ -75,7 +76,7 @@ public class BlossomTreesModule extends QuarkModule {
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 		for(BlossomTree tree : trees.keySet())
-			hintItem(consumer, tree.sapling.asItem());
+			HintManager.hintItem(consumer, tree.sapling.asItem());
 	}
 
 	private void add(String colorName, MaterialColor color, BlossomTreeConfig config) {

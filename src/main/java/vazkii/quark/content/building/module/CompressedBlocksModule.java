@@ -18,11 +18,11 @@ import vazkii.quark.base.block.QuarkFlammableBlock;
 import vazkii.quark.base.block.QuarkFlammablePillarBlock;
 import vazkii.quark.base.handler.FuelHandler;
 import vazkii.quark.base.handler.ToolInteractionHandler;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.BUILDING)
 public class CompressedBlocksModule extends QuarkModule {

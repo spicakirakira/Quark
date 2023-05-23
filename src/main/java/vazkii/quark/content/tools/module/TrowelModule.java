@@ -1,11 +1,11 @@
 package vazkii.quark.content.tools.module;
 
 import net.minecraft.world.item.Item;
-import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.item.TrowelItem;
 
 @LoadModule(category = ModuleCategory.TOOLS)

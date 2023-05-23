@@ -1,4 +1,4 @@
-package vazkii.quark.base.module;
+package vazkii.quark.base.module.hint;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,5 +17,8 @@ public @interface Hint {
 	 * Flag value to check before applying this Hint 
 	 */
 	String value() default "";
+	boolean negate() default false;
+	
+	String key() default "";
 	
 }

@@ -1,5 +1,9 @@
 package vazkii.quark.content.building.module;
 
+import java.util.List;
+
+import org.apache.commons.compress.utils.Lists;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -17,6 +21,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.util.VanillaWoods;
 import vazkii.quark.base.util.VanillaWoods.Wood;
 import vazkii.quark.content.building.block.HollowLogBlock;
@@ -29,13 +34,16 @@ public class HollowLogsModule extends QuarkModule {
 
 	public static QuarkGenericTrigger crawlTrigger;
 	
-	@Config
+	@Config(flag = "hollow_log_auto_crawl")
 	public static boolean enableAutoCrawl = true;
+	
+	@Hint(key = "hollow_logs", value = "hollow_log_auto_crawl") 
+	List<Block> hollowLogs = Lists.newArrayList();
 
 	@Override
 	public void register() {
 		for(Wood wood : VanillaWoods.ALL)
-			new HollowLogBlock(wood.log(), this, !wood.nether());
+			hollowLogs.add(new HollowLogBlock(wood.log(), this, !wood.nether()));
 		
 		crawlTrigger = QuarkAdvancementHandler.registerGenericTrigger("hollow_log_crawl");
 	}
