@@ -167,7 +167,7 @@ public class SimpleHarvestModule extends QuarkModule {
     }
 
     private static void harvestAndReplant(Level world, BlockPos pos, BlockState inWorld, Player player) {
-        if (!(world instanceof ServerLevel serverLevel))
+        if (!(world instanceof ServerLevel serverLevel) || player.isSpectator())
             return;
 
         ItemStack mainHand = player.getMainHandItem();
@@ -216,7 +216,7 @@ public class SimpleHarvestModule extends QuarkModule {
     }
 
     private static boolean handle(Player player, InteractionHand hand, BlockPos pos, boolean doRightClick, boolean isHoe) {
-        if (!player.level.mayInteract(player, pos))
+        if (!player.level.mayInteract(player, pos) || player == null || player.isSpectator())
             return false;
 
         BlockState worldBlock = player.level.getBlockState(pos);
@@ -255,7 +255,7 @@ public class SimpleHarvestModule extends QuarkModule {
     }
 
     public static boolean click(Player player, InteractionHand hand, BlockPos pos, BlockHitResult pick) {
-        if (player == null || hand == null)
+        if (player == null || hand == null || player.isSpectator())
             return false;
 
         if (pick.getType() != HitResult.Type.BLOCK || !pick.getBlockPos().equals(pos))

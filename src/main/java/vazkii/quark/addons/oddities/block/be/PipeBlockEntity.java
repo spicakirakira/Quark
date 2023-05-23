@@ -360,7 +360,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 	@Override
 	public boolean canPlaceItemThroughFace(int index, @Nonnull ItemStack itemStackIn, @Nonnull Direction direction) {
-		return index == direction.ordinal() && isPipeEnabled();
+		return direction != null && index == direction.ordinal() && isPipeEnabled();
 	}
 
 	@Override
