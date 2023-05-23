@@ -109,7 +109,6 @@ dependencies {
     compileOnly fg.deobf("vazkii.autoreglib:AutoRegLib:${deps.arl}")
     compileOnly fg.deobf("curse.maven:jei-238222:${deps.jei}")
     compileOnly fg.deobf("curse.maven:flan-forge-493246:${deps.flan}")
-    compileOnly fg.deobf("curse.maven:mouse-tweaks-60089:${deps.mousetweaks}")
 }
 
 spotless {
