@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
@@ -147,6 +148,25 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 		if (matrix())
 			registerInfluenceRecipes(registration);
+		
+		if(GeneralConfig.enableJeiItemInfo) {
+			MutableComponent hint = Component.translatable("quark.jei.hint_preamble");
+			hint.setStyle(hint.getStyle().withColor(0x48ddbc));
+			
+			List<Item> blacklist = MiscUtil.massRegistryGet(GeneralConfig.suppressedInfo, ForgeRegistries.ITEMS);
+
+			ModuleLoader.INSTANCE.addStackInfo((i, c) -> {
+				if(blacklist.contains(i))
+					return;
+				
+				MutableComponent compound = Component.literal("");
+				if(!ForgeRegistries.ITEMS.getKey(i).getNamespace().equals(Quark.MOD_ID))
+					compound = compound.append(hint);
+				compound = compound.append(c);
+				
+				registration.addItemStackInfo(new ItemStack(i), compound);
+			});
+		}
 	}
 
 	@Override

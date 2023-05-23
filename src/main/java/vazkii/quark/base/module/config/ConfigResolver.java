@@ -176,6 +176,7 @@ public class ConfigResolver {
 
         try {
             ConfigObjectSerializer.serialize(builder, flagManager, refreshRunnables, module);
+            ConfigObjectSerializer.loadHints(flagManager, module);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to create config spec for module " + module.displayName, e);
         }

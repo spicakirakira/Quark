@@ -26,6 +26,7 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -59,9 +60,9 @@ public class PickarangModule extends QuarkModule {
 	@Config(description = "Set this to true to use the recipe without the Heart of Diamond, even if the Heart of Diamond is enabled.", flag = "pickarang_never_uses_heart")
 	public static boolean neverUseHeartOfDiamond = false;
 
-	public static Item pickarang;
-	public static Item flamerang;
-	public static Item echorang;
+	@Hint public static Item pickarang;
+	@Hint("flamerang") public static Item flamerang;
+	@Hint("echorang") public static Item echorang;
 
 	private static List<PickarangType<?>> knownTypes = new ArrayList<>();
 	private static boolean isEnabled;

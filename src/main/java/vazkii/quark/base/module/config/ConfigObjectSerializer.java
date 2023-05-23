@@ -1,10 +1,5 @@
 package vazkii.quark.base.module.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import org.apache.commons.lang3.text.WordUtils;
-import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.base.module.config.type.IConfigType;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
@@ -13,8 +8,17 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import org.apache.commons.lang3.text.WordUtils;
+
+import net.minecraft.world.item.Item;
+import net.minecraftforge.common.ForgeConfigSpec;
+import vazkii.quark.base.module.Hint;
+import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.type.IConfigType;
 
 public final class ConfigObjectSerializer {
 
@@ -26,8 +30,29 @@ public final class ConfigObjectSerializer {
 				pushConfig(builder, flagManager, callbacks, object, f, config);
 		}
 	}
+	
+	public static void loadHints(ConfigFlagManager flagManager, QuarkModule module) {
+		List<Field> fields = recursivelyGetFields(module.getClass());
+		
+		for(Field f : fields) {
+			Hint hint = f.getDeclaredAnnotation(Hint.class);
+			if(hint != null) {
+				String flag = hint.value();
+				module.hintedItems.add(() -> {
+					if(!flag.isEmpty() && !flagManager.getFlag(flag))
+						return Optional.empty();
+					
+					try {
+						return Optional.of((Item) f.get(module));
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				});
+			}
+		}
+	}
 
-	private static List<Field> recursivelyGetFields(Class<?> clazz) {
+	public static List<Field> recursivelyGetFields(Class<?> clazz) {
 		List<Field> list = new LinkedList<>();
 		while(clazz != Object.class) {
 			Field[] fields = clazz.getDeclaredFields();

@@ -1,11 +1,18 @@
 package vazkii.quark.base.module;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.common.collect.Lists;
 
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -16,6 +23,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.api.event.ModuleLoadedEvent;
 import vazkii.quark.api.event.ModuleStateChangedEvent;
 import vazkii.quark.base.Quark;
@@ -32,6 +40,7 @@ public class QuarkModule {
 	public List<Dist> subscriptionTarget = Lists.newArrayList(Dist.CLIENT, Dist.DEDICATED_SERVER);
 	public boolean enabledByDefault = true;
 	public boolean missingDep = false;
+	public List<Supplier<Optional<Item>>> hintedItems = Lists.newArrayList();
 
 	private boolean firstLoad = true;
 	public boolean enabled = false;
@@ -106,17 +115,17 @@ public class QuarkModule {
 	public void postTextureStitch(TextureStitchEvent.Post event) {
 		// NO-OP
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public void registerKeybinds(RegisterKeyMappingsEvent event) {
 		// NO-OP
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
 		// NO-OP
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
 		// NO-OP
@@ -124,6 +133,36 @@ public class QuarkModule {
 
 	public void loadComplete() {
 		// NO-OP
+	}
+
+	public final void addStackInfo(BiConsumer<Item, Component> consumer) {
+		if(!enabled)
+			return;
+		
+		hintedItems.stream()
+		.map(Supplier::get)
+		.filter(Optional::isPresent)
+		.map(Optional::get)
+		.forEach(i -> hintItem(consumer, i));
+
+		addAdditionalHints(consumer);
+	}
+
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+
+	}	
+
+	public void hintItem(BiConsumer<Item, Component> consumer, Item item) {
+		ResourceLocation res = RegistryHelper.getRegistryName(item, Registry.ITEM);
+		String ns = res.getNamespace();
+		String path = res.getPath();
+		
+		if(ns.equals(Quark.MOD_ID))
+			ns = "";
+		else ns += ".";
+		
+		String hint = String.format("quark.jei.hint.%s%s", ns, path); 
+		consumer.accept(item, Component.translatable(hint));
 	}
 
 	@OnlyIn(Dist.CLIENT)

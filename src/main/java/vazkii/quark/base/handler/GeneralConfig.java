@@ -99,6 +99,12 @@ public class GeneralConfig {
 	@Config(description = "Set to false to disable the behavior where quark will automatically hide any disabled items")
 	public static boolean hideDisabledContent = true;
 	
+	@Config(description = "Set to false to disable Quark's item info when viweing recipe/uses for an item in JEI")
+	public static boolean enableJeiItemInfo = true;
+	
+	@Config(description = "For JEI info purposes, add any items here to specifically disable their JEI info from Quark. Note that Quark already only shows info that's relevant to which features are enabled")
+	public static List<String> suppressedInfo = Lists.newArrayList();
+	
 	private GeneralConfig() {
 		// NO-OP
 	}

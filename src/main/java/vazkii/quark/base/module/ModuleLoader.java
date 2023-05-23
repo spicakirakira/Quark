@@ -1,11 +1,15 @@
 package vazkii.quark.base.module;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.electronwill.nightconfig.core.ConfigSpec;
 import com.google.common.base.Preconditions;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +38,7 @@ public final class ModuleLoader {
 
 	private enum Step {
 		CONSTRUCT, CONSTRUCT_CLIENT, REGISTER, POST_REGISTER, CONFIG_CHANGED, CONFIG_CHANGED_CLIENT, SETUP, SETUP_CLIENT,
-		REGISTER_RELOADABLE, MODEL_BAKE, MODEL_LAYERS, TEXTURE_STITCH, POST_TEXTURE_STITCH, LOAD_COMPLETE,
+		REGISTER_RELOADABLE, MODEL_BAKE, MODEL_LAYERS, TEXTURE_STITCH, POST_TEXTURE_STITCH, LOAD_COMPLETE, JEI_INFO,
 		FIRST_CLIENT_TICK, REGISTER_KEYBINDS, REIGSTER_ADDITIONAL_MODELS, REGISTER_TOOLTIP_COMPONENT_FACTORIES
 	}
 
@@ -158,7 +162,14 @@ public final class ModuleLoader {
 		this.event = event;
 		dispatch(Step.LOAD_COMPLETE, QuarkModule::loadComplete);
 	}
-
+	
+	public void addStackInfo(BiConsumer<Item, Component> consumer) {
+		dispatch(Step.JEI_INFO, m -> {
+			if(m.enabled)
+				m.addStackInfo(consumer);
+		});
+	}
+	
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void firstClientTick(ClientTickEvent event) {
@@ -167,7 +178,7 @@ public final class ModuleLoader {
 			clientTicked = true;
 		}
 	}
-
+	
 	private void dispatch(Step step, Consumer<QuarkModule> run) {
 		Quark.LOG.info("Dispatching Module Step " + step);
 		foundModules.values().forEach(run);
