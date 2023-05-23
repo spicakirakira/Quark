@@ -51,6 +51,7 @@
     "WallBlockMixin",
     "IronBarsBlockMixin",
     "SlimeMixin",
+    "AnvilMenuMixin",
 
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
