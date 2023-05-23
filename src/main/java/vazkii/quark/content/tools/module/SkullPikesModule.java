@@ -26,6 +26,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.ai.RunAwayFromPikesGoal;
 import vazkii.quark.content.tools.client.render.entity.SkullPikeRenderer;
 import vazkii.quark.content.tools.entity.SkullPike;
@@ -35,6 +36,7 @@ public class SkullPikesModule extends QuarkModule {
 
 	public static EntityType<SkullPike> skullPikeType;
 
+	@Hint(key = "skull_pikes") 
 	public static TagKey<Block> pikeTrophiesTag;
 
 	@Config public static double pikeRange = 5;

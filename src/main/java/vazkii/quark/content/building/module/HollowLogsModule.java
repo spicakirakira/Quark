@@ -1,13 +1,12 @@
 package vazkii.quark.content.building.module;
 
-import java.util.List;
-
-import org.apache.commons.compress.utils.Lists;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
@@ -38,14 +38,19 @@ public class HollowLogsModule extends QuarkModule {
 	public static boolean enableAutoCrawl = true;
 	
 	@Hint(key = "hollow_logs", value = "hollow_log_auto_crawl") 
-	List<Block> hollowLogs = Lists.newArrayList();
+	TagKey<Block> hollowLogsTag;
 
 	@Override
 	public void register() {
 		for(Wood wood : VanillaWoods.ALL)
-			hollowLogs.add(new HollowLogBlock(wood.log(), this, !wood.nether()));
+			new HollowLogBlock(wood.log(), this, !wood.nether());
 		
 		crawlTrigger = QuarkAdvancementHandler.registerGenericTrigger("hollow_log_crawl");
+	}
+
+	@Override
+	public void setup() {
+		hollowLogsTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "hollow_logs"));
 	}
 
 	@SubscribeEvent

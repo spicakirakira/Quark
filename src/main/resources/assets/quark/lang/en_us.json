@@ -232,6 +232,7 @@
 	"quark.jei.hint.yellow_blossom_sapling": "Can be found in plains.",
 	"quark.jei.hint.ancient_tome": "Can upgrade an item or book's enchantment by one level, up to one above the normal cap. Rarely found in dungeons or strongholds.",
 	"quark.jei.hint.hollow_logs": "Can be crawled into by sneaking while walking towards the hollow side, can also be climbed when you're inside.",
+	"quark.jei.hint.skull_pikes": "When placed over a fence, simple monsters that wander close by will be scared and run away.",
 
 	"quark.jei.hint.minecraft.calcite": "Additional large calcite clusters are added to mountains.",
 	"quark.jei.hint.minecraft.chain": "When connected to a block, if that block is moved by a piston, so will the Chain and anything else on the other end.",

@@ -1,4 +1,3 @@
-hollow_logs - Can be crawled into by sneaking into their entrance, can also be climbed when you're inside.
 potted stuff - Can now be added to a Flower Pot.
 stools - Can be sat on, and stay sat on when moved by a piston. Placing a block on top will change the stool to a table.
 posts - Can be placed in any axis. Chains and Lanaterns can connect to this block.
@@ -10,7 +9,6 @@ crab_leg and crab_shell - Crabs can be found in Beaches, and bred with Wheat, Ch
 ambience_discs - Ambience Discs can be gotten when a Skeleton kills a Spider. Unlike Music Discs, these loop infinitely.
 color_runes - Combine in an Anvil with an enchanted item to change its color. This is purely visual.
 parrot_eggs - Throw to create a baby parrot. Feed a parrot many Beetroot Seeds until it loves you, and then it'll hatch one after 10 minutes.
-skeleton_skull, zombie_head, creeper_head - When placed over a fence, simple monsters that wander close by will be scared and run away.
 rocket - Can be used to start flying with an Elytra without needing to jump first.
 clock - Must be crafted before it does anything to prevent funny recipe book cheese.
 doors - When creating a double door, they'll open/close together.
