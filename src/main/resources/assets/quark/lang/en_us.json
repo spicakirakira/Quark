@@ -180,7 +180,7 @@
 	"quark.jei.hint.flamerang": "Works like a Pickarang, but any items it picks up become immune to fire and lava damage while they travel.",
 	"quark.jei.hint.echorang": "Works like a Pickarang, but emits constant vibrations, and will increase its flight time if it hears a Sculk Shrieker.",
 	
-	"quark.jei.hint.minecraft.armor_stand": "Now has arms, allowing for an item to be held.",
+	"quark.jei.hint.minecraft.armor_stand": "Now has arms, allowing for an item plus a shield to be held.",
 
 	"quark.keybind.change_hotbar": "Hotbar Swapper",
 	"quark.keybind.lock_rotation": "Rotation Lock",
