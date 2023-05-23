@@ -1,5 +1,7 @@
 package vazkii.quark.content.tweaks.module;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,8 +13,12 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.living.LootingLevelEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -36,6 +42,9 @@ public class GoldToolsHaveFortuneModule extends QuarkModule {
 	@Min(0)
 	@Max(4)
 	public static int harvestLevel = 2;
+	
+	@Config public static boolean displayFortuneInTooltip = true;
+	@Config public static boolean italicTooltip = true;
 
 	private static boolean staticEnabled;
 
@@ -63,12 +72,33 @@ public class GoldToolsHaveFortuneModule extends QuarkModule {
 		}
 	}
 	
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void onTooltip(ItemTooltipEvent event) {
+		if(!displayFortuneInTooltip)
+			return;
+		
+		ItemStack stack = event.getItemStack();
+		int level = getEffectiveLevel(stack, 0);
+		if(level == fortuneLevel) {
+			Enchantment enchant = stack.getItem() instanceof SwordItem ? Enchantments.MOB_LOOTING : Enchantments.BLOCK_FORTUNE;
+			int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(enchant, stack);
+			if(enchantLevel < level) {
+				Component comp = enchant.getFullname(level);
+				if(italicTooltip)
+					comp = comp.copy().withStyle(ChatFormatting.ITALIC);
+				
+				event.getToolTip().add(comp);
+			}
+		}
+	}
+	
 	private static int getEffectiveLevel(ItemStack stack, int prevLvl) {
 		if(stack.getItem() instanceof TieredItem ti) {
 			Tier tier = ti.getTier();
 			
 			if(tier == Tiers.GOLD)
-				return fortuneLevel;
+				return Math.max(prevLvl, fortuneLevel);
 		}
 		
 		return prevLvl;
