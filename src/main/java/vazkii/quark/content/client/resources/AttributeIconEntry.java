@@ -1,17 +1,30 @@
 package vazkii.quark.content.client.resources;
 
-import com.google.gson.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-
 import java.lang.reflect.Type;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.google.gson.JsonSyntaxException;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import vazkii.quark.content.client.resources.AttributeIconEntry.CompareType;
+
 public record AttributeIconEntry(
 	 Map<AttributeSlot, AttributeDisplayType> displayTypes,
-	 ResourceLocation texture) {
+	 ResourceLocation texture,
+	 CompareType comparison) {
+	
 	public static class Serializer implements JsonDeserializer<AttributeIconEntry>, JsonSerializer<AttributeIconEntry> {
 		public static Serializer INSTANCE = new Serializer();
 
@@ -39,8 +52,11 @@ public record AttributeIconEntry(
 			String texturePath = GsonHelper.getAsString(obj, "texture");
 			ResourceLocation truncatedPath = new ResourceLocation(texturePath);
 			ResourceLocation texture = new ResourceLocation(truncatedPath.getNamespace(), "textures/" + truncatedPath.getPath() + ".png");
-
-			return new AttributeIconEntry(display, texture);
+			
+			String compareStr = GsonHelper.getAsString(obj, "compare", "no_compare");
+			CompareType type = CompareType.valueOf(compareStr.toUpperCase());
+			
+			return new AttributeIconEntry(display, texture, type);
 		}
 
 		@Override
@@ -62,5 +78,36 @@ public record AttributeIconEntry(
 				texture = texture.substring(0, texture.length() - 4);
 			return texture;
 		}
+	}
+	
+	public static enum CompareType {
+		NO_COMPARE((a, b) -> 0), 
+		LOWER_BETTER((a, b) -> sign(a, b)), 
+		HIGHER_BETTER((a, b) -> sign(b, a));
+
+		private Comparator<Double> comparator;
+		
+		private CompareType(Comparator<Double> comparator) {
+			this.comparator = comparator;
+		}
+		
+		private static int sign(double a, double b) {
+			double diff = a - b;
+			if(diff < 0)
+				return -1;
+			if(diff > 0)
+				return 1;
+			return 0;
+		}
+		
+		public ChatFormatting getColor(double ours, double equipped) {
+			int val = comparator.compare(equipped, ours);
+			if(val == 0)
+				return ChatFormatting.WHITE;
+			if(val < 0)
+				return ChatFormatting.RED;
+			return ChatFormatting.GREEN;
+		}
+		
 	}
 }

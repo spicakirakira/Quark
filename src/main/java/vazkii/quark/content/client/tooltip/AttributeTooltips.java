@@ -28,6 +28,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -41,6 +42,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.TippedArrowItem;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.api.distmarker.Dist;
@@ -54,6 +56,7 @@ import vazkii.quark.content.client.hax.PseudoAccessorItemStack;
 import vazkii.quark.content.client.module.ImprovedTooltipsModule;
 import vazkii.quark.content.client.resources.AttributeDisplayType;
 import vazkii.quark.content.client.resources.AttributeIconEntry;
+import vazkii.quark.content.client.resources.AttributeIconEntry.CompareType;
 import vazkii.quark.content.client.resources.AttributeSlot;
 
 /**
@@ -78,7 +81,7 @@ public class AttributeTooltips {
 		return null;
 	}
 
-	private static Component format(Attribute attribute, double value, AttributeDisplayType displayType) {
+	private static MutableComponent format(Attribute attribute, double value, AttributeDisplayType displayType) {
 		switch (displayType) {
 		case DIFFERENCE -> {
 			return Component.literal((value > 0 ? "+" : "") + ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(value))
@@ -203,7 +206,24 @@ public class AttributeTooltips {
 				RenderSystem.setShaderTexture(0, entry.texture());
 				GuiComponent.blit(matrix, x, y, 0, 0, 9, 9, 9, 9);
 
-				Component valueStr = format(attribute, value, entry.displayTypes().get(slot));
+				MutableComponent valueStr = format(attribute, value, entry.displayTypes().get(slot));
+				
+				if(ImprovedTooltipsModule.showUpgradeStatus && slot.hasCanonicalSlot()) {
+					CompareType compareType = entry.comparison();
+					EquipmentSlot equipSlot = slot.getCanonicalSlot();
+					
+					ItemStack equipped = mc.player.getItemBySlot(equipSlot);
+					if(!equipped.equals(stack) && !equipped.isEmpty()) {
+						equipped.getTooltipLines(mc.player, TooltipFlag.Default.NORMAL);
+						Multimap<Attribute, AttributeModifier> equippedSlotAttributes = getModifiers(equipped, slot);
+
+						double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
+						
+						ChatFormatting color = compareType.getColor(value, otherValue);
+						valueStr = valueStr.withStyle(color);	
+					}
+				}
+				
 				mc.font.draw(matrix, valueStr, x + 12, y + 1, -1);
 				x += mc.font.width(valueStr) + 20;
 			}
