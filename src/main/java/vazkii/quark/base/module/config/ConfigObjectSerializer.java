@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.ForgeConfigSpec;
 import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.QuarkModule;
@@ -44,7 +44,7 @@ public final class ConfigObjectSerializer {
 						return Optional.empty();
 					
 					try {
-						return Optional.of((Item) f.get(module));
+						return Optional.of(((ItemLike) f.get(module)).asItem());
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}

@@ -40,6 +40,7 @@ import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
@@ -57,6 +58,7 @@ public class FeedingTroughModule extends QuarkModule {
 	
 	public static BlockEntityType<FeedingTroughBlockEntity> blockEntityType;
 	public static PoiType feedingTroughPoi;
+	@Hint Block feeding_trough;
 	
 	private static final String TAG_CACHE = "quark:feedingTroughCache";
 
@@ -157,13 +159,13 @@ public class FeedingTroughModule extends QuarkModule {
 
 	@Override
 	public void register() {
-		Block feedingTrough = new FeedingTroughBlock("feeding_trough", this, CreativeModeTab.TAB_DECORATIONS,
+		feeding_trough = new FeedingTroughBlock("feeding_trough", this, CreativeModeTab.TAB_DECORATIONS,
 				Block.Properties.of(Material.WOOD).strength(0.6F).sound(SoundType.WOOD));
 
-		blockEntityType = BlockEntityType.Builder.of(FeedingTroughBlockEntity::new, feedingTrough).build(null);
+		blockEntityType = BlockEntityType.Builder.of(FeedingTroughBlockEntity::new, feeding_trough).build(null);
 		RegistryHelper.register(blockEntityType, "feeding_trough", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
 
-		feedingTroughPoi = new PoiType(getBlockStates(feedingTrough), 1, 32);
+		feedingTroughPoi = new PoiType(getBlockStates(feeding_trough), 1, 32);
 		RegistryHelper.register(feedingTroughPoi, "feeding_trough", Registry.POINT_OF_INTEREST_TYPE_REGISTRY);
 	}
 

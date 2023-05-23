@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.base.item.QuarkMusicDiscItem;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -30,7 +31,7 @@ public class EndermoshMusicDiscModule extends QuarkModule {
 	@Config private int lootWeight = 5;
 	@Config private int lootQuality = 1;
 
-	public static QuarkMusicDiscItem endermosh;
+	@Hint public static QuarkMusicDiscItem endermosh;
 
 	@OnlyIn(Dist.CLIENT) private boolean isFightingDragon;
 	@OnlyIn(Dist.CLIENT) private int delay;

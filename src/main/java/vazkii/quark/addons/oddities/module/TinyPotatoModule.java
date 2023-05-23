@@ -24,6 +24,7 @@ import vazkii.quark.addons.oddities.client.model.TinyPotatoModel;
 import vazkii.quark.addons.oddities.client.render.be.TinyPotatoRenderer;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -35,7 +36,7 @@ public class TinyPotatoModule extends QuarkModule {
 	public static BlockEntityType<TinyPotatoBlockEntity> blockEntityType;
 	public static QuarkGenericTrigger patPotatoTrigger;
 
-	public static Block tiny_potato;
+	@Hint public static Block tiny_potato;
 
 	@Config(description = "Set this to true to use the recipe without the Heart of Diamond, even if the Heart of Diamond is enabled.", flag = "tiny_potato_never_uses_heart")
 	public static boolean neverUseHeartOfDiamond = false;

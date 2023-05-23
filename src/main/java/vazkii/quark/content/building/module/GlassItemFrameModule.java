@@ -11,6 +11,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ModelEvent;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -28,8 +29,8 @@ public class GlassItemFrameModule extends QuarkModule {
 
 	@Config public static boolean glassItemFramesUpdateMaps = true;
 	
-	public static Item glassFrame;
-	public static Item glowingGlassFrame;
+	@Hint public static Item glassFrame;
+	@Hint public static Item glowingGlassFrame;
 
 	public static EntityType<GlassItemFrame> glassFrameEntity;
 	

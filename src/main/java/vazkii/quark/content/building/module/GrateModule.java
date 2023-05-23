@@ -1,6 +1,7 @@
 package vazkii.quark.content.building.module;
 
 import net.minecraft.world.level.block.Block;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -13,7 +14,7 @@ import vazkii.quark.content.building.block.GrateBlock;
 @LoadModule(category = ModuleCategory.BUILDING)
 public class GrateModule extends QuarkModule {
 
-	public static Block grate;
+	@Hint public static Block grate;
 	
 	@Override
 	public void register() {

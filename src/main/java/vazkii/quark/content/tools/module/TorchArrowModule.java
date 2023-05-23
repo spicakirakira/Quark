@@ -9,6 +9,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.item.QuarkArrowItem;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -23,7 +24,7 @@ public class TorchArrowModule extends QuarkModule {
 	
 	public static EntityType<TorchArrow> torchArrowType;
 	
-	public static Item torch_arrow;
+	@Hint public static Item torch_arrow;
 	
 	@Override
 	public void register() {

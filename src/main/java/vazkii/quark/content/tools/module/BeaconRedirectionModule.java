@@ -4,16 +4,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.ibm.icu.util.Currency.CurrencyUsage;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -23,9 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -41,8 +40,10 @@ public class BeaconRedirectionModule extends QuarkModule {
 	@Config 
 	public static int horizontalMoveLimit = 64;
 	
-	@Config
+	@Config(flag = "tinted_glass_dims")
 	public static boolean allowTintedGlassTransparency = true;
+	
+	@Hint("tinted_glass_dims") Item tinted_glass = Items.TINTED_GLASS;
 	
 	public static boolean staticEnabled;
 	

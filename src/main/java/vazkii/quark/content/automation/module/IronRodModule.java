@@ -1,6 +1,7 @@
 package vazkii.quark.content.automation.module;
 
 import net.minecraft.world.level.block.Block;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -13,7 +14,7 @@ public class IronRodModule extends QuarkModule {
 	@Config(flag = "iron_rod_pre_end") 
 	public static boolean usePreEndRecipe = false;
 	
-	public static Block iron_rod;
+	@Hint public static Block iron_rod;
 	
 	@Override
 	public void register() {

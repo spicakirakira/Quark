@@ -39,6 +39,7 @@ import vazkii.quark.addons.oddities.item.BackpackItem;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.item.QuarkItem;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -61,8 +62,8 @@ public class BackpackModule extends QuarkModule {
 	@Config public static int baseRavagerHideDrop = 1;
 	@Config public static double extraChancePerLooting = 0.5;
 
-	public static Item backpack;
-	public static Item ravager_hide;
+	@Hint public static Item backpack;
+	@Hint("ravager_hide") public static Item ravager_hide;
 
 	public static Block bonded_ravager_hide;
 

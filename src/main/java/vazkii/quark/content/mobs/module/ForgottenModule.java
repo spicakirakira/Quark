@@ -24,6 +24,7 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.handler.EntityAttributeHandler;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.mod.MonsterHunterModifier;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -38,7 +39,7 @@ public class ForgottenModule extends QuarkModule {
 
 	public static EntityType<Forgotten> forgottenType;
 
-	public static Item forgotten_hat;
+	@Hint public static Item forgotten_hat;
 
 	@Config(description = "1 in this many Skeletons that spawn under the threshold are replaced with Forgotten.")
 	public double forgottenSpawnRate = 0.05;

@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacements.Type;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -25,6 +26,7 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.EntityAttributeHandler;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.mod.MonsterHunterModifier;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -77,10 +79,12 @@ public class WraithModule extends QuarkModule {
 	public static TagKey<Structure> soulBeadTargetTag;
 
 	public static List<String> validWraithSounds;
+	
+	@Hint Item soul_bead;
 
 	@Override
 	public void register() {
-		new SoulBeadItem(this);
+		soul_bead = new SoulBeadItem(this);
 
 		wraithType = EntityType.Builder.of(Wraith::new, MobCategory.MONSTER)
 				.sized(0.6F, 1.95F)

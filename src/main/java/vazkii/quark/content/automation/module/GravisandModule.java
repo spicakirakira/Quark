@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -22,7 +23,7 @@ public class GravisandModule extends QuarkModule {
 
 	public static EntityType<Gravisand> gravisandType;
 
-	public static Block gravisand;
+	@Hint public static Block gravisand;
 
 	@Override
 	public void register() {

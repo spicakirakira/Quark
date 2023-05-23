@@ -65,6 +65,9 @@ import vazkii.quark.content.client.resources.AttributeSlot;
  */
 public class AttributeTooltips {
 
+	public static final ResourceLocation TEXTURE_UPGRADE = new ResourceLocation(Quark.MOD_ID, "textures/attribute/upgrade.png");
+	public static final ResourceLocation TEXTURE_DOWNGRADE = new ResourceLocation(Quark.MOD_ID, "textures/attribute/downgrade.png");
+
 	private static final Map<ResourceLocation, AttributeIconEntry> attributes = new HashMap<>();
 
 	public static void receiveAttributes(Map<String, AttributeIconEntry> map) {
@@ -204,7 +207,14 @@ public class AttributeTooltips {
 						double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
 						
 						ChatFormatting color = compareType.getColor(value, otherValue);
-						valueStr = valueStr.withStyle(color);	
+						
+						if(color != ChatFormatting.WHITE) {
+							RenderSystem.setShaderTexture(0, entry.texture());
+							GuiComponent.blit(matrix, x, y, 0, 0, 13, 13, 13, 13);
+						}
+						
+						
+						valueStr = valueStr.withStyle(color);
 					}
 				}
 				

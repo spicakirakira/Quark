@@ -3,8 +3,11 @@ package vazkii.quark.content.tweaks.module;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -13,6 +16,8 @@ import vazkii.quark.base.module.QuarkModule;
 public class SlimesToMagmaCubesModule extends QuarkModule {
 
 	private static final String TAG_MAGMAED = "quark:damaged_by_magma";
+	
+	@Hint Item magma_cream = Items.MAGMA_CREAM;
 	
 	public static boolean staticEnabled;
 	

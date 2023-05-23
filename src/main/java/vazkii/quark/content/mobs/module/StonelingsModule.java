@@ -16,6 +16,7 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.handler.EntityAttributeHandler;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -51,7 +52,7 @@ public class StonelingsModule extends QuarkModule {
 
 	public static QuarkGenericTrigger makeStonelingTrigger;
 	
-	public static Item diamondHeart;
+	@Hint("stoneling_drop_diamond_heart") public static Item diamondHeart;
 
 	@Override
 	public void setup() {

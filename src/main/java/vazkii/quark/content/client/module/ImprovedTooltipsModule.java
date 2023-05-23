@@ -59,6 +59,7 @@ public class ImprovedTooltipsModule extends QuarkModule {
 			+ "e.g. if wearing an Iron Helmet, the armor value in a Diamond Helmet will show as green, and vice versa would be red.\n"
 			+ "If set to false, item attributes will show in white or red if they're negative values.") 
 	public static boolean showUpgradeStatus = true;
+	@Config public static boolean animateUpDownArrows = true;
 
 	@Config
 	public static List<String> enchantingStacks = Lists.newArrayList("minecraft:diamond_sword", "minecraft:diamond_pickaxe", "minecraft:diamond_shovel", "minecraft:diamond_axe", "minecraft:diamond_hoe",

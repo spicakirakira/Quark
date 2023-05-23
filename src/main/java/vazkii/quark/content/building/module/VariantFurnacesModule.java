@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -22,7 +23,8 @@ public class VariantFurnacesModule extends QuarkModule {
 
 	public static BlockEntityType<VariantFurnaceBlockEntity> blockEntityType;
 
-	public static Block deepslateFurnace, blackstoneFurnace;
+	public static Block deepslateFurnace;
+	@Hint public static Block blackstoneFurnace;
 	
 	@Override
 	public void register() {

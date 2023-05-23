@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -26,7 +27,7 @@ public class BottledCloudModule extends QuarkModule {
 
 	public static BlockEntityType<CloudBlockEntity> blockEntityType;
 	public static Block cloud;
-	public static Item bottled_cloud;
+	@Hint public static Item bottled_cloud;
 	
 	@Config
 	public static int cloudLevelBottom = 191;

@@ -1,6 +1,9 @@
 package vazkii.quark.content.management.module;
 
+import java.util.List;
+
 import com.mojang.datafixers.util.Either;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -20,7 +23,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ElytraItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -43,6 +52,7 @@ import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -51,8 +61,6 @@ import vazkii.quark.content.management.client.screen.HeldShulkerBoxScreen;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxContainer;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxMenu;
 
-import java.util.List;
-
 @LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class ExpandedItemInteractionsModule extends QuarkModule {
 
@@ -60,11 +68,13 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	public static boolean enableArmorInteraction = true;
 	@Config
 	public static boolean enableShulkerBoxInteraction = true;
-	@Config
+	@Config(flag = "lava_interaction")
 	public static boolean enableLavaInteraction = true;
 	@Config
 	public static boolean allowOpeningShulkerBoxes = true;
 
+	@Hint("lava_interaction") Item lava_bucket = Items.LAVA_BUCKET;
+	
 	private static boolean staticEnabled = false;
 
 	public static MenuType<HeldShulkerBoxMenu> heldShulkerBoxMenuType;

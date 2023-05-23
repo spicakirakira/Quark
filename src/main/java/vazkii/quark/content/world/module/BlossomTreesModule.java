@@ -2,10 +2,13 @@ package vazkii.quark.content.world.module;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import com.google.common.base.Functions;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.material.MaterialColor;
@@ -67,6 +70,12 @@ public class BlossomTreesModule extends QuarkModule {
 					ComposterBlock.COMPOSTABLES.put(tree.sapling.asItem(), 0.3F);
 			}
 		});
+	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		for(BlossomTree tree : trees.keySet())
+			hintItem(consumer, tree.sapling.asItem());
 	}
 
 	private void add(String colorName, MaterialColor color, BlossomTreeConfig config) {

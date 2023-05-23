@@ -3,6 +3,8 @@ package vazkii.quark.content.tweaks.module;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -11,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -21,6 +24,9 @@ public class CampfiresBoostElytraModule extends QuarkModule {
 	
 	@Config public double boostStrength = 0.5;
 	@Config public double maxSpeed = 1;
+	
+	@Hint Item campfire = Items.CAMPFIRE;
+	@Hint Item soul_campfire = Items.SOUL_CAMPFIRE;
 
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent event) {

@@ -20,6 +20,7 @@ import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEv
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.Quark;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -30,7 +31,7 @@ import vazkii.quark.content.tools.item.SeedPouchItem;
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class SeedPouchModule extends QuarkModule {
 
-	public static Item seed_pouch;
+	@Hint public static Item seed_pouch;
 
 	public static TagKey<Item> seedPouchHoldableTag;
 

@@ -42,6 +42,7 @@ import vazkii.quark.base.handler.UndergroundBiomeHandler;
 import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.mod.AdventuringTimeModifier;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
@@ -66,8 +67,8 @@ public class GlimmeringWealdModule extends QuarkModule {
 	public static Holder<PlacedFeature> placed_glow_shrooms;
 	public static Holder<PlacedFeature> placed_glow_extras;
 
-	public static Block glow_shroom;
-	public static Block glow_lichen_growth;
+	@Hint public static Block glow_shroom;
+	@Hint public static Block glow_lichen_growth;
 	public static Block glow_shroom_block;
 	public static Block glow_shroom_stem;
 	public static Block glow_shroom_ring;

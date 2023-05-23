@@ -1,6 +1,12 @@
 package vazkii.quark.content.world.module;
 
+import java.util.ArrayDeque;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.BooleanSupplier;
+
 import com.google.common.collect.Maps;
+
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
@@ -10,6 +16,7 @@ import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.block.QuarkBlockWrapper;
 import vazkii.quark.base.handler.VariantHandler;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
@@ -22,11 +29,6 @@ import vazkii.quark.base.world.generator.OreGenerator;
 import vazkii.quark.content.world.block.MyaliteBlock;
 import vazkii.quark.content.world.config.BigStoneClusterConfig;
 import vazkii.quark.content.world.config.StoneTypeConfig;
-
-import java.util.ArrayDeque;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.BooleanSupplier;
 
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class NewStoneTypesModule extends QuarkModule {
@@ -43,7 +45,10 @@ public class NewStoneTypesModule extends QuarkModule {
 	@Config public static StoneTypeConfig shale = new StoneTypeConfig();
 	@Config public static StoneTypeConfig myalite = new StoneTypeConfig(DimensionConfig.end(false));
 
-	public static Block limestoneBlock, jasperBlock, shaleBlock, myaliteBlock;
+	@Hint("limestone") public static Block limestoneBlock;
+	@Hint("jasper") public static Block jasperBlock;
+	@Hint("shale") public static Block shaleBlock;
+	@Hint("myalite") public static Block myaliteBlock;
 
 	public static Map<Block, Block> polishedBlocks = Maps.newHashMap();
 

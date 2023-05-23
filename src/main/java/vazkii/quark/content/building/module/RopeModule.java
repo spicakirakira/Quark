@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -25,7 +26,7 @@ import vazkii.quark.content.building.block.RopeBlock;
 @LoadModule(category = ModuleCategory.BUILDING)
 public class RopeModule extends QuarkModule {
 
-	public static Block rope;
+	@Hint public static Block rope;
 
 	@Config(description = "Set to true to allow ropes to move Tile Entities even if Pistons Push TEs is disabled.\nNote that ropes will still use the same blacklist.")
 	public static boolean forceEnableMoveTileEntities = false;

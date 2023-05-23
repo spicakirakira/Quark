@@ -64,6 +64,7 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
@@ -125,7 +126,7 @@ public class AncientTomesModule extends QuarkModule {
 	@Config(description = "Allows combining tomes with normal books")
 	public static boolean combineWithBooks = true;
 
-	public static Item ancient_tome;
+	@Hint public static Item ancient_tome;
 	public static final List<Enchantment> validEnchants = new ArrayList<>();
 	private static boolean initialized = false;
 

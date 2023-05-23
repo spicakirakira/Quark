@@ -52,6 +52,7 @@ import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -94,7 +95,7 @@ public class PathfinderMapsModule extends QuarkModule {
 
 	public static QuarkGenericTrigger pathfinderMapTrigger;
 	
-	public static Item pathfinders_quill;
+	@Hint public static Item pathfinders_quill;
 	
 	@Config(description = "Set to false to make it so the default quark Pathfinder Map Built-In don't get added, and only the custom ones do")
 	public static boolean applyDefaultTrades = true;

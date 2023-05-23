@@ -17,6 +17,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.ItemNBTHelper;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -25,7 +26,7 @@ import vazkii.quark.content.tools.item.SlimeInABucketItem;
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class SlimeInABucketModule extends QuarkModule {
 
-	public static Item slime_in_a_bucket;
+	@Hint public static Item slime_in_a_bucket;
 
 	@Override
 	public void register() {

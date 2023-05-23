@@ -3,8 +3,6 @@ package vazkii.quark.content.world.module;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
@@ -15,7 +13,6 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
-import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.QuarkLeavesBlock;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.VariantHandler;
@@ -24,6 +21,7 @@ import vazkii.quark.base.handler.WoodSetHandler.WoodSet;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.handler.advancement.mod.BalancedDietModifier;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -52,8 +50,8 @@ public class AncientWoodModule extends QuarkModule {
 	
 	public static WoodSet woodSet;
 	public static Block ancient_leaves;
-	public static Block ancient_sapling;
-	public static Item ancient_fruit;
+	@Hint public static Block ancient_sapling;
+	@Hint public static Item ancient_fruit;
 	
 	public static QuarkGenericTrigger ancientFruitTrigger;
 
