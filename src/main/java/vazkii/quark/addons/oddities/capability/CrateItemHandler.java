@@ -51,7 +51,7 @@ public class CrateItemHandler extends ItemStackHandler {
 	}
 
 	private void changeTotal(ItemStack oldStack, ItemStack newStack) {
-		int diff = oldStack.getCount() - newStack.getCount();
+		int diff = newStack.getCount() - oldStack.getCount();
 		if(diff != 0)
 			changeTotal(diff);
 	}
@@ -79,6 +79,7 @@ public class CrateItemHandler extends ItemStackHandler {
 			}
 		}
 		stacks = newStacks;
+		cachedTotal = -1;
 	}
 
 	public void clear() {
