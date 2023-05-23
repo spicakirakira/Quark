@@ -159,7 +159,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 		if(GeneralConfig.enableJeiItemInfo) {
 			MutableComponent hint = Component.translatable("quark.jei.hint_preamble");
-			hint.setStyle(hint.getStyle().withColor(0x48ddbc));
+			hint.setStyle(hint.getStyle().withColor(0x0b5d4b));
 
 			List<Item> blacklist = MiscUtil.massRegistryGet(GeneralConfig.suppressedInfo, ForgeRegistries.ITEMS);
 
