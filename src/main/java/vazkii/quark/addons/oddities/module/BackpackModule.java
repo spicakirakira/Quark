@@ -149,7 +149,7 @@ public class BackpackModule extends QuarkModule {
 		}
 	}
 
-	private void requestBackpack() {
+	public static void requestBackpack() {
 		heldStack = Minecraft.getInstance().player.inventoryMenu.getCarried();
 		QuarkNetwork.sendToServer(new HandleBackpackMessage(true));
 	}

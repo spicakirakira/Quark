@@ -12,9 +12,12 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import vazkii.quark.addons.oddities.client.screen.BackpackInventoryScreen;
+import vazkii.quark.addons.oddities.module.BackpackModule;
 import vazkii.quark.api.IQuarkButtonAllowed;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxMenu;
 
@@ -65,10 +68,15 @@ public class HeldShulkerBoxScreen extends AbstractContainerScreen<HeldShulkerBox
 			double mx = mc.mouseHandler.xpos();
 			double my = mc.mouseHandler.ypos();
 			
-			player.closeContainer();
 			player.playSound(SoundEvents.SHULKER_BOX_CLOSE, 1F, 1F);
 			
-			mc.setScreen(new InventoryScreen(player));
+			if(player.getItemBySlot(EquipmentSlot.CHEST).is(BackpackModule.backpack))
+				BackpackModule.requestBackpack();
+			else {
+				player.closeContainer();
+				mc.setScreen(new InventoryScreen(player));
+			}
+			
 			GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), mx, my);
 		}
 	}

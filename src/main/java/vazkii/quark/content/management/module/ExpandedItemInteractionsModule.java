@@ -41,6 +41,7 @@ import net.minecraftforge.items.wrapper.EmptyHandler;
 import net.minecraftforge.network.NetworkHooks;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.addons.oddities.inventory.BackpackMenu;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -227,7 +228,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	public static boolean canOpenShulkerBox(ItemStack stack, ItemStack incoming, Slot slot, Player player) {
 		return incoming.isEmpty() &&
 				allowOpeningShulkerBoxes &&
-				!player.hasContainerOpen() &&
+				(!player.hasContainerOpen() || player.containerMenu instanceof BackpackMenu) &&
 				slot.container == player.getInventory() &&
 				SimilarBlockTypeHandler.isShulkerBox(stack) &&
 				slot.mayPickup(player);
