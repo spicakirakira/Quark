@@ -35,6 +35,7 @@ public final class ConfigObjectSerializer {
 		List<Field> fields = recursivelyGetFields(module.getClass());
 		
 		for(Field f : fields) {
+			f.setAccessible(true);
 			Hint hint = f.getDeclaredAnnotation(Hint.class);
 			if(hint != null) {
 				String flag = hint.value();

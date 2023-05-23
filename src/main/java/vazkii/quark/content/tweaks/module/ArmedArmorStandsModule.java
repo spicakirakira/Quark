@@ -1,13 +1,11 @@
 package vazkii.quark.content.tweaks.module;
 
-import java.util.function.BiConsumer;
-
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.quark.base.module.Hint;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -19,10 +17,7 @@ import vazkii.quark.base.module.QuarkModule;
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class ArmedArmorStandsModule extends QuarkModule {
 
-	@Override
-	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
-		hintItem(consumer, Items.ARMOR_STAND);
-	}
+	@Hint Item armor_stand = Items.ARMOR_STAND;
 
 	@SubscribeEvent
 	public void entityConstruct(EntityEvent.EntityConstructing event) {
