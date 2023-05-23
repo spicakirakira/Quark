@@ -44,8 +44,8 @@ public class DiamondRepairModule extends QuarkModule {
 	public static List<String> unrepairableItemsList = Arrays.asList();
 
 	private static boolean staticEnabled;
-	private static Multimap<Item, Item> repairChanges = HashMultimap.create();
-	private static List<Item> unrepairableItems;
+	public static Multimap<Item, Item> repairChanges = HashMultimap.create();
+	public static List<Item> unrepairableItems;
 
 	@Override
 	public void configChanged() {

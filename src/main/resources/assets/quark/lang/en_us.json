@@ -177,8 +177,8 @@
 	"quark.jei.hint_preamble": "[Quark]\n",
 
 	"quark.jei.hint.repair_item_removed": "This item has been changed to not be repairable in an Anvil using repair materials.",
-	"quark.jei.hint.repair_item_changed": "This item's Repair Item has been changed to %s.",
-	"quark.jei.hint.repair_item_changed_multiple": "This item's Repair Item has been changed to one of %s.",
+	"quark.jei.hint.repair_item_changed": "This item's repair material in an Anvil has been changed to %s.",
+	"quark.jei.hint.repair_item_changed_multiple": "This item's repair material in an Anvil has been changed to one of %s.",
 
 	"quark.jei.hint.pickarang": "It's a Pickaxe Boomerang! Can be thrown and will mine anything it hits and bring you the drops back. It can also be enchanted for better performance.",
 	"quark.jei.hint.flamerang": "Works like a Pickarang, but any items it picks up become immune to fire and lava damage while they travel.",

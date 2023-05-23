@@ -14,6 +14,7 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe;
 import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
@@ -68,6 +69,7 @@ import vazkii.quark.content.tools.item.AncientTomeItem;
 import vazkii.quark.content.tools.module.AncientTomesModule;
 import vazkii.quark.content.tools.module.ColorRunesModule;
 import vazkii.quark.content.tools.module.PickarangModule;
+import vazkii.quark.content.tweaks.module.DiamondRepairModule;
 import vazkii.quark.content.tweaks.recipe.ElytraDuplicationRecipe;
 import vazkii.quark.content.tweaks.recipe.SlabToBlockRecipe;
 
@@ -76,7 +78,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 	private static final ResourceLocation UID = new ResourceLocation(Quark.MOD_ID, Quark.MOD_ID);
 
 	public static final RecipeType<InfluenceEntry> INFLUENCING =
-		 RecipeType.create(Quark.MOD_ID, "influence", InfluenceEntry.class);
+			RecipeType.create(Quark.MOD_ID, "influence", InfluenceEntry.class);
 
 	@Nonnull
 	@Override
@@ -90,15 +92,18 @@ public class QuarkJeiPlugin implements IModPlugin {
 	}
 
 	@Override
-	public void onRuntimeAvailable(@Nonnull IJeiRuntime jeiRuntime) {
+	public void onRuntimeAvailable(@Nonnull final IJeiRuntime jeiRuntime) {
 		List<ItemStack> disabledItems = RequiredModTooltipHandler.disabledItems();
 		if (!disabledItems.isEmpty())
 			jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, disabledItems);
 
 		ModuleLoader.INSTANCE.initJEICompat(() -> {
+			if(ModuleLoader.INSTANCE.isModuleEnabled(DiamondRepairModule.class))
+				hideAnvilRepairRecipes(jeiRuntime.getRecipeManager());
+
 			if(!GeneralConfig.hideDisabledContent)
 				return;
-			
+
 			NonNullList<ItemStack> stacks = NonNullList.create();
 			for (Item item : ForgeRegistries.ITEMS.getValues()) {
 				ResourceLocation loc = ForgeRegistries.ITEMS.getKey(item);
@@ -148,22 +153,25 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 		if (matrix())
 			registerInfluenceRecipes(registration);
-		
+
+		if(ModuleLoader.INSTANCE.isModuleEnabled(DiamondRepairModule.class))
+			registerCustomAnvilRecipes(registration, factory);
+
 		if(GeneralConfig.enableJeiItemInfo) {
 			MutableComponent hint = Component.translatable("quark.jei.hint_preamble");
 			hint.setStyle(hint.getStyle().withColor(0x48ddbc));
-			
+
 			List<Item> blacklist = MiscUtil.massRegistryGet(GeneralConfig.suppressedInfo, ForgeRegistries.ITEMS);
 
 			ModuleLoader.INSTANCE.addStackInfo((i, c) -> {
 				if(blacklist.contains(i))
 					return;
-				
+
 				MutableComponent compound = Component.literal("");
 				if(!ForgeRegistries.ITEMS.getKey(i).getNamespace().equals(Quark.MOD_ID))
 					compound = compound.append(hint);
 				compound = compound.append(c);
-				
+
 				registration.addItemStackInfo(new ItemStack(i), compound);
 			});
 		}
@@ -268,20 +276,64 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 	private void registerInfluenceRecipes(@Nonnull IRecipeRegistration registration) {
 		registration.addRecipes(INFLUENCING,
-			 Arrays.stream(DyeColor.values()).map(color -> {
-				 Block candle = MatrixEnchantingTableBlockEntity.CANDLES.get(color.getId());
-				 Influence influence = MatrixEnchantingModule.candleInfluences.get(color);
+				Arrays.stream(DyeColor.values()).map(color -> {
+					Block candle = MatrixEnchantingTableBlockEntity.CANDLES.get(color.getId());
+					Influence influence = MatrixEnchantingModule.candleInfluences.get(color);
 
-				 return new InfluenceEntry(candle, influence);
-			 }).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+					return new InfluenceEntry(candle, influence);
+				}).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
 
 		registration.addRecipes(INFLUENCING,
-			 MatrixEnchantingModule.customInfluences.entrySet().stream().map(entry -> {
-				 Block block = entry.getKey().getBlock();
-				 Influence influence = entry.getValue().influence();
+				MatrixEnchantingModule.customInfluences.entrySet().stream().map(entry -> {
+					Block block = entry.getKey().getBlock();
+					Influence influence = entry.getValue().influence();
 
-				 return new InfluenceEntry(block, influence);
-			 }).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+					return new InfluenceEntry(block, influence);
+				}).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+	}
+
+	private void hideAnvilRepairRecipes(@Nonnull IRecipeManager manager) {
+		Stream<IJeiAnvilRecipe> anvilRecipe = manager.createRecipeLookup(RecipeTypes.ANVIL).get();
+		List<IJeiAnvilRecipe> hidden = 
+				anvilRecipe.filter(r -> {
+					ItemStack left = r.getLeftInputs().stream()
+							.filter(st -> {
+								Item i = st.getItem();
+								return DiamondRepairModule.repairChanges.containsKey(i) || DiamondRepairModule.unrepairableItems.contains(i);
+							})
+							.findFirst()
+							.orElse(null);
+					
+					if(left != null) {
+						for(ItemStack right: r.getRightInputs()) {
+							Item item = left.getItem();
+							if(item.isValidRepairItem(left, right))
+								return true;
+						}
+					}
+					
+					return false;
+				}).collect(Collectors.toList());
+		
+		manager.hideRecipes(RecipeTypes.ANVIL, hidden);
+	}
+
+	private void registerCustomAnvilRecipes(@Nonnull IRecipeRegistration registration, @Nonnull IVanillaRecipeFactory factory) {
+		for(Item item : DiamondRepairModule.repairChanges.keySet()) {
+			ItemStack left = new ItemStack(item);
+			ItemStack out = left.copy();
+			
+			int max = item.getMaxDamage(left);
+			
+			left.setDamageValue(max - 1);
+			out.setDamageValue(max - max / 4);
+			
+			for(Item repair : DiamondRepairModule.repairChanges.get(item)) {
+				IJeiAnvilRecipe toolRepair = factory.createAnvilRecipe(left, Collections.singletonList(new ItemStack(repair)), Collections.singletonList(out));
+
+				registration.addRecipes(RecipeTypes.ANVIL, Arrays.asList(toolRepair));
+			}
+		}
 	}
 
 	private static class CrateGuiHandler implements IGuiContainerHandler<CrateScreen> {
