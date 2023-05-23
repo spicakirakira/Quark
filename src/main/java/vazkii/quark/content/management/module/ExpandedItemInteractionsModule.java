@@ -241,8 +241,9 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 
 				NetworkHooks.openScreen(splayer, container, buf -> buf.writeInt(lockedSlot));
 			}
-
-			player.playSound(SoundEvents.SHULKER_BOX_OPEN, 1F, 1F);
+			else 
+				player.playSound(SoundEvents.SHULKER_BOX_OPEN, 1F, 1F);
+			
 			return true;
 		}
 

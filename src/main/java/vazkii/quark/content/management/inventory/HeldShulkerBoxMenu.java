@@ -15,6 +15,7 @@ import vazkii.quark.content.management.module.ExpandedItemInteractionsModule;
 public class HeldShulkerBoxMenu extends AbstractContainerMenu implements ISortingLockedSlots {
 
 	private final Container container;
+	private final Player player;
 	public final int blockedSlot;
 
 	public HeldShulkerBoxMenu(int p_40188_, Inventory p_40189_, int blockedSlot) {
@@ -25,6 +26,7 @@ public class HeldShulkerBoxMenu extends AbstractContainerMenu implements ISortin
 		super(ExpandedItemInteractionsModule.heldShulkerBoxMenuType, p_40191_);
 		checkContainerSize(p_40193_, 27);
 		this.container = p_40193_;
+		this.player = p_40192_.player;
 		this.blockedSlot = blockedSlot;
 		p_40193_.startOpen(p_40192_.player);
 
@@ -82,6 +84,18 @@ public class HeldShulkerBoxMenu extends AbstractContainerMenu implements ISortin
 		}
 
 		return itemstack;
+	}
+	
+	@Override
+	public void suppressRemoteUpdates() {
+		super.suppressRemoteUpdates();
+		player.inventoryMenu.suppressRemoteUpdates();
+	}
+	
+	@Override
+	public void resumeRemoteUpdates() {
+		super.resumeRemoteUpdates();
+		player.inventoryMenu.resumeRemoteUpdates();
 	}
 
 	@Override
