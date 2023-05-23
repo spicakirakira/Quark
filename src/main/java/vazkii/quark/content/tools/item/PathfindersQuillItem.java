@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.extensions.IForgeItem;
+import org.jetbrains.annotations.NotNull;
 import vazkii.arl.interf.IItemColorProvider;
 import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
@@ -153,7 +154,8 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
             ItemStack runningStack = search(stack, sl, player, slot);
 
             if (runningStack != stack) {
-                String msg = "quark.misc." + (runningStack.isEmpty() ? "quill_failed" : "quill_finished");
+                String msg = runningStack.isEmpty() ?
+                        getFinishedMessage() : getFailedMessage();
                 player.displayClientMessage(Component.translatable(msg), true);
 
                 Vec3 pos = player.getPosition(1F);
@@ -162,6 +164,14 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
                 player.getInventory().setItem(slot, runningStack);
             }
         }
+    }
+
+    protected String getFinishedMessage() {
+        return "quark.misc.quill_finished";
+    }
+
+    protected String getFailedMessage() {
+        return "quark.misc.quill_failed";
     }
 
     protected ItemStack search(ItemStack stack, ServerLevel level, Player player, int slot) {
