@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.gossip.GossipContainer;
 import net.minecraft.world.entity.ai.gossip.GossipType;
 import net.minecraft.world.entity.monster.ZombieVillager;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -65,8 +67,14 @@ public class GameNerfsModule extends QuarkModule {
 	@Config(description = "Disables mob griefing for only specific entities")
 	public static boolean enableSelectiveMobGriefing = true;
 	
+	@Config(description = "Force Elytra to only work in specific dimensions")
+	public static boolean enableDimensionLockedElytra = true;
+	
 	@Config 
-	public List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
+	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
+	
+	@Config
+	public static List<String> elytraAllowedDimensions = Arrays.asList("minecraft:the_end");
 
 	private static boolean staticEnabled;
 	
@@ -79,6 +87,17 @@ public class GameNerfsModule extends QuarkModule {
 	// https://gitlab.com/supersaiyansubtlety/ice_boat_nerf/-/blob/master/src/main/java/net/sssubtlety/ice_boat_nerf/mixin/BoatEntityMixin.java
 	public static float getBoatFriction(float glide) {
 		return (staticEnabled && disableIceRoads) ? 0.45F : glide;
+	}
+	
+	public static boolean canEntityUseElytra(LivingEntity entity, boolean prev) {
+		if(!prev)
+			return false;
+		if(!staticEnabled || !enableDimensionLockedElytra)
+			return true;
+		
+		Level level = entity.getLevel();
+		String dim = level.dimensionTypeId().location().toString();
+		return elytraAllowedDimensions.contains(dim);
 	}
 	
 	@SubscribeEvent

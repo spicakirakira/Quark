@@ -52,6 +52,7 @@
     "IronBarsBlockMixin",
     "SlimeMixin",
     "AnvilMenuMixin",
+    "ElytraItemMixin",
 
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
