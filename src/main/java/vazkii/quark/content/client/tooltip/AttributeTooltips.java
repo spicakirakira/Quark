@@ -106,7 +106,6 @@ public class AttributeTooltips {
 
 	@OnlyIn(Dist.CLIENT)
 	public static void makeTooltip(RenderTooltipEvent.GatherComponents event) {
-		Minecraft mc = Minecraft.getInstance();
 		ItemStack stack = event.getItemStack();
 
 		if(!Screen.hasShiftDown()) {
@@ -134,27 +133,12 @@ public class AttributeTooltips {
 			}
 
 			AttributeSlot primarySlot = getPrimarySlot(stack);
-			boolean showSlots = !allAreSame && (onlyInvalid ||
-					(attributeTooltips.size() == 1 && attributeTooltips.containsKey(primarySlot)));
 
 			int i = 1;
 			for (AttributeSlot slot : AttributeSlot.values()) {
 				if (attributeTooltips.containsKey(slot)) {
-					String stringForSlot = attributeTooltips.get(slot).getString();
-
-					int len = 16;
-					if(stringForSlot.contains("/")) {
-						stringForSlot = stringForSlot.substring(0, stringForSlot.length() - 1);
-						String[] toks = stringForSlot.split("/");
-						for(String tok : toks)
-							len += mc.font.width(tok) + 5;
-					}
-
-					if (showSlots)
-						len += 20;
-
 					int tooltipSlot = (slot == primarySlot ? 1 : i);
-					tooltipRaw.add(tooltipSlot, Either.right(new AttributeComponent(stack, slot, len, 10)));
+					tooltipRaw.add(tooltipSlot, Either.right(new AttributeComponent(stack, slot)));
 					i++;
 					
 					if(allAreSame)
@@ -312,8 +296,17 @@ public class AttributeTooltips {
 
 
 	@OnlyIn(Dist.CLIENT)
-	public record AttributeComponent(ItemStack stack, AttributeSlot slot, int width, int height) implements ClientTooltipComponent, TooltipComponent {
+	public static class AttributeComponent implements ClientTooltipComponent, TooltipComponent {
 
+		final ItemStack stack;
+		final AttributeSlot slot;
+		int width = 0;
+		
+		public AttributeComponent(ItemStack stack, AttributeSlot slot) {
+			this.stack = stack;
+			this.slot = slot;
+		}
+		
 		@Override
 		public void renderImage(@Nonnull Font font, int tooltipX, int tooltipY, @Nonnull PoseStack pose, @Nonnull ItemRenderer itemRenderer, int something) {
 			if (!Screen.hasShiftDown()) {
@@ -330,6 +323,7 @@ public class AttributeTooltips {
 
 				AttributeSlot primarySlot = getPrimarySlot(stack);
 				boolean showSlots = false;
+				int x = tooltipX;
 
 				if(canShowAttributes(stack, slot)) {
 					Multimap<Attribute, AttributeModifier> slotAttributes = getModifiers(stack, slot);
@@ -342,12 +336,7 @@ public class AttributeTooltips {
 							}
 						}
 					}
-				}
-				
-				if (canShowAttributes(stack, slot)) {
-					int x = tooltipX;
-
-					Multimap<Attribute, AttributeModifier> slotAttributes = getModifiers(stack, slot);
+					
 
 					boolean anyToRender = false;
 					for (Attribute attr : slotAttributes.keys()) {
@@ -377,22 +366,70 @@ public class AttributeTooltips {
 							}
 						}
 					}
-
-					y += 10;
 				}
 
 				pose.popPose();
+
 			}
 		}
 
 		@Override
 		public int getHeight() {
-			return height;
+			return 10;
 		}
 
 		@Override
 		public int getWidth(@Nonnull Font font) {
-			return width;
+			int width = 0;
+
+			if (canShowAttributes(stack, slot)) {
+				Minecraft mc = Minecraft.getInstance();
+				Multimap<Attribute, AttributeModifier> slotAttributes = getModifiers(stack, slot);
+
+				AttributeSlot primarySlot = getPrimarySlot(stack);
+				boolean showSlots = false;
+				
+				for (Attribute attr : slotAttributes.keys()) {
+					if (getIconForAttribute(attr) != null) {
+						if (slot != primarySlot) {
+							showSlots = true;
+							break;
+						}
+					}
+				}
+				
+				boolean anyToRender = false;
+				for (Attribute attr : slotAttributes.keys()) {
+					double value = getAttribute(mc.player, slot, stack, slotAttributes, attr);
+					if (value != 0) {
+						anyToRender = true;
+						break;
+					}
+				}
+
+				if (anyToRender) {
+					if (showSlots)
+						width += 20;
+
+					for(Attribute key : slotAttributes.keySet()) {
+						AttributeIconEntry icons = getIconForAttribute(key);
+						double value = getAttribute(mc.player, slot, stack, slotAttributes, key);
+
+						MutableComponent valueStr = format(key, value, icons.displayTypes().get(slot));
+						width += font.width(valueStr) + 20;
+					}
+						
+
+					for (Attribute key : slotAttributes.keys()) {
+						if (getIconForAttribute(key) == null) {
+							width += font.width("[+]") + 8;
+							break;
+						}
+					}
+				}
+			}
+			
+			return width - 8;
 		}
 
 	}
