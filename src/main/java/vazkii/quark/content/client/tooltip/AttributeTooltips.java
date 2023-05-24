@@ -429,10 +429,12 @@ public class AttributeTooltips {
 
 					for(Attribute key : slotAttributes.keySet()) {
 						AttributeIconEntry icons = getIconForAttribute(key);
-						double value = getAttribute(mc.player, slot, stack, slotAttributes, key);
+						if(icons != null) {
+							double value = getAttribute(mc.player, slot, stack, slotAttributes, key);
 
-						MutableComponent valueStr = format(key, value, icons.displayTypes().get(slot));
-						width += font.width(valueStr) + 20;
+							MutableComponent valueStr = format(key, value, icons.displayTypes().get(slot));
+							width += font.width(valueStr) + 20;
+						}
 					}
 						
 
