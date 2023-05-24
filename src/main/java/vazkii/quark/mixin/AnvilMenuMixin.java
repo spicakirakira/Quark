@@ -9,11 +9,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import vazkii.quark.content.tweaks.module.DiamondRepairModule;
 
-@Mixin(AnvilMenu.class)
+@Mixin(value = AnvilMenu.class, priority = 2000)
 public class AnvilMenuMixin {
 
 	@Redirect(method = "createResult()V", at = @At(value = "INVOKE", 
-			target = "Lnet/minecraft/world/item/Item;isValidRepairItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
+			target = "Lnet/minecraft/world/item/Item;isValidRepairItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"),
+			require = 0)
 	public boolean isValidRepairItem(Item item, ItemStack stack, ItemStack repairStack) {
 		return DiamondRepairModule.isValidRepairItem(item, stack, repairStack);
 	}
