@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import com.google.common.collect.Lists;
 
@@ -12,10 +13,13 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -172,6 +176,16 @@ public class MatrixEnchantingModule extends QuarkModule {
 		RegistryHelper.register(blockEntityType, "matrix_enchanting", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
 		
 		influenceTrigger = QuarkAdvancementHandler.registerGenericTrigger("influence");
+	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		MutableComponent comp = Component.translatable("quark.jei.hint.matrix_enchanting");
+		if(allowInfluencing)
+			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.matrix_influencing"));
+
+		consumer.accept(Items.ENCHANTING_TABLE, comp);
+		consumer.accept(matrixEnchanter.asItem(), comp);
 	}
 
 	@Override

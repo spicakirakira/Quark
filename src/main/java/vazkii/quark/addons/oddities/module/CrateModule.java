@@ -1,8 +1,12 @@
 package vazkii.quark.addons.oddities.module;
 
+import java.util.function.BiConsumer;
+
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -43,6 +47,12 @@ public class CrateModule extends QuarkModule {
 	@OnlyIn(Dist.CLIENT)
 	public void clientSetup() {
 		MenuScreens.register(menuType, CrateScreen::new);
+	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		Component comp = Component.translatable("quark.jei.hint.crate", maxItems);
+		consumer.accept(crate.asItem(), comp);
 	}
 	
 }

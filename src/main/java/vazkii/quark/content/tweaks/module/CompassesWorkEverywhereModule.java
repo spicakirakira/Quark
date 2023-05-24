@@ -1,6 +1,10 @@
 package vazkii.quark.content.tweaks.module;
 
+import java.util.function.BiConsumer;
+
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -40,6 +44,27 @@ public class CompassesWorkEverywhereModule extends QuarkModule {
 
 		if(enabled && enableClockNerf)
 			enqueue(() -> ItemProperties.register(Items.CLOCK, new ResourceLocation("time"), new ClockTimeGetter.Impl()));
+	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		if(!enableNether && !enableEnd && !enableCompassNerf)
+			return;
+		
+		MutableComponent comp = Component.literal("");
+		String pad = "";
+		if(enableNether) {
+			comp = comp.append(pad).append(Component.translatable("quark.jei.hint.compass_nether"));
+			pad = " ";
+		}
+		if(enableEnd) {
+			comp = comp.append(pad).append(Component.translatable("quark.jei.hint.compass_end"));
+			pad = " ";
+		}
+		if(enableCompassNerf)
+			comp = comp.append(pad).append(Component.translatable("quark.jei.hint.compass_nerf"));
+		
+		consumer.accept(Items.COMPASS, comp);
 	}
 
 	@SubscribeEvent

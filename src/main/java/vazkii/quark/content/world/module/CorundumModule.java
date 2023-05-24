@@ -1,16 +1,20 @@
 package vazkii.quark.content.world.module;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,8 +25,10 @@ import vazkii.quark.base.block.QuarkInheritedPaneBlock;
 import vazkii.quark.base.handler.ToolInteractionHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
+import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.hint.Hint;
+import vazkii.quark.content.tools.module.BeaconRedirectionModule;
 import vazkii.quark.content.world.block.CorundumBlock;
 import vazkii.quark.content.world.block.CorundumClusterBlock;
 import vazkii.quark.content.world.undergroundstyle.CorundumStyle;
@@ -63,6 +69,7 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 	public static boolean staticEnabled;
 
 	public static List<CorundumBlock> crystals = Lists.newArrayList();
+	public static List<CorundumClusterBlock> clusters = Lists.newArrayList();
 	@Hint public static TagKey<Block> corundumTag;
 
 	@Override
@@ -85,6 +92,17 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 		staticEnabled = enabled;
 	}
 
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		MutableComponent comp = Component.translatable("quark.jei.hint.corundum_cluster_grow");
+		
+		if(ModuleLoader.INSTANCE.isModuleEnabled(BeaconRedirectionModule.class))
+			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.corundum_cluster_redirect"));
+		
+		for(Block block : clusters)
+			consumer.accept(block.asItem(), comp);
+	}
+	
 	private void add(String name, int color, MaterialColor material) {
 		CorundumBlock crystal = new CorundumBlock(name + "_corundum", color, this, material, false);
 		crystals.add(crystal);
@@ -94,6 +112,7 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 
 		new QuarkInheritedPaneBlock(crystal);
 		CorundumClusterBlock cluster = new CorundumClusterBlock(crystal);
+		clusters.add(cluster);
 
 		ClusterConnection connection = new ClusterConnection(cluster);
 		IIndirectConnector.INDIRECT_STICKY_BLOCKS.add(Pair.of(connection::isValidState, connection));

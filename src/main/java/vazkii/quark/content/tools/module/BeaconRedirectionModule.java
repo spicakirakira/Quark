@@ -3,10 +3,12 @@ package vazkii.quark.content.tools.module;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.function.BiConsumer;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -26,9 +28,11 @@ import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
+import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.hint.Hint;
+import vazkii.quark.base.module.hint.HintManager;
 import vazkii.quark.content.world.block.CorundumClusterBlock;
 import vazkii.quark.content.world.module.CorundumModule;
 
@@ -57,6 +61,21 @@ public class BeaconRedirectionModule extends QuarkModule {
 	@Override
 	public void configChanged() {
 		staticEnabled = enabled;
+	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		final String redirectHint = "beacon_redirect_item";
+		String type = "amethyst";
+		
+		if(!ModuleLoader.INSTANCE.isModuleEnabled(CorundumModule.class))
+			HintManager.hintItem(consumer, Items.AMETHYST_CLUSTER, redirectHint);
+		
+		else
+			type = "corundum";
+		
+		Component comp = Component.translatable("quark.jei.hint.beacon_redirection", Component.translatable("quark.jei.hint.beacon_" + type));
+		consumer.accept(Items.BEACON, comp);
 	}
 	
 	// The value that comes out of this is fed onto a constant for the FOR loop that
