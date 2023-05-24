@@ -13,7 +13,10 @@ public class EntityMixin {
 
 	@Inject(method = "fireImmune", at = @At("RETURN"), cancellable = true)
 	private void isImmuneToFire(CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
-		callbackInfoReturnable.setReturnValue(PickarangModule.getIsFireResistant(callbackInfoReturnable.getReturnValue(), (Entity) (Object) this));
+		boolean original = callbackInfoReturnable.getReturnValue();
+		boolean changed = PickarangModule.getIsFireResistant(original, (Entity) (Object) this);
+		if(original != changed)
+			callbackInfoReturnable.setReturnValue(changed);
 	}
 
 }
