@@ -27,7 +27,7 @@ public class HintManager {
 					try {
 						return Optional.ofNullable(f.get(module));
 					} catch (Exception e) {
-						throw new RuntimeException();
+						throw new RuntimeException(e);
 					}
 				});
 				
