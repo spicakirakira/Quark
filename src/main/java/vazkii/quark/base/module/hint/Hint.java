@@ -18,7 +18,15 @@ public @interface Hint {
 	 */
 	String value() default "";
 	boolean negate() default false;
-	
+
+	/**
+	 * Translation key
+	 */
 	String key() default "";
+
+	/**
+	 * Extra content to put in the translation, reference with %s
+	 */
+	String[] content() default "";
 	
 }

@@ -51,9 +51,12 @@ public class GoldToolsHaveFortuneModule extends QuarkModule {
 	@Config public static boolean displayFortuneInTooltip = true;
 	@Config public static boolean italicTooltip = true;
 
-	@Hint(key = "gold_tool_fortune")
+	@Hint(key = "gold_tool_fortune", content = "fortuneLevel")
 	List<Item> gold_tools = Arrays.asList(Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD);
-	
+	@Hint(key = "gold_tool_harvest_level", content = "harvestLevel")
+	List<Item> gold_tools_2 = gold_tools;
+
+
 	private static boolean staticEnabled;
 
 	@Override

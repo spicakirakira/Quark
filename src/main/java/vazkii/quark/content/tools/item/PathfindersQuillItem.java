@@ -35,6 +35,7 @@ import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule.TradeInfo;
+import vazkii.quark.content.tweaks.module.GoldToolsHaveFortuneModule;
 import vazkii.quark.mixin.BeaconBlockEntityMixin;
 
 import javax.annotation.Nullable;

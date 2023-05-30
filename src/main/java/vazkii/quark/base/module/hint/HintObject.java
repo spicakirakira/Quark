@@ -13,6 +13,7 @@ import net.minecraft.world.level.ItemLike;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.ConfigFlagManager;
+import vazkii.quark.content.tweaks.module.GoldToolsHaveFortuneModule;
 
 public class HintObject {
 
@@ -20,16 +21,20 @@ public class HintObject {
 	private final QuarkModule module;
 	private final String flag;
 	private boolean negateFlag;
+	private List<Supplier<Object>> extraContent;
 	private final Supplier<Optional<Object>> fieldGetter;
 	
 	private String key;
 
-	public HintObject(ConfigFlagManager flagManager, QuarkModule module, Hint hint, Supplier<Optional<Object>> fieldGetter) {
+	public HintObject(ConfigFlagManager flagManager, QuarkModule module, Hint hint,
+					  List<Supplier<Object>> extraContent,
+					  Supplier<Optional<Object>> fieldGetter) {
 		this.flagManager = flagManager;
 		this.module = module;
 		this.flag = hint.value();
 		this.negateFlag = hint.negate();
 		this.fieldGetter = fieldGetter;
+		this.extraContent = extraContent;
 
 		this.key = hint.key();
 	}
@@ -81,10 +86,12 @@ public class HintObject {
 	}
 
 	private void applyTo(BiConsumer<Item, Component> consumer, ItemLike itemLike) {
+		var extra = this.extraContent.stream().map(Supplier::get).toArray(Object[]::new);
 		if(key.isEmpty())
-			HintManager.hintItem(consumer, itemLike);
+			HintManager.hintItem(consumer, itemLike, extra);
 		else 
-			HintManager.hintItem(consumer, itemLike, key);
+			HintManager.hintItem(consumer, itemLike, key, extra);
 	}
+
 
 }
