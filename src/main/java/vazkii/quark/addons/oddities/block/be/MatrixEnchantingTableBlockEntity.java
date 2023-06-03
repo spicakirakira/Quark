@@ -422,7 +422,7 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 		@Nullable
 		@Override
 		public ParticleOptions getExtraParticleOptions(BlockGetter world, BlockPos pos, BlockState state) {
-			if (inverted)
+			if (inverted && state.getValue(CandleBlock.LIT))
 				return ParticleTypes.SOUL;
 			return null;
 		}
