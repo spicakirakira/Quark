@@ -156,7 +156,7 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
             if (runningStack != stack) {
                 String msg = runningStack.isEmpty() ?
-                        getFinishedMessage() : getFailedMessage();
+                        getFailedMessage() : getFinishedMessage();
                 player.displayClientMessage(Component.translatable(msg), true);
 
                 Vec3 pos = player.getPosition(1F);
