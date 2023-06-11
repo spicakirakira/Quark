@@ -33,7 +33,7 @@ jobs:
     - name: Calculate artifact names
       id: calculate_artifact_names
       run: |
-        VERSION=$(awk -F '=' '/version/ { print $2; }' build.properties)
+        VERSION=$(awk -F '=' '/^version/ { print $2; }' build.properties)
         BUILD=$(awk -F '=' '/build_number/ { print $2; }' build.properties)
         echo "forge=Forge/build/libs/Quark-${VERSION}-${BUILD}-FORGE.jar" >> "$GITHUB_OUTPUT"
     - name: Sign jars
