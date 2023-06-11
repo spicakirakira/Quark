@@ -13,6 +13,7 @@ import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Registry;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
@@ -60,7 +61,7 @@ public class DispensersPlaceBlocksModule extends QuarkModule {
 					Item item = b.asItem();
 					if(item instanceof BlockItem) {
 						DispenseItemBehavior original = registry.get(item);
-						boolean exists = original != null;
+						boolean exists = original != null && original.getClass() != DefaultDispenseItemBehavior.class;
 						
 						if(exists) {
 							if(wrapExistingBehaviors && original instanceof OptionalDispenseItemBehavior opt)
