@@ -1,4 +1,5 @@
 import os
+import re
 from jproperties import Properties
 
 def main():
@@ -14,13 +15,17 @@ def main():
 	print('Version:', version)
 	print('Build Number', build_number)
 
+	changelog = '-m "" '
+	with open('changelog.txt', 'r') as f:
+		changelog = changelog + re.sub(r'(- .+)\n?', '-m "\g<1>" ', f.read())
+
 	build['build_number'] = str(int(build_number) + 1)
 	with open("build.properties", "wb") as f:
 	    build.store(f, encoding="utf-8")
-
+	
 	os.system('git tag -a release-{}-{}-{}'.format(mc_version, version, build_number))
 	os.system('git commit -a -m build')
-	os.system('git push origin master release-{}-{}-{}'.format(mc_version, version, build_number))
+	os.system('git push origin master release-{}-{}-{} {}'.format(mc_version, version, build_number))
 
 if __name__ == '__main__':
 	main()
