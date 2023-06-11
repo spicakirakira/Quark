@@ -97,7 +97,7 @@ public class MatrixEnchantingModule extends QuarkModule {
 	@Config(description = "Set this to true to allow treasure enchantments to be rolled as pieces")
 	public static boolean allowTreasures = false;
 
-	@Config(description = "Add specific enchantments to matrix enchanter. Meant for treasure ones")
+	@Config(description = "Any treasure enchantment IDs here will be able to appear in books in matrix enchanting")
 	public static List<String> treasureWhitelist = Lists.newArrayList();
 
 	@Config(description = "Set to false to disable the tooltip for items with pending enchantments")

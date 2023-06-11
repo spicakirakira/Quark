@@ -72,7 +72,7 @@ public class EnchantmentMatrix {
 		if(enchantability == 0)
 			return false;
 
-		if (!generatePiece(influences, bookshelfPower, true))
+		if (!generatePiece(influences, bookshelfPower, book, true))
 			return false;
 
 		if(book) {
@@ -109,8 +109,8 @@ public class EnchantmentMatrix {
 		return 1 + (MatrixEnchantingModule.piecePriceScale == 0 ? 0 : count / MatrixEnchantingModule.piecePriceScale);
 	}
 
-	public boolean generatePiece(Map<Enchantment, Integer> influences, int bookshelfPower, boolean simulate) {
-		EnchantmentDataWrapper data = generateRandomEnchantment(influences, bookshelfPower, simulate);
+	public boolean generatePiece(Map<Enchantment, Integer> influences, int bookshelfPower, boolean isBook, boolean simulate) {
+		EnchantmentDataWrapper data = generateRandomEnchantment(influences, bookshelfPower, isBook, simulate);
 		if (data == null)
 			return false;
 
@@ -144,7 +144,7 @@ public class EnchantmentMatrix {
 		return true;
 	}
 
-	private EnchantmentDataWrapper generateRandomEnchantment(Map<Enchantment, Integer> influences, int bookshelfPower, boolean simulate) {
+	private EnchantmentDataWrapper generateRandomEnchantment(Map<Enchantment, Integer> influences, int bookshelfPower, boolean isBook, boolean simulate) {
 		int level = book ? (MatrixEnchantingModule.bookEnchantability + rng.nextInt(Math.max(1, bookshelfPower) * 2)) : 0;
 
 		List<Piece> marked = pieces.values().stream().filter(p -> p.marked).collect(Collectors.toList());
@@ -155,7 +155,7 @@ public class EnchantmentMatrix {
 			boolean isValid = true;
 			if(enchantment.isTreasureOnly()){
 				isValid = MatrixEnchantingModule.allowTreasures ||
-						MatrixEnchantingModule.treasureWhitelist.contains(id);
+						(isBook && MatrixEnchantingModule.treasureWhitelist.contains(id));
 			}
 
 			if (isValid
