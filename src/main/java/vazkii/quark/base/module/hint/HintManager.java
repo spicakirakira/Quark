@@ -25,7 +25,10 @@ public class HintManager {
 			if(hint != null) {
 				List<Supplier<Object>> list = new ArrayList<>();
 				outer:
-				for(var h : hint.content()){
+				for(String h : hint.content()){
+					if(h.isEmpty())
+						break;
+					
 					for(Field cf : fields) {
 						if(cf.getName().equals(h)){
 							list.add(()->{
@@ -38,7 +41,8 @@ public class HintManager {
 							continue outer;
 						}
 					}
-					throw new AssertionError(String.format("Missing field %s in module %s for hin %s", h,module, f));
+					
+					throw new AssertionError(String.format("Missing field %s in module %s for hint %s", h, module, f));
 				}
 
 				HintObject hintObj = new HintObject(flagManager, module, hint, list, () -> {
