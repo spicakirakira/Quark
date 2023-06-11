@@ -18,11 +18,12 @@ def main():
 	with open('changelog.txt', 'r') as f:
 		changelog = f.read()
 
-	os.system('git tag -a release-{}-{}-{} -m "{}"'.format(mc_version, version, build_number, changelog))
-
 	build['build_number'] = str(int(build_number) + 1)
 	with open("build.properties", "wb") as f:
 	    build.store(f, encoding="utf-8")
+
+	os.system('git tag -a release-{}-{}-{} -m "{}"'.format(mc_version, version, build_number, changelog))
+	os.system('git push origin master release-{}-{}-{}'.format(mc_version, version, build_number))
 
 if __name__ == '__main__':
 	main()
