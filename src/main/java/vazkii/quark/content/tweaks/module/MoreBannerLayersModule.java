@@ -25,16 +25,16 @@ public class MoreBannerLayersModule extends QuarkModule {
 
 	@Hint(key = "banner_layer_buff", content = "layerLimit")
 	public static final TagKey<Item> banners = ItemTags.BANNERS;
-	
+
 	private static boolean staticEnabled;
-	
+
 	@Override
 	public void configChanged() {
 		staticEnabled = enabled;
 	}
-	
+
 	public static int getLimit(int curr) {
 		return staticEnabled ? layerLimit : curr;
 	}
-	
+
 }

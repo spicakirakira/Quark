@@ -68,7 +68,7 @@ public class HintManager {
 			ns = "";
 		else ns += ".";
 
-		hintItem(consumer, item, ns + path);
+		hintItem(consumer, item, ns + path, extraContent);
 	}
 
 	public static void hintItem(BiConsumer<Item, Component> consumer, ItemLike itemLike, String key, Object... extraContent) {
