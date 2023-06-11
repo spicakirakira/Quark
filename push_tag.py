@@ -23,6 +23,7 @@ def main():
 	    build.store(f, encoding="utf-8")
 
 	os.system('git tag -a release-{}-{}-{} -m "{}"'.format(mc_version, version, build_number, changelog))
+	os.system('git commit -a -m build')
 	os.system('git push origin master release-{}-{}-{}'.format(mc_version, version, build_number))
 
 if __name__ == '__main__':
