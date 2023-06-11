@@ -1,0 +1,11 @@
+- Added some more Repurposed Structures structures to the chest config (TelepathicGrunt)
+- Fixed a bunch of typos and incorrect info in the JEI descriptions.
+- Fixed assigning multiple repair items to the same item generating multiple copies of the same JEI entry
+- Fixed Candles emitting soul fire particles when unlit
+- Fixed Dispensers not being able to place regular blocks
+- Fixed minor typo in general settings
+- Fixed Moss Paste not being compostable
+- Fixed Pathfinder's Quill notifications being inverted
+- Fixed the Allowed Treasure Books config applying to regular items too
+- Fixed the Mending nerf showing as Too Expensive if the item was already in that state
+- Improved the JEI hint system to better pull info from specific config values
