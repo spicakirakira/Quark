@@ -87,7 +87,7 @@ public class DiamondRepairModule extends QuarkModule {
 		for(Item item : unrepairableItems)
 			consumer.accept(item, removed);
 		
-		for(Item item : repairChanges.keys()) {
+		for(Item item : repairChanges.keySet()) {
 			Collection<Item> options = repairChanges.get(item);
 			
 			int len = options.size();
