@@ -99,7 +99,6 @@ repositories {
 
 }
 
-
 dependencies {
     minecraft "net.minecraftforge:forge:${config.mc_version}-${deps.forge}"
 
@@ -141,37 +140,6 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude '**/psd/**'
         duplicatesStrategy 'include'
-    }
-}
-
-task incrementBuildNumber {
-    doFirst {
-        config.build_number = (config.build_number.toString().toInteger()) + 1
-        configFile.withWriter {
-            config.toProperties().store(it, "")
-        }
-    }
-
-    //file('web/versions.ini').append("\n${version}=${minecraft.version}")
-    //file("${config.dir_repo}/version/${minecraft.version}.txt").write("${version}")
-}
-
-import java.util.regex.Pattern
-task sortArtifacts(type: Copy) {
-    from jar.destinationDir
-    into config.dir_output
-    //Put each jar with a classifier in a subfolder with the classifier as its name
-    eachFile {
-        //This matcher is used to get the classifier of the jar
-        def matcher = Pattern.compile(Pattern.quote("$config.mod_name-$version") + "-(?<classifier>\\w+).jar").matcher(it.name)
-        //Only change the destination for full matches, i.e jars with classifiers
-        if (matcher.matches())
-        {
-            def classifier = matcher.group('classifier')
-            /* Set the relative path to change the destination, since
-             * Gradle doesn't seem to like the absolute path being set*/
-            it.relativePath = it.relativePath.parent.append(false, classifier, it.name)
-        }
     }
 }
 
