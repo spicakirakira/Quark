@@ -171,8 +171,7 @@ public class GameNerfsModule extends QuarkModule {
 				out.setDamageValue(0);
 
 			event.setOutput(out);
-			if(event.getCost() == 0)
-				event.setCost(1);
+			event.setCost(5);
 		}
 	}
 
