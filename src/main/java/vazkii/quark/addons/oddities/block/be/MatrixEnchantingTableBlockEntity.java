@@ -142,7 +142,7 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 			boolean creative = player.getAbilities().instabuild;
 			int cost = matrix.getNewPiecePrice();
 			if(charge > 0 || creative) {
-				if (matrix.generatePiece(influences, bookshelfPower, false)) {
+				if (matrix.generatePiece(influences, bookshelfPower, getItem(0).is(Items.BOOK), false)) {
 					if (!creative) {
 						player.giveExperienceLevels(-cost);
 						charge = Math.max(charge - 1, 0);
