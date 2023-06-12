@@ -47,7 +47,7 @@ EOF
 					   )
 
 	MODRINTH_FORGE_SPEC=$(echo "${MODRINTH_FORGE_SPEC}" | \
-							  jq --arg name "${VERSION}-forge" \
+							  jq --arg name "${VERSION}" \
 								 --arg mcver "${MC_VERSION}" \
 								 --arg changelog "${GH_RELEASE_PAGE}" \
 								 '.name=$ARGS.named.name | .version_number=$ARGS.named.name | .game_versions=[$ARGS.named.mcver] | .changelog=$ARGS.named.changelog')
