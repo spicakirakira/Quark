@@ -201,7 +201,7 @@
 	"quark.jei.hint.gold_button": "Emits a very short, 2 redstone tick, pulse.",
 	"quark.jei.hint.golden_apple_crate": "Can be used as a Beacon base.",
 	"quark.jei.hint.gravisand": "Only falls when given a redstone signal, taking adjacent ones along with it. If it can't fall, it'll float upwards. Emits a comparator signal of 15.",
-	"quark.jei.hint.diamond_heart": "Can be gotten by killing Stonelings underground. If you see a small creature holding an item, that's one! Sneak up to it so it doesn't notice you, or use a Glow Shroom to bait it.",
+	"quark.jei.hint.diamond_heart": "Can be gotten by breaking a Stoneling's shell underground. Don't worry - the Stoneling is just fine. The body is just a shell around the heart! If you see a small creature holding an item, that's one! Sneak up to it so it doesn't notice you, or use a Glow Shroom to bait it. If you use the Heart on raw stone, the Stoneling will construct a new body out of it, and will be more comfortable with players after its ride in your inventory.",
 	"quark.jei.hint.iron_button": "Emits a very long, 5 second, pulse.",
 	"quark.jei.hint.grate": "Animals that aren't leashed will not walk on this, and items will fall through.",
 	"quark.jei.hint.iron_rod": "Will break any blocks in front of it when pushed with a piston.",
@@ -255,7 +255,7 @@
 	"quark.jei.hint.pipe": "Will move items put in with a Hopper/Dropper or equivalent, or via dropped item form on an edge. Items will prefer to fall down, then fowards, then randomly sideways, and only then upwards. Items going into a full container will turn back. Any pipe can be disabled with a Redstone signal, and the amount of items in a Pipe can be read with a Comparator. Pipes with over 16 items will break.",
 	"quark.jei.hint.magnet": "Can push and pull any blocks made of Copper or Iron when powered, depending on the side. If multiple magnets are moving the same block, the biggest force will win. A magnet's force on a block is the restone signal it's given minus the distance to the block. Hoppers moved with a Magnet will drop one item in front for each block moved. If the item is a seed, it'll try to plant it instead. Stonecutters moved with a Magnet will try to break the block above them.",
 	"quark.jei.hint.dusky_myalite": "Can be found embeded in Spiral Spires around the outer end.",
-	
+
 	"quark.jei.hint.banner_layer_buff": "Banners have been upgraded to have up to %d layers now.",
 	"quark.jei.hint.crate": "Can hold up to %d items, regardless of their stack size. Not that great for bulk storage, but fantastic for unstackables or a large variety of random items.",
 	"quark.jei.hint.piston_te": "Can now push complex blocks (aka Tile Entities), except Monster Spawners.",
@@ -533,7 +533,7 @@
 	"item.quark.azalea_boat": "Azalea Boat",
 	"item.quark.blossom_boat": "Blossom Boat",
 	"item.quark.azalea_chest_boat": "Azalea Boat with Chest",
-	"item.quark.blossom_chest_boat": "Blossom Boat with Chest",	
+	"item.quark.blossom_chest_boat": "Blossom Boat with Chest",
 	"item.quark.egg_parrot_red_blue": "Red Parrot Egg",
 	"item.quark.egg_parrot_blue": "Blue Parrot Egg",
 	"item.quark.egg_parrot_green": "Green Parrot Egg",
