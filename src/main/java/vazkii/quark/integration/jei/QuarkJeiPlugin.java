@@ -1,14 +1,5 @@
 package vazkii.quark.integration.jei;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -18,13 +9,7 @@ import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe;
 import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
-import mezz.jei.api.registration.IGuiHandlerRegistration;
-import mezz.jei.api.registration.IRecipeCatalystRegistration;
-import mezz.jei.api.registration.IRecipeCategoryRegistration;
-import mezz.jei.api.registration.IRecipeRegistration;
-import mezz.jei.api.registration.IRecipeTransferRegistration;
-import mezz.jei.api.registration.ISubtypeRegistration;
-import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
+import mezz.jei.api.registration.*;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
@@ -34,13 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -73,6 +52,14 @@ import vazkii.quark.content.tweaks.module.DiamondRepairModule;
 import vazkii.quark.content.tweaks.recipe.ElytraDuplicationRecipe;
 import vazkii.quark.content.tweaks.recipe.SlabToBlockRecipe;
 
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @JeiPlugin
 public class QuarkJeiPlugin implements IModPlugin {
 	private static final ResourceLocation UID = new ResourceLocation(Quark.MOD_ID, Quark.MOD_ID);
@@ -99,7 +86,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 		ModuleLoader.INSTANCE.initJEICompat(() -> {
 			if(ModuleLoader.INSTANCE.isModuleEnabled(DiamondRepairModule.class))
-				hideAnvilRepairRecipes(jeiRuntime.getRecipeManager());
+				Minecraft.getInstance().submitAsync(() -> hideAnvilRepairRecipes(jeiRuntime.getRecipeManager()));
 
 			if(!GeneralConfig.hideDisabledContent)
 				return;
@@ -294,7 +281,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 	private void hideAnvilRepairRecipes(@Nonnull IRecipeManager manager) {
 		Stream<IJeiAnvilRecipe> anvilRecipe = manager.createRecipeLookup(RecipeTypes.ANVIL).get();
-		List<IJeiAnvilRecipe> hidden = 
+		List<IJeiAnvilRecipe> hidden =
 				anvilRecipe.filter(r -> {
 					ItemStack left = r.getLeftInputs().stream()
 							.filter(st -> {
@@ -303,7 +290,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 							})
 							.findFirst()
 							.orElse(null);
-					
+
 					if(left != null) {
 						for(ItemStack right: r.getRightInputs()) {
 							Item item = left.getItem();
@@ -311,10 +298,10 @@ public class QuarkJeiPlugin implements IModPlugin {
 								return true;
 						}
 					}
-					
+
 					return false;
 				}).collect(Collectors.toList());
-		
+
 		manager.hideRecipes(RecipeTypes.ANVIL, hidden);
 	}
 
@@ -322,12 +309,12 @@ public class QuarkJeiPlugin implements IModPlugin {
 		for(Item item : DiamondRepairModule.repairChanges.keySet()) {
 			ItemStack left = new ItemStack(item);
 			ItemStack out = left.copy();
-			
+
 			int max = item.getMaxDamage(left);
-			
+
 			left.setDamageValue(max - 1);
 			out.setDamageValue(max - max / 4);
-			
+
 			for(Item repair : DiamondRepairModule.repairChanges.get(item)) {
 				IJeiAnvilRecipe toolRepair = factory.createAnvilRecipe(left, Collections.singletonList(new ItemStack(repair)), Collections.singletonList(out));
 
