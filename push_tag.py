@@ -15,7 +15,7 @@ def main():
 	print('Version:', version)
 	print('Build Number', build_number)
 
-	changelog = '-m "" '
+	changelog = '-m "Changelog:" '
 	with open('changelog.txt', 'r') as f:
 		changelog = changelog + re.sub(r'(- .+)\n?', '-m "\g<1>" ', f.read())
 
