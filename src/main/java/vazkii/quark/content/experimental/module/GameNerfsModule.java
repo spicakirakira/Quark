@@ -1,12 +1,6 @@
 package vazkii.quark.content.experimental.module;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.mojang.serialization.Dynamic;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
@@ -43,79 +37,91 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 @LoadModule(category = ModuleCategory.EXPERIMENTAL, enabledByDefault = false, hasSubscriptions = true)
 public class GameNerfsModule extends QuarkModule {
-	
+
 	private static final String TAG_TRADES_ADJUSTED = "quark:zombie_trades_adjusted";
-	
+
 	@Config(description = "Makes Mending act like the Unmending mod\n"
 			+ "https://www.curseforge.com/minecraft/mc-mods/unmending")
 	public static boolean nerfMending = true;
-	
-	@Config(description = "Resets all villager discounts when zombified to prevent reducing prices to ridiculous levels") 
+
+	@Config(description = "Resets all villager discounts when zombified to prevent reducing prices to ridiculous levels")
 	public static boolean nerfVillagerDiscount = true;
 
-	@Config(description = "Makes Iron Golems not drop Iron Ingots") 
+	@Config(description = "Makes Iron Golems not drop Iron Ingots")
 	public static boolean disableIronFarms = true;
-	
-	@Config(description = "Makes Boats not glide on ice") 
+
+	@Config(description = "Makes Boats not glide on ice")
 	public static boolean disableIceRoads = true;
-	
-	@Config(description = "Makes Sheep not drop Wool when killed") 
+
+	@Config(description = "Makes Sheep not drop Wool when killed")
 	public static boolean disableWoolDrops = true;
-	
+
 	@Config(description = "Disables mob griefing for only specific entities")
 	public static boolean enableSelectiveMobGriefing = true;
-	
+
 	@Config(description = "Force Elytra to only work in specific dimensions")
 	public static boolean enableDimensionLockedElytra = true;
-	
-	@Config 
+
+	@Config(description = "Makes falling blocks not able to be duped via dimension crossing")
+	public static boolean disableFallingBlockDupe = true;
+
+	@Config
 	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
-	
+
 	@Config
 	public static List<String> elytraAllowedDimensions = Arrays.asList("minecraft:the_end");
 
 	private static boolean staticEnabled;
-	
+
 	@Override
 	public void configChanged() {
 		staticEnabled = enabled;
 	}
-	
-	// Source for this magic number is the ice-boat-nerf mod 
+
+	// Source for this magic number is the ice-boat-nerf mod
 	// https://gitlab.com/supersaiyansubtlety/ice_boat_nerf/-/blob/master/src/main/java/net/sssubtlety/ice_boat_nerf/mixin/BoatEntityMixin.java
 	public static float getBoatFriction(float glide) {
 		return (staticEnabled && disableIceRoads) ? 0.45F : glide;
 	}
-	
+
 	public static boolean canEntityUseElytra(LivingEntity entity, boolean prev) {
 		if(!prev)
 			return false;
 		if(!staticEnabled || !enableDimensionLockedElytra)
 			return true;
-		
+
 		Level level = entity.getLevel();
 		String dim = level.dimensionTypeId().location().toString();
 		return elytraAllowedDimensions.contains(dim);
 	}
-	
+
+	public static boolean stopFallingBlocksDuping() {
+		return staticEnabled && disableFallingBlockDupe;
+	}
+
 	@SubscribeEvent
 	public void onMobGriefing(EntityMobGriefingEvent event) {
 		if(!enableSelectiveMobGriefing || event.getEntity() == null)
 			return;
-		
+
 		String name = Registry.ENTITY_TYPE.getKey(event.getEntity().getType()).toString();
 		if(nonGriefingEntities.contains(name))
 			event.setResult(Result.DENY);
 	}
-	
+
 	// stolen from King Lemming thanks mate
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void killMending(PlayerXpEvent.PickupXp event) {
 		if(!nerfMending)
 			return;
-		
+
 		Player player = event.getEntity();
 		ExperienceOrb orb = event.getOrb();
 
@@ -132,7 +138,7 @@ public class GameNerfsModule extends QuarkModule {
 	public void onAnvilUpdate(AnvilUpdateEvent event) {
 		if(!nerfMending)
 			return;
-		
+
 		ItemStack left = event.getLeft();
 		ItemStack right = event.getRight();
 		ItemStack out = event.getOutput();
@@ -163,7 +169,7 @@ public class GameNerfsModule extends QuarkModule {
 			Map<Enchantment, Integer> enchOutput = EnchantmentHelper.getEnchantments(out);
 			enchOutput.putAll(enchRight);
 			enchOutput.remove(Enchantments.MENDING);
-			
+
 			EnchantmentHelper.setEnchantments(enchOutput, out);
 
 			out.setRepairCost(0);
@@ -180,29 +186,29 @@ public class GameNerfsModule extends QuarkModule {
 	public void onTooltip(ItemTooltipEvent event) {
 		if(!nerfMending)
 			return;
-		
+
 		Component itemgotmodified = Component.translatable("quark.misc.repaired").withStyle(ChatFormatting.YELLOW);
 		int repairCost = event.getItemStack().getBaseRepairCost();
 		if(repairCost > 0)
 			event.getToolTip().add(itemgotmodified);
 	}
-	
+
 	@SubscribeEvent
 	public void onTick(LivingTickEvent event) {
 		if(nerfVillagerDiscount && event.getEntity().getType() == EntityType.ZOMBIE_VILLAGER && !event.getEntity().getPersistentData().contains(TAG_TRADES_ADJUSTED)) {
 			ZombieVillager zombie = (ZombieVillager) event.getEntity();
-			
+
 			Tag gossipsNbt = zombie.gossips;
-			
+
 			GossipContainer manager = new GossipContainer();
 			manager.update(new Dynamic<>(NbtOps.INSTANCE, gossipsNbt));
-			
+
 			for(UUID uuid : manager.gossips.keySet()) {
 				GossipContainer.EntityGossips gossips = manager.gossips.get(uuid);
 				gossips.remove(GossipType.MAJOR_POSITIVE);
 				gossips.remove(GossipType.MINOR_POSITIVE);
 			}
-			
+
 			zombie.getPersistentData().putBoolean(TAG_TRADES_ADJUSTED, true);
 		}
 	}
@@ -211,10 +217,10 @@ public class GameNerfsModule extends QuarkModule {
 	public void onLoot(LivingDropsEvent event) {
 		if(disableIronFarms && event.getEntity().getType() == EntityType.IRON_GOLEM)
 			event.getDrops().removeIf(e -> e.getItem().getItem() == Items.IRON_INGOT);
-		
+
 		if(disableWoolDrops && event.getEntity().getType() == EntityType.SHEEP)
 			event.getDrops().removeIf(e -> e.getItem().is(ItemTags.WOOL));
 	}
-	
+
 }
 
