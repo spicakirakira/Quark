@@ -32,8 +32,17 @@
   },
   "conditions": [
     {
-      "type": "quark:flag",
-      "flag": "color_runes"
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "color_runes"
+        },
+        {
+          "type": "quark:flag",
+          "flag": "craftable_rainbow_rune"
+        }
+      ]
     }
   ]
-} 
+}

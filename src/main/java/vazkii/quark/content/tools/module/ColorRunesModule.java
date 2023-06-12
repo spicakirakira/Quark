@@ -1,15 +1,6 @@
 package vazkii.quark.content.tools.module;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import com.google.common.collect.ImmutableSet;
-
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -20,11 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.CompassItem;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
@@ -56,6 +43,10 @@ import vazkii.quark.base.network.message.UpdateTridentMessage;
 import vazkii.quark.content.tools.client.render.GlintRenderTypes;
 import vazkii.quark.content.tools.item.RuneItem;
 
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 /**
  * @author WireSegal
  * Hacked by svenhjol
@@ -68,6 +59,12 @@ public class ColorRunesModule extends QuarkModule {
 	public static final String TAG_RUNE_COLOR = Quark.MOD_ID + ":RuneColor";
 
 	public static final int RUNE_TYPES = 17;
+
+	@Config(description = "Whether you can blend runes of each of the 'primary' colors plus white to create rainbow runes.", flag = "craftable_rainbow_rune")
+	public static boolean rainbowRuneCraftable = true;
+
+	@Config(description = "Whether you can blend runes of the 'primary' colors to create other colors of rune.", flag = "color_blending_runes")
+	public static boolean colorBlendingRunes = true;
 
 	private static final ThreadLocal<ItemStack> targetStack = new ThreadLocal<>();
 	@Hint public static TagKey<Item> runesTag;
@@ -82,7 +79,7 @@ public class ColorRunesModule extends QuarkModule {
 	@Config public static int desertTempleWeight = 8;
 	@Config public static int itemQuality = 0;
 	@Config public static int applyCost = 5;
-	
+
 	public static QuarkGenericTrigger applyRuneTrigger;
 	public static QuarkGenericTrigger fullRainbowTrigger;
 
@@ -95,7 +92,7 @@ public class ColorRunesModule extends QuarkModule {
 
 		return getStackColor(target);
 	}
-	
+
 	private static int getStackColor(ItemStack target) {
 		if (target == null)
 			return -1;
@@ -184,7 +181,7 @@ public class ColorRunesModule extends QuarkModule {
 
 		rainbow_rune = new RuneItem("rainbow_rune", this, 16, true);
 		blank_rune = new RuneItem("blank_rune", this, 17, false);
-		
+
 		applyRuneTrigger = QuarkAdvancementHandler.registerGenericTrigger("apply_rune");
 		fullRainbowTrigger = QuarkAdvancementHandler.registerGenericTrigger("full_rainbow");
 	}
@@ -241,39 +238,39 @@ public class ColorRunesModule extends QuarkModule {
 			event.setMaterialCost(1);
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onAnvilUse(AnvilRepairEvent event) {
 		ItemStack right = event.getRight();
-		
+
 		if(right.is(runesTag) && event.getEntity() instanceof ServerPlayer sp)
 			applyRuneTrigger.trigger(sp);
 	}
-	
+
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent event) {
 		final String tag = "quark:what_are_you_gay_or_something";
 		Player player = event.player;
-		
+
 		boolean wasRainbow = player.getPersistentData().getBoolean(tag);
 		boolean rainbow = isPlayerRainbow(player);
-		
+
 		if(wasRainbow != rainbow) {
 			player.getPersistentData().putBoolean(tag, rainbow);
 			if(rainbow && player instanceof ServerPlayer sp)
 				fullRainbowTrigger.trigger(sp);
 		}
 	}
-	
+
 	private boolean isPlayerRainbow(Player player) {
 		Set<EquipmentSlot> checks = ImmutableSet.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-		
+
 		for(EquipmentSlot slot : checks) {
 			ItemStack stack = player.getItemBySlot(slot);
 			if(stack.isEmpty() || getStackColor(stack) != 16) // 16 = rainbow rune
 				return false;
 		}
-		
+
 		return true;
 	}
 
