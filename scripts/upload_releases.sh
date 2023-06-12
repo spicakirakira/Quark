@@ -65,7 +65,7 @@ function release_curseforge() {
 	local CURSEFORGE_JAVA_VERSION=8326 # Java 17
 	local CURSEFORGE_FORGE_VERSION=7498
 	local CURSEFORGE_CLIENT_VERSION=9638
-	local CURSEFORGE_SERVEr_VERSION=9639 
+	local CURSEFORGE_SERVER_VERSION=9639 
 	# For the Minecraft one, don't hardcode so we don't have to remember to come change this every time.
 	# Each game version seems to be duplicated three times:
 	# Once with type ID 1 (unused?), once with its major-version-specific type ID, and once with the type ID for "Addons" 615
