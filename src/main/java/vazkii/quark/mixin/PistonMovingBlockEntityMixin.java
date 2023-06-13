@@ -26,7 +26,7 @@ public class PistonMovingBlockEntityMixin {
 	}
 
 	@ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", ordinal = 0), index = 3)
-	private static int injected(int flag) {
-		return GameNerfsModule.stopPistonPhysicsExploits() ? 84 : (84 | 2); // paper impl comment: Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
+	private static int forceNotifyBlockUpdate(int flag) {
+		return GameNerfsModule.stopPistonPhysicsExploits() ? (84 | 2) : 84; // paper impl comment: Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
 	}
 }
