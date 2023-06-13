@@ -17,7 +17,10 @@ def main():
 
 	changelog = '-m "Changelog:" '
 	with open('changelog.txt', 'r') as f:
-		changelog = changelog + re.sub(r'(- .+)\n?', '-m "\g<1>" ', f.read())
+		content = f.read()
+
+		content = content.replace('"', '\'');
+		changelog = changelog + re.sub(r'(- .+)\n?', '-m "\g<1>" ', content)
 	
 	os.system('git tag -a release-{}-{}-{} {}'.format(mc_version, version, build_number, changelog))
 	
