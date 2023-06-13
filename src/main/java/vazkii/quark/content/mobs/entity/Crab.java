@@ -201,7 +201,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 				level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, below, Block.getId(belowState));
 		}
 
-		if(isRaving() && tickCount % 20 == 0 && shouldStopRaving()) {
+		if(isRaving() && !level.isClientSide && tickCount % 20 == 0 && shouldStopRaving()) {
 			setRaving(false);
 			jukeboxPosition = null;
 		}
