@@ -195,7 +195,7 @@ public class SimpleHarvestModule extends QuarkModule {
         // ServerLevel sets this to `false` in the constructor, do we really need this check?
         if (!world.isClientSide && !inWorld.is(simpleHarvestBlacklistedTag)) {
             BlockState newBlock = crops.get(inWorld);
-            world.levelEvent(2001, pos, Block.getId(newBlock));
+            world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(newBlock));
             world.setBlockAndUpdate(pos, newBlock);
         }
     }

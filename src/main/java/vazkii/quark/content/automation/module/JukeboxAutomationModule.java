@@ -1,7 +1,5 @@
 package vazkii.quark.content.automation.module;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -15,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.JukeboxBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,11 +31,13 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.hint.Hint;
 
+import javax.annotation.Nonnull;
+
 @LoadModule(category = ModuleCategory.AUTOMATION, hasSubscriptions = true)
 public class JukeboxAutomationModule extends QuarkModule {
 
 	@Hint Item jukebox = Items.JUKEBOX;
-	
+
 	private static final ResourceLocation JUKEBOX_ITEM_HANDLER = new ResourceLocation(Quark.MOD_ID, "jukebox_item_handler");
 
 	@Override
@@ -80,7 +81,7 @@ public class JukeboxAutomationModule extends QuarkModule {
 			if (!stackAt.isEmpty()) {
 				ItemStack copy = stackAt.copy();
 				if (!simulate) {
-					tile.getLevel().levelEvent(1010, tile.getBlockPos(), 0);
+					tile.getLevel().levelEvent(LevelEvent.SOUND_PLAY_RECORDING, tile.getBlockPos(), 0);
 					tile.setRecord(ItemStack.EMPTY);
 
 					BlockState state = tile.getBlockState().setValue(JukeboxBlock.HAS_RECORD, false);
@@ -129,7 +130,7 @@ public class JukeboxAutomationModule extends QuarkModule {
 				if (jukebox != null) {
 					ItemStack currentRecord = jukebox.getRecord();
 					((JukeboxBlock) state.getBlock()).setRecord(null, world, pos, state, stack);
-					world.levelEvent(null, 1010, pos, Item.getId(stack.getItem()));
+					world.levelEvent(null, LevelEvent.SOUND_PLAY_RECORDING, pos, Item.getId(stack.getItem()));
 
 					return currentRecord;
 				}

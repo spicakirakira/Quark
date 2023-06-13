@@ -1,8 +1,5 @@
 package vazkii.quark.content.world.block.be;
 
-import java.util.List;
-import java.util.UUID;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -26,6 +24,8 @@ import net.minecraft.world.phys.Vec3;
 import vazkii.arl.block.be.ARLBlockEntity;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.content.world.module.MonsterBoxModule;
+
+import java.util.List;
 
 public class MonsterBoxBlockEntity extends ARLBlockEntity {
 
@@ -56,14 +56,14 @@ public class MonsterBoxBlockEntity extends ARLBlockEntity {
 		}
 
 		if(doBreak) {
-			if(be.breakProgress == 0) 
+			if(be.breakProgress == 0)
 				level.playSound(null, pos, QuarkSounds.BLOCK_MONSTER_BOX_GROWL, SoundSource.BLOCKS, 0.5F, 1F);
 
 			be.breakProgress++;
 			if(be.breakProgress > 40) {
 				be.spawnMobs();
 
-				level.levelEvent(2001, pos, Block.getId(level.getBlockState(pos)));
+				level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(level.getBlockState(pos)));
 				level.removeBlock(pos, false);
 			}
 		}
@@ -80,11 +80,11 @@ public class MonsterBoxBlockEntity extends ARLBlockEntity {
 					.withParameter(LootContextParams.BLOCK_STATE, getBlockState())
 					.withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
 					.withParameter(LootContextParams.BLOCK_ENTITY, this);
-			
+
 			LootContext ctx = builder.create(LootContextParamSets.BLOCK);
-			
+
 			int mobCount = MonsterBoxModule.minMobCount + level.random.nextInt(Math.max(MonsterBoxModule.maxMobCount - MonsterBoxModule.minMobCount + 1, 1));
-			
+
 			for(int i = 0; i < mobCount; i++) {
 				loot.getRandomItemsRaw(ctx, stack -> {
 					Entity e = null;
@@ -103,7 +103,7 @@ public class MonsterBoxBlockEntity extends ARLBlockEntity {
 					}
 				});
 			}
-			
+
             serverLevel.getLevel().gameEvent(null, GameEvent.ENTITY_PLACE, pos);
 		}
 	}

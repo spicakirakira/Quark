@@ -17,10 +17,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -281,7 +278,7 @@ public class RopeBlock extends QuarkBlock implements IBlockItemProvider, SimpleW
 	@Override
 	public void neighborChanged(BlockState state, @Nonnull Level worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos, boolean isMoving) {
 		if(!state.canSurvive(worldIn, pos)) {
-			worldIn.levelEvent(2001, pos, Block.getId(worldIn.getBlockState(pos)));
+			worldIn.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(worldIn.getBlockState(pos)));
 			dropResources(state, worldIn, pos);
 			worldIn.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 		}

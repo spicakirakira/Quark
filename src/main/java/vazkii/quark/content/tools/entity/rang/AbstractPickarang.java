@@ -14,7 +14,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.IndirectEntityDamageSource;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -48,7 +48,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.network.NetworkHooks;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.content.mobs.entity.Toretoise;
@@ -216,7 +215,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				player.setItemInHand(InteractionHand.MAIN_HAND, getStack());
 
 				if (player.gameMode.destroyBlock(hit))
-					level.levelEvent(null, 2001, hit, Block.getId(state));
+					level.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, hit, Block.getId(state));
 				else
 					clank();
 

@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -56,7 +57,7 @@ public class DiamondHeartItem extends QuarkItem {
 				if (variant != null) {
 					if (!world.isClientSide && world instanceof ServerLevelAccessor serverLevel) {
 						world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-						world.levelEvent(2001, pos, Block.getId(stateAt));
+						world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(stateAt));
 
 						Stoneling stoneling = new Stoneling(StonelingsModule.stonelingType, world);
 						stoneling.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);

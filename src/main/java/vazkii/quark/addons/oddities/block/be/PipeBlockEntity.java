@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -128,7 +129,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 		if (!pipeItems.isEmpty()) {
 			if (PipesModule.maxPipeItems > 0 && pipeItems.size() > PipesModule.maxPipeItems && !level.isClientSide) {
-				level.levelEvent(2001, worldPosition, Block.getId(level.getBlockState(worldPosition)));
+				level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, worldPosition, Block.getId(level.getBlockState(worldPosition)));
 				dropItem(new ItemStack(getBlockState().getBlock()));
 				level.removeBlock(getBlockPos(), false);
 			}

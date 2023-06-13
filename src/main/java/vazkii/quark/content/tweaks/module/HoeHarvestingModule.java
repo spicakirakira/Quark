@@ -15,6 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
@@ -38,7 +39,7 @@ public class HoeHarvestingModule extends QuarkModule {
 
 	@Hint(key = "hoe_harvesting")
 	TagKey<Item> hoes = Tags.Items.TOOLS_HOES;
-	
+
 	public static TagKey<Item> bigHarvestingHoesTag;
 
 	public static int getRange(ItemStack hoe) {
@@ -54,9 +55,9 @@ public class HoeHarvestingModule extends QuarkModule {
 	}
 
 	public static boolean isHoe(ItemStack itemStack) {
-		return !itemStack.isEmpty() && 
-				(itemStack.getItem() instanceof HoeItem 
-						|| itemStack.is(Tags.Items.TOOLS_HOES) 
+		return !itemStack.isEmpty() &&
+				(itemStack.getItem() instanceof HoeItem
+						|| itemStack.is(Tags.Items.TOOLS_HOES)
 						|| itemStack.getItem().canPerformAction(itemStack, ToolActions.HOE_DIG));
 	}
 
@@ -93,7 +94,7 @@ public class HoeHarvestingModule extends QuarkModule {
 						if (block.canHarvestBlock(state, world, pos, player))
 							block.playerDestroy(level, player, pos, state, world.getBlockEntity(pos), stack);
 						world.destroyBlock(pos, false);
-						world.levelEvent(2001, pos, Block.getId(state));
+						world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
 					}
 				}
 
