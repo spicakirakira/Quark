@@ -1,26 +1,21 @@
 package vazkii.quark.base.network;
 
+import net.minecraft.network.chat.LastSeenMessages;
+import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import vazkii.arl.network.IMessage;
+import vazkii.arl.network.MessageSerializer;
 import vazkii.arl.network.NetworkHandler;
 import vazkii.quark.base.Quark;
-import vazkii.quark.base.network.message.ChangeHotbarMessage;
-import vazkii.quark.base.network.message.DoEmoteMessage;
-import vazkii.quark.base.network.message.DoubleDoorMessage;
-import vazkii.quark.base.network.message.EditSignMessage;
-import vazkii.quark.base.network.message.HarvestMessage;
-import vazkii.quark.base.network.message.InventoryTransferMessage;
-import vazkii.quark.base.network.message.RequestEmoteMessage;
-import vazkii.quark.base.network.message.SetLockProfileMessage;
-import vazkii.quark.base.network.message.ShareItemMessage;
-import vazkii.quark.base.network.message.SortInventoryMessage;
-import vazkii.quark.base.network.message.UpdateTridentMessage;
+import vazkii.quark.base.network.message.*;
 import vazkii.quark.base.network.message.oddities.HandleBackpackMessage;
 import vazkii.quark.base.network.message.oddities.MatrixEnchanterOperationMessage;
 import vazkii.quark.base.network.message.oddities.ScrollCrateMessage;
+
+import java.time.Instant;
 
 public final class QuarkNetwork {
 
@@ -29,6 +24,10 @@ public final class QuarkNetwork {
 	private static NetworkHandler network;
 
 	public static void setup() {
+		MessageSerializer.mapHandlers(Instant.class, (buf, field) -> buf.readInstant(), (buf, field, instant) -> buf.writeInstant(instant));
+		MessageSerializer.mapHandlers(MessageSignature.class, (buf, field) -> new MessageSignature(buf), (buf, field, signature) -> signature.write(buf));
+		MessageSerializer.mapHandlers(LastSeenMessages.Update.class, (buf, field) -> new LastSeenMessages.Update(buf), (buf, field, update) -> update.write(buf));
+
 		network = new NetworkHandler(Quark.MOD_ID, PROTOCOL_VERSION);
 
 		network.register(SortInventoryMessage.class, NetworkDirection.PLAY_TO_SERVER);

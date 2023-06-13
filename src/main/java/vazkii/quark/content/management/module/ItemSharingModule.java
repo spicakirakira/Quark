@@ -10,24 +10,17 @@
  */
 package vazkii.quark.content.management.module;
 
-import java.util.List;
-
-import org.lwjgl.glfw.GLFW;
-
 import com.mojang.blaze3d.platform.InputConstants.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.*;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.Slot;
@@ -35,9 +28,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.ScreenEvent.KeyPressed;
 import net.minecraftforge.client.event.ScreenEvent.MouseButtonPressed;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.lwjgl.glfw.GLFW;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
@@ -45,6 +40,11 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.ShareItemMessage;
+import vazkii.quark.mixin.accessor.AccessorServerGamePacketListenerImpl;
+import vazkii.quark.mixin.client.accessor.AccessorLocalPlayer;
+
+import java.time.Instant;
+import java.util.List;
 
 @LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class ItemSharingModule extends QuarkModule {
@@ -53,7 +53,7 @@ public class ItemSharingModule extends QuarkModule {
 	public static boolean renderItemsInChat = true;
 
 	//global variable to apply 5 sec cooldown
-	private static long lastShadeTimestamp = -1;
+	private static long lastShareTimestamp = -1;
 
 	@OnlyIn(Dist.CLIENT)
 	public static void renderItemForMessage(PoseStack poseStack, FormattedCharSequence sequence, float x, float y, int color) {
@@ -80,7 +80,8 @@ public class ItemSharingModule extends QuarkModule {
 	public void onKeyInput(KeyPressed.Pre event) {
 		KeyMapping key = getChatKey();
 		if(key.getKey().getType() == Type.KEYSYM && event.getKeyCode() == key.getKey().getValue())
-			clicc();
+			event.setCanceled(clicc());
+
 	}
 
 	@SubscribeEvent
@@ -89,23 +90,23 @@ public class ItemSharingModule extends QuarkModule {
 		KeyMapping key = getChatKey();
 		int btn = event.getButton();
 		if(key.getKey().getType() == Type.MOUSE && btn != GLFW.GLFW_MOUSE_BUTTON_LEFT && btn == key.getKey().getValue())
-			clicc();
+			event.setCanceled(clicc());
 	}
-	
+
 	private KeyMapping getChatKey() {
 		return Minecraft.getInstance().options.keyChat;
 	}
-	
-	public void clicc() {
+
+	public boolean clicc() {
 		Minecraft mc = Minecraft.getInstance();
 		Screen screen = mc.screen;
-		
+
 		if(screen instanceof AbstractContainerScreen<?> gui && Screen.hasShiftDown()) {
 			List<? extends GuiEventListener> children = gui.children();
 			for(GuiEventListener c : children)
 				if(c instanceof EditBox tf) {
 					if(tf.isFocused())
-						return;
+						return false;
 				}
 
 			Slot slot = gui.getSlotUnderMouse();
@@ -113,32 +114,48 @@ public class ItemSharingModule extends QuarkModule {
 				ItemStack stack = slot.getItem();
 
 				if(!stack.isEmpty()) {
-					if(mc.level != null && mc.level.getGameTime() - lastShadeTimestamp > 10) {
-						lastShadeTimestamp = mc.level.getGameTime();
-					} else return;
-					
-					ShareItemMessage message = new ShareItemMessage(slot.index, gui.getMenu().containerId);
-					QuarkNetwork.sendToServer(message);
+					if(mc.level != null && mc.level.getGameTime() - lastShareTimestamp > 10) {
+						lastShareTimestamp = mc.level.getGameTime();
+					} else return false;
+
+					if (mc.player instanceof AccessorLocalPlayer accessorLocalPlayer) {
+						Component itemComp = stack.getDisplayName();
+						String rawMessage = itemComp.getString();
+
+						@SuppressWarnings("UnstableApiUsage")
+						String transformedMessage = ForgeHooksClient.onClientSendMessage(rawMessage);
+
+						if (transformedMessage.equals(rawMessage)) {
+							ChatMessageContent content = accessorLocalPlayer.quark$buildSignedContent(rawMessage, itemComp);
+							MessageSigner sign = accessorLocalPlayer.quark$createMessageSigner();
+							LastSeenMessages.Update update = mc.player.connection.generateMessageAcknowledgements();
+							MessageSignature signature = accessorLocalPlayer.quark$signMessage(sign, content, update.lastSeen());
+
+							ShareItemMessage message = new ShareItemMessage(stack, itemComp, sign.timeStamp(), sign.salt(), signature, content.isDecorated(), update);
+							QuarkNetwork.sendToServer(message);
+
+							return true;
+						}
+					}
 				}
 			}
 		}
+
+		return false;
 	}
 
-	public static void shareItem(ServerPlayer player, int slot, int containedId) {
+	public static void shareItem(ServerPlayer player, Component component, ItemStack stack, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(ItemSharingModule.class))
 			return;
-		if(player.containerMenu.containerId == containedId) {
-			var slots = player.containerMenu.slots;
-			if (slot >= 0 && slots.size() > slot) {
-				ItemStack stack = slots.get(slot).getItem();
-				if (!stack.isEmpty()) {
-					MutableComponent comp = Component.translatable("quark.misc.shared_item", player.getName());
-					Component itemComp = stack.getDisplayName();
 
-					comp.append(itemComp);
-					player.server.getPlayerList().getPlayers().forEach(p -> p.sendSystemMessage(comp));
-				}
-			}
+		Component itemComp = stack.getDisplayName();
+		String message = itemComp.getString();
+
+		// This is done to ensure that arbitrary components can't be sent - only the stack's component
+		if (Component.Serializer.toJson(itemComp).equals(Component.Serializer.toJson(component))) {
+			((AccessorServerGamePacketListenerImpl) player.connection).quark$chatPreviewCache().set(message, itemComp);
+
+			player.connection.handleChat(new ServerboundChatPacket(message, timeStamp, salt, signature, signedPreview, lastSeenMessages));
 		}
 	}
 
