@@ -68,7 +68,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Boolean> RAVING = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.BOOLEAN);
 
-	private static int lightningCooldown;
+	private int lightningCooldown;
 	private Ingredient temptationItems;
 
 	private boolean noSpike;
