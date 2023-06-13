@@ -46,6 +46,7 @@
     "ServerEntityMixin",
     "SlimeMixin",
     "SpawnerBlockEntityMixin",
+    "SpongeBlockMixin",
     "SpringFeatureMixin",
     "StructurePieceMixin",
     "StructureStartMixin",
