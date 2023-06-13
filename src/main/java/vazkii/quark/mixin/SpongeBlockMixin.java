@@ -14,4 +14,9 @@ public class SpongeBlockMixin {
 		return SpongesBetterModule.drainLimit(limit);
 	}
 
+	@ModifyConstant(method = "removeWaterBreadthFirstSearch", constant = @Constant(intValue = 6))
+	public int getCrawlLimit(int limit) {
+		return SpongesBetterModule.crawlLimit(limit);
+	}
+
 }
