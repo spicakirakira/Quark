@@ -72,6 +72,9 @@ public class GameNerfsModule extends QuarkModule {
 	@Config(description = "Makes falling blocks not able to be duped via dimension crossing")
 	public static boolean disableFallingBlockDupe = true;
 
+	@Config(description = "Fixes several piston physics exploits, most notably including TNT duping")
+	public static boolean disablePistonPhysicsExploits = true;
+
 	@Config
 	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
 
@@ -104,6 +107,10 @@ public class GameNerfsModule extends QuarkModule {
 
 	public static boolean stopFallingBlocksDuping() {
 		return staticEnabled && disableFallingBlockDupe;
+	}
+
+	public static boolean stopPistonPhysicsExploits() {
+		return staticEnabled && disablePistonPhysicsExploits;
 	}
 
 	@SubscribeEvent
