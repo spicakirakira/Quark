@@ -1,11 +1,16 @@
-- Added some more Repurposed Structures structures to the chest config (TelepathicGrunt)
-- Fixed a bunch of typos and incorrect info in the JEI descriptions.
-- Fixed assigning multiple repair items to the same item generating multiple copies of the same JEI entry
-- Fixed Candles emitting soul fire particles when unlit
-- Fixed Dispensers not being able to place regular blocks
-- Fixed minor typo in general settings
-- Fixed Moss Paste not being compostable
-- Fixed Pathfinder's Quill notifications being inverted
-- Fixed the Allowed Treasure Books config applying to regular items too
-- Fixed the Mending nerf showing as Too Expensive if the item was already in that state
-- Improved the JEI hint system to better pull info from specific config values
+- Added "Sponges Better", which by default quadruples the amount of water blocks a Sponge can suck up and increases the range to 10 blocks
+- Added an option to Game Nerfs disable TNT dupe machines (Noobulus)
+- Added an option to Game Nerfs to disable Sand dupe machines
+- Added config option for Ancient Tomes to skip sanity checks on advancements that should logically not have a tome
+- Added configs to disable rainbow rune crafting and rune mixing
+- Added recipes to merge multiple runes together into previously non-renewable colors
+- Fixed Amethyst Note Blocks being too quiet
+- Fixed Biomes o'Plenty bushes breaking Hoe Harvsting
+- Fixed Crab lightning interaction cooldown being computed incorrectly
+- Fixed Crab Rave animation not working
+- Fixed Crab Rave animation stopping immediately upon disk removal
+- Fixed JEI log spam on reload
+- Fixed tamed stonelings being able to drop Pathfinder's Quills
+- Item Sharing is now a proper chat message that is signed and can be reported
+- Slightly improved the code for level events (internal change)
+- Updated Heart of Diamond JEI Hint
