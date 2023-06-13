@@ -1,9 +1,7 @@
 package vazkii.quark.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -25,8 +23,8 @@ public class PistonMovingBlockEntityMixin {
 		return PistonsMoveTileEntitiesModule.setPistonBlock(world, pos, newState, flags);
 	}
 
-	@ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", ordinal = 0), index = 3)
+	@ModifyConstant(method = "tick", constant = @Constant(intValue = 84))
 	private static int forceNotifyBlockUpdate(int flag) {
-		return GameNerfsModule.stopPistonPhysicsExploits() ? (84 | 2) : 84; // paper impl comment: Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
+		return GameNerfsModule.stopPistonPhysicsExploits() ? (flag | 2) : flag; // paper impl comment: Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
 	}
 }
