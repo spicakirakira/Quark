@@ -51,7 +51,6 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.HarvestMessage;
-import vazkii.quark.content.mobs.entity.Toretoise;
 import vazkii.quark.integration.claim.IClaimIntegration;
 
 import java.util.Collection;
@@ -278,8 +277,23 @@ public class SimpleHarvestModule extends QuarkModule {
 
         boolean hasHarvested = false;
 
+        if (!handle(player, hand, pos, range > 1, isHoe)) {
+            BlockPos shiftPos = pos.above();
+
+            if (handle(player, hand, shiftPos, range > 1, isHoe))
+                hasHarvested = true;
+        } else {
+            hasHarvested = true;
+        }
+
+        if (isHoe && !hasHarvested)
+            return false;
+
         for (int x = 1 - range; x < range; x++)
             for (int z = 1 - range; z < range; z++) {
+                if (x == 0 && z == 0)
+                    continue;
+
                 BlockPos shiftPos = pos.offset(x, 0, z);
 
                 if (!handle(player, hand, shiftPos, range > 1, isHoe)) {
