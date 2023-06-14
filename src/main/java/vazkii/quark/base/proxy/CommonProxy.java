@@ -1,8 +1,5 @@
 package vazkii.quark.base.proxy;
 
-import java.time.LocalDateTime;
-import java.time.Month;
-
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -21,24 +18,16 @@ import net.minecraftforge.registries.RegisterEvent;
 import vazkii.arl.util.ClientTicker;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.capability.CapabilityHandler;
-import vazkii.quark.base.handler.BrewingHandler;
-import vazkii.quark.base.handler.ContributorRewardHandler;
-import vazkii.quark.base.handler.DyeHandler;
-import vazkii.quark.base.handler.FuelHandler;
-import vazkii.quark.base.handler.QuarkSounds;
-import vazkii.quark.base.handler.ToolInteractionHandler;
-import vazkii.quark.base.handler.UndergroundBiomeHandler;
-import vazkii.quark.base.handler.WoodSetHandler;
+import vazkii.quark.base.handler.*;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.config.IConfigCallback;
 import vazkii.quark.base.network.QuarkNetwork;
-import vazkii.quark.base.recipe.DataMaintainingCampfireRecipe;
-import vazkii.quark.base.recipe.DataMaintainingRecipe;
-import vazkii.quark.base.recipe.DataMaintainingSmeltingRecipe;
-import vazkii.quark.base.recipe.DataMaintainingSmokingRecipe;
-import vazkii.quark.base.recipe.ExclusionRecipe;
+import vazkii.quark.base.recipe.*;
 import vazkii.quark.base.world.EntitySpawnHandler;
 import vazkii.quark.base.world.WorldGenHandler;
+
+import java.time.LocalDateTime;
+import java.time.Month;
 
 public class CommonProxy {
 
@@ -69,7 +58,7 @@ public class CommonProxy {
 		bus.addListener(this::loadComplete);
 		bus.addListener(this::configChanged);
 		bus.addListener(this::registerCapabilities);
-		
+
 		WorldGenHandler.registerBiomeModifier(bus);
 
 		bus.register(RegistryListener.class);
@@ -78,7 +67,7 @@ public class CommonProxy {
 	public void setup(FMLCommonSetupEvent event) {
 		QuarkNetwork.setup();
 		BrewingHandler.setup();
-		
+
 		ModuleLoader.INSTANCE.setup(event);
 		initContributorRewards();
 
@@ -116,6 +105,9 @@ public class CommonProxy {
 		EntitySpawnHandler.refresh();
 	}
 
+	/**
+	 * Use an item WITHOUT sending the use to the server. This will cause ghost interactions if used incorrectly!
+	 */
 	public InteractionResult clientUseItem(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
 		return InteractionResult.PASS;
 	}

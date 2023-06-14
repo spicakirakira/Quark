@@ -18,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -171,7 +172,7 @@ public class SimpleHarvestModule extends QuarkModule {
 
         ItemStack mainHand = player.getMainHandItem();
 
-        int fortune = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, mainHand);
+        int fortune = mainHand.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
 
         ItemStack copy = mainHand.copy();
         if (copy.isEmpty())
@@ -221,7 +222,7 @@ public class SimpleHarvestModule extends QuarkModule {
         BlockState worldBlock = player.level.getBlockState(pos);
         if (!worldBlock.is(simpleHarvestBlacklistedTag)) {
             //prevents firing event for non crop blocks
-            if (cropBlocks.contains(worldBlock.getBlock())) {
+            if (cropBlocks.contains(worldBlock.getBlock()) || (doRightClick && rightClickCrops.contains(worldBlock.getBlock()))) {
                 //event stuff
                 ActionType action = getAction(worldBlock, doRightClick);
                 SimpleHarvestEvent event = new SimpleHarvestEvent(worldBlock, pos, hand, player, isHoe, action);
@@ -236,10 +237,13 @@ public class SimpleHarvestModule extends QuarkModule {
                     harvestAndReplant(player.level, pos, worldBlock, player);
                     return true;
                 } else if (action == ActionType.CLICK) {
-                    if (!player.level.isClientSide)
-                        return true;
-                    return Quark.proxy.clientUseItem(player, player.level, hand,
-                            new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, true)).consumesAction();
+                    var hitResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, true);
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        return serverPlayer.gameMode.useItemOn(serverPlayer, serverPlayer.level, player.getMainHandItem(), hand,
+                            hitResult).consumesAction();
+                    } else {
+                        return Quark.proxy.clientUseItem(player, player.level, hand, hitResult).consumesAction();
+                    }
                 }
             }
         }
@@ -273,27 +277,21 @@ public class SimpleHarvestModule extends QuarkModule {
         if (!emptyHandHarvest && !isHoe)
             return false;
 
+        BlockState stateAbove = player.level.getBlockState(pos.above());
+
+        if (isHoe) {
+            boolean aboveValid = !stateAbove.is(simpleHarvestBlacklistedTag) && (cropBlocks.contains(stateAbove.getBlock()) || rightClickCrops.contains(stateAbove.getBlock()));
+            boolean atValid = !stateAt.is(simpleHarvestBlacklistedTag) && (cropBlocks.contains(stateAt.getBlock()) || rightClickCrops.contains(stateAt.getBlock()));
+            if (!aboveValid && !atValid)
+                return false;
+        }
+
         int range = HoeHarvestingModule.getRange(inHand);
 
         boolean hasHarvested = false;
 
-        if (!handle(player, hand, pos, range > 1, isHoe)) {
-            BlockPos shiftPos = pos.above();
-
-            if (handle(player, hand, shiftPos, range > 1, isHoe))
-                hasHarvested = true;
-        } else {
-            hasHarvested = true;
-        }
-
-        if (isHoe && !hasHarvested)
-            return false;
-
         for (int x = 1 - range; x < range; x++)
             for (int z = 1 - range; z < range; z++) {
-                if (x == 0 && z == 0)
-                    continue;
-
                 BlockPos shiftPos = pos.offset(x, 0, z);
 
                 if (!handle(player, hand, shiftPos, range > 1, isHoe)) {
