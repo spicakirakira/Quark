@@ -98,7 +98,7 @@ $CURSEFORGE_GAME_VERSION]"
 								jq --arg changelog "$GH_RELEASE_PAGE" \
 								   --argjson gamevers "$CURSEFORGE_FORGE_GAMEVERS" \
 								   '.gameVersions=$ARGS.named.gamevers | .changelog=$ARGS.named.changelog')
-	curl --http1.1 'https://minecraft.curseforge.com/api/projects/243121/upload-file' \
+	curl 'https://minecraft.curseforge.com/api/projects/243121/upload-file' \
 		 -H "X-Api-Token: $CURSEFORGE_TOKEN" \
 		 -F "metadata=$CURSEFORGE_FORGE_SPEC" \
 		 -F "file=@$FORGE_JAR"
