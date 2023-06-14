@@ -189,6 +189,10 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				&& (entitiesHit == null || !entitiesHit.contains(entity.getId())));
 	}
 
+	protected boolean canDestroyBlock(BlockState state) {
+		return !state.is(PickarangModule.pickarangImmuneTag);
+	}
+
 	@Override
 	protected void onHit(@Nonnull HitResult result) {
 		LivingEntity owner = getThrower();
@@ -210,7 +214,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 
 			if (equivalentHardness <= getPickarangType().maxHardness
 					&& equivalentHardness >= 0
-					&& !state.is(PickarangModule.pickarangImmuneTag)) {
+					&& canDestroyBlock(state)) {
 				ItemStack prev = player.getMainHandItem();
 				player.setItemInHand(InteractionHand.MAIN_HAND, getStack());
 

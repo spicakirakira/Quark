@@ -1,11 +1,6 @@
 package vazkii.quark.content.tools.entity.rang;
 
-import java.util.function.BiConsumer;
-
-import javax.annotation.Nullable;
-
 import com.mojang.serialization.Dynamic;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -27,6 +23,11 @@ import net.minecraft.world.phys.Vec3;
 import vazkii.quark.base.Quark;
 import vazkii.quark.content.tools.config.PickarangType;
 import vazkii.quark.content.tools.module.PickarangModule;
+
+import javax.annotation.Nullable;
+import java.util.function.BiConsumer;
+
+import static vazkii.quark.content.tools.module.PickarangModule.echorangBreaksAnywayTag;
 
 public class Echorang extends AbstractPickarang<Echorang> implements VibrationListenerConfig {
 
@@ -57,7 +58,12 @@ public class Echorang extends AbstractPickarang<Echorang> implements VibrationLi
 					(Math.random() - 0.5) * 0.1,
 					(Math.random() - 0.5) * 0.1);
 	}
-	
+
+	@Override
+	protected boolean canDestroyBlock(BlockState state) {
+		return super.canDestroyBlock(state) || state.is(echorangBreaksAnywayTag);
+	}
+
 	@Override
 	public boolean hasDrag() {
 		return false;
@@ -67,12 +73,12 @@ public class Echorang extends AbstractPickarang<Echorang> implements VibrationLi
 	public TagKey<GameEvent> getListenableEvents() {
 		return PickarangModule.echorangCanListenTag;
 	}
-	
+
 	@Override
 	public boolean isValidVibration(GameEvent p_223878_, Context p_223879_) {
 		return p_223878_.is(getListenableEvents()) && p_223879_.sourceEntity() == getOwner();
 	}
-	
+
 	@Override
 	public boolean shouldListen(ServerLevel level, GameEventListener listener, BlockPos pos, GameEvent event, Context context) {
 		return !isReturning() && level.getWorldBorder().isWithinBounds(pos) && !isRemoved() && this.level == level;
@@ -86,10 +92,10 @@ public class Echorang extends AbstractPickarang<Echorang> implements VibrationLi
 	@Override
 	public void tick() {
 		super.tick();
-		
+
 		gameEvent(GameEvent.PROJECTILE_SHOOT);
 
-		if(level instanceof ServerLevel serverlevel) 
+		if(level instanceof ServerLevel serverlevel)
 			this.dynamicGameEventListener.getListener().tick(serverlevel);
 	}
 

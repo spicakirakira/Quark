@@ -68,6 +68,7 @@ public class PickarangModule extends QuarkModule {
 	private static boolean isEnabled;
 
 	public static TagKey<Block> pickarangImmuneTag;
+	public static TagKey<Block> echorangBreaksAnywayTag;
 	public static TagKey<GameEvent> echorangCanListenTag;
 
 	public static QuarkGenericTrigger throwPickarangTrigger;
@@ -118,6 +119,7 @@ public class PickarangModule extends QuarkModule {
 	@Override
 	public void setup() {
 		pickarangImmuneTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "pickarang_immune"));
+		pickarangImmuneTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "echorang_breaks_anyway"));
 		echorangCanListenTag = TagKey.create(Registry.GAME_EVENT_REGISTRY, new ResourceLocation(Quark.MOD_ID, "echorang_can_listen"));
 	}
 
