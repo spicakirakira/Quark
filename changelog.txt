@@ -1,16 +1,4 @@
-- Added "Sponges Better", which by default quadruples the amount of water blocks a Sponge can suck up and increases the range to 10 blocks
-- Added an option to Game Nerfs disable TNT dupe machines (Noobulus)
-- Added an option to Game Nerfs to disable Sand dupe machines
-- Added config option for Ancient Tomes to skip sanity checks on advancements that should logically not have a tome
-- Added configs to disable rainbow rune crafting and rune mixing
-- Added recipes to merge multiple runes together into previously non-renewable colors
-- Fixed Amethyst Note Blocks being too quiet
-- Fixed Biomes o'Plenty bushes breaking Hoe Harvsting
-- Fixed Crab lightning interaction cooldown being computed incorrectly
-- Fixed Crab Rave animation not working
-- Fixed Crab Rave animation stopping immediately upon disk removal
-- Fixed JEI log spam on reload
-- Fixed tamed stonelings being able to drop Pathfinder's Quills
-- Item Sharing is now a proper chat message that is signed and can be reported
-- Slightly improved the code for level events (internal change)
-- Updated Heart of Diamond JEI Hint
+- Added config options to change which tool types pickarangs can have
+- Echorangs can now break sculk blocks
+- Fixed broken simple harvesting
+- Pickarangs now also have the hoe tool type
