@@ -182,11 +182,11 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	@Nullable
 	protected EntityHitResult raycastEntities(Vec3 from, Vec3 to) {
 		return ProjectileUtil.getEntityHitResult(level, this, from, to, getBoundingBox().expandTowards(getDeltaMovement()).inflate(1.0D), (entity) ->
-		!entity.isSpectator()
-		&& entity.isAlive()
-		&& (entity.isPickable() || entity instanceof AbstractPickarang)
-		&& entity != getThrower()
-		&& (entitiesHit == null || !entitiesHit.contains(entity.getId())));
+			!entity.isSpectator()
+				&& entity.isAlive()
+				&& (entity.isPickable() || entity instanceof AbstractPickarang)
+				&& entity != getThrower()
+				&& (entitiesHit == null || !entitiesHit.contains(entity.getId())));
 	}
 
 	@Override
