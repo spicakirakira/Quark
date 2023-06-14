@@ -1,4 +1,4 @@
 - Added config options to change which tool types pickarangs can have
-- Echorangs can now break sculk blocks
+- Echorangs can now break sculk blocks (normal pickarangs still can't)
 - Fixed broken simple harvesting
 - Pickarangs now also have the hoe tool type
