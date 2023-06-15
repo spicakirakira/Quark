@@ -18,6 +18,7 @@ public class ShareItemMessage implements IMessage {
 	private static final long serialVersionUID = 3550769853533388357L;
 
 	public ItemStack stack;
+	public String message;
 	public Component component;
 	public Instant timeStamp;
 	public long salt;
@@ -27,8 +28,9 @@ public class ShareItemMessage implements IMessage {
 
 	public ShareItemMessage() { }
 
-	public ShareItemMessage(ItemStack stack, Component component, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
+	public ShareItemMessage(ItemStack stack, String message, Component component, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
 		this.stack = stack;
+		this.message = message;
 		this.component = component;
 		this.timeStamp = timeStamp;
 		this.salt = salt;
@@ -41,7 +43,7 @@ public class ShareItemMessage implements IMessage {
 	public boolean receive(Context context) {
 		ServerPlayer player = context.getSender();
 		if (player != null && player.server != null)
-			context.enqueueWork(() -> ItemSharingModule.shareItem(player, component, stack, timeStamp, salt, signature, signedPreview, lastSeenMessages));
+			context.enqueueWork(() -> ItemSharingModule.shareItem(player, message, component, stack, timeStamp, salt, signature, signedPreview, lastSeenMessages));
 
 		return true;
 	}
