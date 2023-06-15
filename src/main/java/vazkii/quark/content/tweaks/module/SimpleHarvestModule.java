@@ -42,6 +42,7 @@ import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import vazkii.quark.api.event.SimpleHarvestEvent;
 import vazkii.quark.api.event.SimpleHarvestEvent.ActionType;
 import vazkii.quark.base.Quark;
@@ -182,11 +183,14 @@ public class SimpleHarvestModule extends QuarkModule {
         enchMap.put(Enchantments.BLOCK_FORTUNE, fortune);
         EnchantmentHelper.setEnchantments(enchMap, copy);
 
+        MutableBoolean hasTaken = new MutableBoolean(false);
         Item blockItem = inWorld.getBlock().asItem();
         Block.getDrops(inWorld, serverLevel, pos, world.getBlockEntity(pos), player, copy)
                 .forEach((stack) -> {
-                    if (stack.getItem() == blockItem)
+                    if (stack.getItem() == blockItem && !hasTaken.getValue()) {
                         stack.shrink(1);
+                        hasTaken.setValue(true);
+                    }
 
                     if (!stack.isEmpty())
                         Block.popResource(world, pos, stack);
