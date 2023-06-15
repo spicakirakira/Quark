@@ -17,6 +17,7 @@ import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 
+import java.io.Serial;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -106,6 +107,9 @@ public class ConfigResolver {
     }
 
     private static class ConfigLoadingException extends RuntimeException {
+        @Serial
+        private static final long serialVersionUID = 1554369973578001612L;
+
         public ConfigLoadingException(ModConfig config, Exception cause) {
             super("Failed loading config file " + config.getFileName() + " of type " + config.getType() + " for modid " + config.getModId(), cause);
         }
@@ -151,9 +155,9 @@ public class ConfigResolver {
         for (QuarkModule module : modules) {
             if (!module.description.isEmpty())
                 builder.comment(module.description);
-            
+
             ForgeConfigSpec.ConfigValue<Boolean> value = builder.defineBool(module.displayName, () -> module.configEnabled, module.enabledByDefault);
-            
+
             setEnabledRunnables.put(module, () -> {
                 module.setEnabled(value.get() && category.enabled);
                 flagManager.putEnabledFlag(module);
