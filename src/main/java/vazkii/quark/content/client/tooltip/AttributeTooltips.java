@@ -48,10 +48,7 @@ import vazkii.quark.content.client.resources.AttributeSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author WireSegal
@@ -145,6 +142,18 @@ public class AttributeTooltips {
 		}
 	}
 
+	public static Multimap<Attribute, AttributeModifier> getModifiersOnEquipped(Player player, ItemStack stack, Multimap<Attribute, AttributeModifier> attributes, AttributeSlot slot) {
+		if (ImprovedTooltipsModule.showUpgradeStatus && slot.hasCanonicalSlot()) {
+			ItemStack equipped = player.getItemBySlot(slot.getCanonicalSlot());
+			if (!equipped.equals(stack) && !equipped.isEmpty()) {
+				equipped.getTooltipLines(player, TooltipFlag.Default.NORMAL);
+				return getModifiers(equipped, slot);
+
+			}
+		}
+		return ImmutableMultimap.of();
+	}
+
 	public static Multimap<Attribute, AttributeModifier> getModifiers(ItemStack stack, AttributeSlot slot) {
 		var capturedModifiers = ((PseudoAccessorItemStack) (Object) stack).quark$getCapturedAttributes();
 		if (capturedModifiers.containsKey(slot)) {
@@ -177,11 +186,14 @@ public class AttributeTooltips {
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	private static int renderAttribute(PoseStack matrix, Attribute attribute, AttributeSlot slot, int x, int y, ItemStack stack, Multimap<Attribute, AttributeModifier> slotAttributes, Minecraft mc) {
+	private static int renderAttribute(PoseStack matrix, Attribute attribute, AttributeSlot slot, int x, int y, ItemStack stack, Multimap<Attribute, AttributeModifier> slotAttributes, Minecraft mc, boolean forceRenderIfZero, Multimap<Attribute, AttributeModifier> equippedSlotAttributes, @Nullable Set<Attribute> equippedAttrsToRender) {
 		AttributeIconEntry entry = getIconForAttribute(attribute);
 		if (entry != null) {
 			double value = getAttribute(mc.player, slot, stack, slotAttributes, attribute);
-			if (value != 0) {
+			if (value != 0 || forceRenderIfZero) {
+				if (equippedAttrsToRender != null)
+					equippedAttrsToRender.remove(attribute);
+
 				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 				RenderSystem.setShaderTexture(0, entry.texture());
@@ -196,9 +208,6 @@ public class AttributeTooltips {
 					if (mc.player != null) {
 						ItemStack equipped = mc.player.getItemBySlot(equipSlot);
 						if (!equipped.equals(stack) && !equipped.isEmpty()) {
-							equipped.getTooltipLines(mc.player, TooltipFlag.Default.NORMAL);
-							Multimap<Attribute, AttributeModifier> equippedSlotAttributes = getModifiers(equipped, slot);
-
 							if (!equippedSlotAttributes.isEmpty()) {
 								double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
 
@@ -309,16 +318,8 @@ public class AttributeTooltips {
 
 
 	@OnlyIn(Dist.CLIENT)
-	public static class AttributeComponent implements ClientTooltipComponent, TooltipComponent {
-
-		final ItemStack stack;
-		final AttributeSlot slot;
-		int width = 0;
-
-		public AttributeComponent(ItemStack stack, AttributeSlot slot) {
-			this.stack = stack;
-			this.slot = slot;
-		}
+	public record AttributeComponent(ItemStack stack,
+									 AttributeSlot slot) implements ClientTooltipComponent, TooltipComponent {
 
 		@Override
 		public void renderImage(@Nonnull Font font, int tooltipX, int tooltipY, @Nonnull PoseStack pose, @Nonnull ItemRenderer itemRenderer, int something) {
@@ -338,10 +339,12 @@ public class AttributeTooltips {
 				boolean showSlots = false;
 				int x = tooltipX;
 
-				if(canShowAttributes(stack, slot)) {
+				if (canShowAttributes(stack, slot)) {
 					Multimap<Attribute, AttributeModifier> slotAttributes = getModifiers(stack, slot);
+					Multimap<Attribute, AttributeModifier> presentOnEquipped = getModifiersOnEquipped(mc.player, stack, slotAttributes, slot);
+					Set<Attribute> equippedAttrsToRender = new LinkedHashSet<>(presentOnEquipped.keySet());
 
-					for (Attribute attr : slotAttributes.keys()) {
+					for (Attribute attr : slotAttributes.keySet()) {
 						if (getIconForAttribute(attr) != null) {
 							if (slot != primarySlot) {
 								showSlots = true;
@@ -350,9 +353,8 @@ public class AttributeTooltips {
 						}
 					}
 
-
 					boolean anyToRender = false;
-					for (Attribute attr : slotAttributes.keys()) {
+					for (Attribute attr : slotAttributes.keySet()) {
 						double value = getAttribute(mc.player, slot, stack, slotAttributes, attr);
 						if (value != 0) {
 							anyToRender = true;
@@ -370,7 +372,10 @@ public class AttributeTooltips {
 						}
 
 						for (Attribute key : slotAttributes.keySet())
-							x = renderAttribute(pose, key, slot, x, y, stack, slotAttributes, mc);
+							x = renderAttribute(pose, key, slot, x, y, stack, slotAttributes, mc, false, presentOnEquipped, equippedAttrsToRender);
+						for (Attribute key : equippedAttrsToRender)
+							x = renderAttribute(pose, key, slot, x, y, stack, slotAttributes, mc, true, presentOnEquipped, null);
+
 
 						for (Attribute key : slotAttributes.keys()) {
 							if (getIconForAttribute(key) == null) {
@@ -398,11 +403,13 @@ public class AttributeTooltips {
 			if (canShowAttributes(stack, slot)) {
 				Minecraft mc = Minecraft.getInstance();
 				Multimap<Attribute, AttributeModifier> slotAttributes = getModifiers(stack, slot);
+				Multimap<Attribute, AttributeModifier> presentOnEquipped = getModifiersOnEquipped(mc.player, stack, slotAttributes, slot);
+				Set<Attribute> equippedAttrsToRender = new LinkedHashSet<>(presentOnEquipped.keySet());
 
 				AttributeSlot primarySlot = getPrimarySlot(stack);
 				boolean showSlots = false;
 
-				for (Attribute attr : slotAttributes.keys()) {
+				for (Attribute attr : slotAttributes.keySet()) {
 					if (getIconForAttribute(attr) != null) {
 						if (slot != primarySlot) {
 							showSlots = true;
@@ -412,7 +419,7 @@ public class AttributeTooltips {
 				}
 
 				boolean anyToRender = false;
-				for (Attribute attr : slotAttributes.keys()) {
+				for (Attribute attr : slotAttributes.keySet()) {
 					double value = getAttribute(mc.player, slot, stack, slotAttributes, attr);
 					if (value != 0) {
 						anyToRender = true;
@@ -424,9 +431,23 @@ public class AttributeTooltips {
 					if (showSlots)
 						width += 20;
 
-					for(Attribute key : slotAttributes.keySet()) {
+					for (Attribute key : slotAttributes.keySet()) {
 						AttributeIconEntry icons = getIconForAttribute(key);
-						if(icons != null) {
+						if (icons != null) {
+							double value = getAttribute(mc.player, slot, stack, slotAttributes, key);
+
+							if (value != 0) {
+								equippedAttrsToRender.remove(key);
+
+								MutableComponent valueStr = format(key, value, icons.displayTypes().get(slot));
+								width += font.width(valueStr) + 20;
+							}
+						}
+					}
+
+					for (Attribute key : equippedAttrsToRender) {
+						AttributeIconEntry icons = getIconForAttribute(key);
+						if (icons != null) {
 							double value = getAttribute(mc.player, slot, stack, slotAttributes, key);
 
 							MutableComponent valueStr = format(key, value, icons.displayTypes().get(slot));
