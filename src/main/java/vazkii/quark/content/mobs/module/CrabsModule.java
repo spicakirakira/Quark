@@ -1,7 +1,6 @@
 package vazkii.quark.content.mobs.module;
 
 import com.google.common.collect.ImmutableSet;
-
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +38,6 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.CompoundBiomeConfig;
 import vazkii.quark.base.module.config.type.EntitySpawnConfig;
 import vazkii.quark.base.module.hint.Hint;
-import vazkii.quark.base.recipe.ingredient.FlagIngredient;
 import vazkii.quark.base.util.QuarkEffect;
 import vazkii.quark.base.world.EntitySpawnHandler;
 import vazkii.quark.content.mobs.client.render.entity.CrabRenderer;
@@ -62,10 +60,11 @@ public class CrabsModule extends QuarkModule {
 
 	@Config(flag = "crab_brewing")
 	public static boolean enableBrewing = true;
-	
-	@Config
-	public static boolean enableResillienceEffect = true;
-	
+
+	@Config(description = "Whether Resilience should be required for 'How Did We Get Here?' and (if brewing is enabled) 'A Furious Cocktail'.\n" +
+		"Keep this on when brewing is disabled if your pack adds an alternative source for the effect.")
+	public static boolean resilienceRequiredForAllEffects = true;
+
 	@Hint(key = "crab_info") Item crab_leg;
 	@Hint(key = "crab_info") Item crab_shell;
 
@@ -93,8 +92,7 @@ public class CrabsModule extends QuarkModule {
 		resilience = new QuarkEffect("resilience", MobEffectCategory.BENEFICIAL, 0x5b1a04);
 		resilience.addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, "2ddf3f0a-f386-47b6-aeb0-6bd32851f215", 0.5, AttributeModifier.Operation.ADDITION);
 
-		BrewingHandler.addPotionMix("crab_brewing",
-				() -> new FlagIngredient(Ingredient.of(crab_shell), "crab_brewing"), resilience);
+		BrewingHandler.addPotionMix("crab_brewing", () -> Ingredient.of(crab_shell), resilience);
 
 		crabType = EntityType.Builder.<Crab>of(Crab::new, MobCategory.CREATURE)
 				.sized(0.9F, 0.5F)
@@ -107,9 +105,9 @@ public class CrabsModule extends QuarkModule {
 		EntitySpawnHandler.addEgg(crabType, 0x893c22, 0x916548, spawnConfig);
 
 		EntityAttributeHandler.put(crabType, Crab::prepareAttributes);
-		
+
 		QuarkAdvancementHandler.addModifier(new FuriousCocktailModifier(this, () -> enableBrewing, ImmutableSet.of(resilience))
-				.setCondition(() -> enableResillienceEffect));
+				.setCondition(() -> resilienceRequiredForAllEffects));
 		QuarkAdvancementHandler.addModifier(new TwoByTwoModifier(this, ImmutableSet.of(crabType)));
 		QuarkAdvancementHandler.addModifier(new BalancedDietModifier(this, ImmutableSet.of(crab_leg, cookedCrabLeg)));
 	}

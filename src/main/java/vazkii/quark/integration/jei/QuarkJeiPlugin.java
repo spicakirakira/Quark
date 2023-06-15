@@ -1,5 +1,6 @@
 package vazkii.quark.integration.jei;
 
+import com.google.common.collect.Sets;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -20,6 +21,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -36,6 +39,7 @@ import vazkii.quark.addons.oddities.util.Influence;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.client.handler.RequiredModTooltipHandler;
+import vazkii.quark.base.handler.BrewingHandler;
 import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.item.IQuarkItem;
@@ -53,10 +57,7 @@ import vazkii.quark.content.tweaks.recipe.ElytraDuplicationRecipe;
 import vazkii.quark.content.tweaks.recipe.SlabToBlockRecipe;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,6 +92,16 @@ public class QuarkJeiPlugin implements IModPlugin {
 			if(!GeneralConfig.hideDisabledContent)
 				return;
 
+			Set<Potion> hidePotions = Sets.newHashSet();
+			for (Potion potion : ForgeRegistries.POTIONS.getValues()) {
+				ResourceLocation loc = ForgeRegistries.POTIONS.getKey(potion);
+				if (loc != null && loc.getNamespace().equals("quark")) {
+					if (!BrewingHandler.isEnabled(potion)) {
+						hidePotions.add(potion);
+					}
+				}
+			}
+
 			NonNullList<ItemStack> stacks = NonNullList.create();
 			for (Item item : ForgeRegistries.ITEMS.getValues()) {
 				ResourceLocation loc = ForgeRegistries.ITEMS.getKey(item);
@@ -99,6 +110,12 @@ public class QuarkJeiPlugin implements IModPlugin {
 							(item instanceof BlockItem blockItem && blockItem.getBlock() instanceof IQuarkBlock quarkBlock && !quarkBlock.isEnabled())) {
 						item.fillItemCategory(CreativeModeTab.TAB_SEARCH, stacks);
 					}
+				}
+
+				if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+					NonNullList<ItemStack> potionStacks = NonNullList.create();
+					item.fillItemCategory(CreativeModeTab.TAB_SEARCH, potionStacks);
+					potionStacks.stream().filter(it -> hidePotions.contains(PotionUtils.getPotion(it))).forEach(stacks::add);
 				}
 			}
 
