@@ -151,8 +151,9 @@ public class ItemSharingModule extends QuarkModule {
 		Component itemComp = stack.getDisplayName();
 		String message = itemComp.getString();
 
-		// This is done to ensure that arbitrary components can't be sent - only the stack's component
-		if (Component.Serializer.toJson(itemComp).equals(Component.Serializer.toJson(component))) {
+		// This is done to ensure that arbitrary components can't be sent - only the stack's component.
+		// Component is checked on this side to ensure the signing was of the correct component.
+		if (itemComp.equals(component)) {
 			((AccessorServerGamePacketListenerImpl) player.connection).quark$chatPreviewCache().set(message, itemComp);
 
 			player.connection.handleChat(new ServerboundChatPacket(message, timeStamp, salt, signature, signedPreview, lastSeenMessages));

@@ -1,20 +1,11 @@
 package vazkii.quark.content.client.tooltip;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -31,12 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -59,6 +45,13 @@ import vazkii.quark.content.client.resources.AttributeDisplayType;
 import vazkii.quark.content.client.resources.AttributeIconEntry;
 import vazkii.quark.content.client.resources.AttributeIconEntry.CompareType;
 import vazkii.quark.content.client.resources.AttributeSlot;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author WireSegal
@@ -144,7 +137,7 @@ public class AttributeTooltips {
 					int tooltipSlot = (slot == primarySlot ? 1 : i);
 					tooltipRaw.add(tooltipSlot, Either.right(new AttributeComponent(stack, slot)));
 					i++;
-					
+
 					if(allAreSame)
 						break;
 				}
@@ -195,35 +188,39 @@ public class AttributeTooltips {
 				GuiComponent.blit(matrix, x, y, 0, 0, 9, 9, 9, 9);
 
 				MutableComponent valueStr = format(attribute, value, entry.displayTypes().get(slot));
-				
+
 				if(ImprovedTooltipsModule.showUpgradeStatus && slot.hasCanonicalSlot()) {
 					CompareType compareType = entry.comparison();
 					EquipmentSlot equipSlot = slot.getCanonicalSlot();
-					
-					ItemStack equipped = mc.player.getItemBySlot(equipSlot);
-					if(!equipped.equals(stack) && !equipped.isEmpty()) {
-						equipped.getTooltipLines(mc.player, TooltipFlag.Default.NORMAL);
-						Multimap<Attribute, AttributeModifier> equippedSlotAttributes = getModifiers(equipped, slot);
 
-						double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
-						
-						ChatFormatting color = compareType.getColor(value, otherValue);
-						
-						if(color != ChatFormatting.WHITE) {
-							RenderSystem.setShaderTexture(0, color == ChatFormatting.RED ? TEXTURE_DOWNGRADE : TEXTURE_UPGRADE);
-							int xp = x - 2;
-							int yp = y - 2;
-							if(ImprovedTooltipsModule.animateUpDownArrows && ClientTicker.total % 20 < 10)
-								yp++;
-							
-							GuiComponent.blit(matrix, xp, yp, 0, 0, 13, 13, 13, 13);
+					if (mc.player != null) {
+						ItemStack equipped = mc.player.getItemBySlot(equipSlot);
+						if (!equipped.equals(stack) && !equipped.isEmpty()) {
+							equipped.getTooltipLines(mc.player, TooltipFlag.Default.NORMAL);
+							Multimap<Attribute, AttributeModifier> equippedSlotAttributes = getModifiers(equipped, slot);
+
+							if (equippedSlotAttributes.containsKey(attribute)) {
+								double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
+
+								ChatFormatting color = compareType.getColor(value, otherValue);
+
+								if (color != ChatFormatting.WHITE) {
+									RenderSystem.setShaderTexture(0, color == ChatFormatting.RED ? TEXTURE_DOWNGRADE : TEXTURE_UPGRADE);
+									int xp = x - 2;
+									int yp = y - 2;
+									if (ImprovedTooltipsModule.animateUpDownArrows && ClientTicker.total % 20 < 10)
+										yp++;
+
+									GuiComponent.blit(matrix, xp, yp, 0, 0, 13, 13, 13, 13);
+								}
+
+
+								valueStr = valueStr.withStyle(color);
+							}
 						}
-						
-						
-						valueStr = valueStr.withStyle(color);
 					}
 				}
-				
+
 				mc.font.draw(matrix, valueStr, x + 12, y + 1, -1);
 				x += mc.font.width(valueStr) + 20;
 			}
@@ -293,7 +290,7 @@ public class AttributeTooltips {
 		if (key.equals(Attributes.ATTACK_DAMAGE) && slot == AttributeSlot.MAINHAND)
 			value += EnchantmentHelper.getDamageBonus(stack, MobType.UNDEFINED);
 		if (key.equals(Attributes.ATTACK_KNOCKBACK) && slot == AttributeSlot.MAINHAND)
-			value += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, stack);
+			value += stack.getEnchantmentLevel(Enchantments.KNOCKBACK);
 
 		if (displayType == AttributeDisplayType.DIFFERENCE) {
 			if (slot != null || !key.equals(Attributes.ATTACK_DAMAGE)) {
@@ -317,12 +314,12 @@ public class AttributeTooltips {
 		final ItemStack stack;
 		final AttributeSlot slot;
 		int width = 0;
-		
+
 		public AttributeComponent(ItemStack stack, AttributeSlot slot) {
 			this.stack = stack;
 			this.slot = slot;
 		}
-		
+
 		@Override
 		public void renderImage(@Nonnull Font font, int tooltipX, int tooltipY, @Nonnull PoseStack pose, @Nonnull ItemRenderer itemRenderer, int something) {
 			if (!Screen.hasShiftDown()) {
@@ -352,7 +349,7 @@ public class AttributeTooltips {
 							}
 						}
 					}
-					
+
 
 					boolean anyToRender = false;
 					for (Attribute attr : slotAttributes.keys()) {
@@ -404,7 +401,7 @@ public class AttributeTooltips {
 
 				AttributeSlot primarySlot = getPrimarySlot(stack);
 				boolean showSlots = false;
-				
+
 				for (Attribute attr : slotAttributes.keys()) {
 					if (getIconForAttribute(attr) != null) {
 						if (slot != primarySlot) {
@@ -413,7 +410,7 @@ public class AttributeTooltips {
 						}
 					}
 				}
-				
+
 				boolean anyToRender = false;
 				for (Attribute attr : slotAttributes.keys()) {
 					double value = getAttribute(mc.player, slot, stack, slotAttributes, attr);
@@ -436,7 +433,7 @@ public class AttributeTooltips {
 							width += font.width(valueStr) + 20;
 						}
 					}
-						
+
 
 					for (Attribute key : slotAttributes.keys()) {
 						if (getIconForAttribute(key) == null) {
@@ -446,7 +443,7 @@ public class AttributeTooltips {
 					}
 				}
 			}
-			
+
 			return width - 8;
 		}
 
