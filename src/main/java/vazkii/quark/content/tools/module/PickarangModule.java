@@ -119,7 +119,7 @@ public class PickarangModule extends QuarkModule {
 	@Override
 	public void setup() {
 		pickarangImmuneTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "pickarang_immune"));
-		pickarangImmuneTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "echorang_breaks_anyway"));
+		echorangBreaksAnywayTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "echorang_breaks_anyway"));
 		echorangCanListenTag = TagKey.create(Registry.GAME_EVENT_REGISTRY, new ResourceLocation(Quark.MOD_ID, "echorang_can_listen"));
 	}
 
