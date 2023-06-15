@@ -15,7 +15,7 @@ import java.time.Instant;
 public class ShareItemMessage implements IMessage {
 
 	@Serial
-	private static final long serialVersionUID = 2204175080232208578L;
+	private static final long serialVersionUID = 3550769853533388357L;
 
 	public ItemStack stack;
 	public Component component;
