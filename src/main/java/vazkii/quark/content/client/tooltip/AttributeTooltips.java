@@ -199,7 +199,7 @@ public class AttributeTooltips {
 							equipped.getTooltipLines(mc.player, TooltipFlag.Default.NORMAL);
 							Multimap<Attribute, AttributeModifier> equippedSlotAttributes = getModifiers(equipped, slot);
 
-							if (equippedSlotAttributes.containsKey(attribute)) {
+							if (!equippedSlotAttributes.isEmpty()) {
 								double otherValue = getAttribute(mc.player, slot, equipped, equippedSlotAttributes, attribute);
 
 								ChatFormatting color = compareType.getColor(value, otherValue);
