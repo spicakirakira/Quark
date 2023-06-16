@@ -1,16 +1,5 @@
 package vazkii.quark.addons.oddities.inventory;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -27,7 +16,12 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.addons.oddities.module.MatrixEnchantingModule;
 import vazkii.quark.content.experimental.module.EnchantmentsBegoneModule;
-import vazkii.quark.content.tools.item.PathfindersQuillItem;
+
+import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class EnchantmentMatrix {
 
@@ -63,7 +57,7 @@ public class EnchantmentMatrix {
 		book = target.getItem() == Items.BOOK;
 		computeMatrix();
 	}
-	
+
 	public boolean isInfluenced() {
 		return influenced;
 	}
@@ -199,7 +193,7 @@ public class EnchantmentMatrix {
 		EnchantmentDataWrapper ret =  WeightedRandom.getRandomItem(rng, validEnchants).orElse(null);
 		if(!simulate && ret != null && influences.containsKey(ret.enchantment) && influences.get(ret.enchantment) > 0)
 			influenced = true;
-		
+
 		return ret;
 	}
 
@@ -521,6 +515,8 @@ public class EnchantmentMatrix {
 				boolean mark = true;
 
 				for(Piece other : markedEnchants) {
+					if (other.enchant == null)
+						continue;
 					if(other.enchant == enchantment) {
 						mutableWeight.val *= MatrixEnchantingModule.dupeMultiplier;
 						mark = false;
