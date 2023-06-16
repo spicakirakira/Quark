@@ -26,8 +26,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.extensions.IForgeItem;
-import org.jetbrains.annotations.NotNull;
 import vazkii.arl.interf.IItemColorProvider;
 import vazkii.arl.util.ClientTicker;
 import vazkii.arl.util.ItemNBTHelper;
@@ -35,8 +33,6 @@ import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule;
 import vazkii.quark.content.tools.module.PathfinderMapsModule.TradeInfo;
-import vazkii.quark.content.tweaks.module.GoldToolsHaveFortuneModule;
-import vazkii.quark.mixin.BeaconBlockEntityMixin;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -96,6 +92,22 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
 
     public static @Nullable ItemStack getActiveQuill(Player player) {
         for (ItemStack stack : player.getInventory().items)
+            if (stack.getItem() instanceof PathfindersQuillItem) {
+                boolean searching = ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false);
+
+                if (searching)
+                    return stack;
+            }
+
+        for (ItemStack stack : player.getInventory().offhand)
+            if (stack.getItem() instanceof PathfindersQuillItem) {
+                boolean searching = ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false);
+
+                if (searching)
+                    return stack;
+            }
+
+        for (ItemStack stack : player.getInventory().armor)
             if (stack.getItem() instanceof PathfindersQuillItem) {
                 boolean searching = ItemNBTHelper.getBoolean(stack, TAG_IS_SEARCHING, false);
 
