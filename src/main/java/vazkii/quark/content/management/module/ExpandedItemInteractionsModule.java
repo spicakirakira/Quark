@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -147,7 +148,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 				if (underStack.is(Items.BUNDLE)) {
 					CompoundTag tag = underStack.getTag();
 					if (tag != null) {
-						ListTag items = tag.getList("Items", 10);
+						ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
 						if (items.size() > 1) {
 							var menu = containerGui.getMenu();
 							event.setCanceled(true);
@@ -198,7 +199,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 		if (stack.is(Items.BUNDLE)) {
 			CompoundTag tag = stack.getTag();
 			if (tag != null) {
-				ListTag items = tag.getList("Items", 10);
+				ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
 				if (items.size() > 1) {
 					ListTag rotatedItems = new ListTag();
 					if (scrollDelta < 0) {
