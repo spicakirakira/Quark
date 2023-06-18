@@ -27,6 +27,7 @@
     "EntityMixin",
     "FallingBlockEntityMixin",
     "HalfTransparentBlockMixin",
+    "HarvestFarmlandMixin",
     "IronBarsBlockMixin",
     "ItemMixin",
     "ItemsMixin",

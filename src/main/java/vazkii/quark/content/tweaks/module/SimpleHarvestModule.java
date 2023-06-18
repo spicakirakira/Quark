@@ -23,6 +23,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -69,6 +71,8 @@ public class SimpleHarvestModule extends QuarkModule {
     public static boolean harvestingCostsDurability = false;
     @Config(description = "Should Quark look for (nonvanilla) crops, and handle them?")
     public static boolean doHarvestingSearch = true;
+    @Config(description = "Should villagers use simple harvest instead of breaking crops?")
+    public static boolean villagersUseSimpleHarvest = true;
 
     @Config(description = "Which crops can be harvested?\n" +
             "Format is: \"harvestState[,afterHarvest]\", i.e. \"minecraft:wheat[age=7]\" or \"minecraft:cocoa[age=2,facing=north],minecraft:cocoa[age=0,facing=north]\"")
@@ -95,6 +99,8 @@ public class SimpleHarvestModule extends QuarkModule {
 
     public static TagKey<Block> simpleHarvestBlacklistedTag;
 
+    public static boolean staticEnabled;
+
     @Override
     public void setup() {
         simpleHarvestBlacklistedTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "simple_harvest_blacklisted"));
@@ -105,6 +111,7 @@ public class SimpleHarvestModule extends QuarkModule {
         crops.clear();
         cropBlocks.clear();
         rightClickCrops.clear();
+        staticEnabled = enabled;
 
         if (doHarvestingSearch) {
             ForgeRegistries.BLOCKS.getValues().stream()
@@ -167,15 +174,13 @@ public class SimpleHarvestModule extends QuarkModule {
         return loc.getNamespace().equals("minecraft");
     }
 
-    private static void harvestAndReplant(Level world, BlockPos pos, BlockState inWorld, Player player) {
-        if (!(world instanceof ServerLevel serverLevel) || player.isSpectator())
+    public static void harvestAndReplant(Level world, BlockPos pos, BlockState inWorld, Entity entity, ItemStack heldItem) {
+        if (!(world instanceof ServerLevel serverLevel) || entity.isSpectator())
             return;
 
-        ItemStack mainHand = player.getMainHandItem();
+        int fortune = heldItem.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
 
-        int fortune = mainHand.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
-
-        ItemStack copy = mainHand.copy();
+        ItemStack copy = heldItem.copy();
         if (copy.isEmpty())
             copy = new ItemStack(Items.STICK);
 
@@ -185,7 +190,7 @@ public class SimpleHarvestModule extends QuarkModule {
 
         MutableBoolean hasTaken = new MutableBoolean(false);
         Item blockItem = inWorld.getBlock().asItem();
-        Block.getDrops(inWorld, serverLevel, pos, world.getBlockEntity(pos), player, copy)
+        Block.getDrops(inWorld, serverLevel, pos, world.getBlockEntity(pos), entity, copy)
                 .forEach((stack) -> {
                     if (stack.getItem() == blockItem && !hasTaken.getValue()) {
                         stack.shrink(1);
@@ -202,6 +207,7 @@ public class SimpleHarvestModule extends QuarkModule {
             BlockState newBlock = crops.get(inWorld);
             world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(newBlock));
             world.setBlockAndUpdate(pos, newBlock);
+            world.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(entity, inWorld));
         }
     }
 
@@ -238,7 +244,7 @@ public class SimpleHarvestModule extends QuarkModule {
                 action = event.getAction();
 
                 if (action == ActionType.HARVEST) {
-                    harvestAndReplant(player.level, pos, worldBlock, player);
+                    harvestAndReplant(player.level, pos, worldBlock, player, player.getMainHandItem());
                     return true;
                 } else if (action == ActionType.CLICK) {
                     var hitResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, true);
