@@ -42,6 +42,7 @@ public final class QuarkNetwork {
 		network.register(HandleBackpackMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(MatrixEnchanterOperationMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(ScrollCrateMessage.class, NetworkDirection.PLAY_TO_SERVER);
+		network.register(ScrollOnBundleMessage.class, NetworkDirection.PLAY_TO_SERVER);
 
 		network.register(DoEmoteMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(EditSignMessage.class, NetworkDirection.PLAY_TO_CLIENT);

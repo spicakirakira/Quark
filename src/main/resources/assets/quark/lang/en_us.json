@@ -235,6 +235,7 @@
 	"quark.jei.hint.soul_fire_candles": "When placed on any block that can produce Soul Fire when lit, it'll do so as well.",
 	"quark.jei.hint.wool_muffling": "Can be used to silence minecarts if placed under the rail.",
 	"quark.jei.hint.shulker_box_right_click": "Items can be right clicked onto the Shulker Box much like you would for a Bundle.",
+	"quark.jei.hint.rotating_bundles": "Scrolling while hovering over a bundle will rotate the items inside.",
 	"quark.jei.hint.crab_info": "Crabs can be found in Beaches, and bred with Wheat, Chicken, or any type of Fish.",
 	"quark.jei.hint.ambience_discs": "Ambience Discs can be gotten when a Skeleton kills a Spider. Unlike Music Discs, these loop infinitely.",
 	"quark.jei.hint.runes": "Combine in an Anvil with an enchanted item to change its shine color. This is purely visual.",
@@ -282,6 +283,7 @@
 	"quark.jei.hint.repair_item_removed": "This item has been changed to not be repairable in an Anvil using repair materials.",
 	"quark.jei.hint.repair_item_changed": "This item's repair material in an Anvil has been changed to %s.",
 	"quark.jei.hint.repair_item_changed_multiple": "This item's repair material in an Anvil has been changed to one of %s.",
+	"quark.jei.hint.shiba_find_low_light": "If you're holding a torch, Shibas will point out dark spots for you to light up.",
 
 	"quark.jei.hint.minecraft.clock": "Must be crafted before it does anything to prevent funny recipe book cheese.",
 	"quark.jei.hint.minecraft.amethyst_block": "Can be placed under a Note Block to make it emit the iconic Amethyst sound.",

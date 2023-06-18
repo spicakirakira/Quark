@@ -1,9 +1,6 @@
 package vazkii.quark.content.management.module;
 
-import java.util.List;
-
 import com.mojang.datafixers.util.Either;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -13,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -23,13 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ElytraItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -52,6 +44,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
@@ -60,11 +53,15 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.hint.Hint;
+import vazkii.quark.base.network.QuarkNetwork;
+import vazkii.quark.base.network.message.ScrollOnBundleMessage;
 import vazkii.quark.content.management.client.screen.HeldShulkerBoxScreen;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxContainer;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxMenu;
 
-@LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
+import java.util.List;
+
+@LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true)
 public class ExpandedItemInteractionsModule extends QuarkModule {
 
 	@Config
@@ -75,11 +72,14 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	public static boolean enableLavaInteraction = true;
 	@Config
 	public static boolean allowOpeningShulkerBoxes = true;
+	@Config(flag = "allow_rotating_bundles")
+	public static boolean allowRotatingBundles = true;
 
 	@Hint("lava_interaction") Item lava_bucket = Items.LAVA_BUCKET;
-	@Hint(value = "shulker_box_interaction", key = "shulker_box_right_click") 
+	@Hint(value = "allow_rotating_bundles", key = "rotating_bundles") Item bundle = Items.BUNDLE;
+	@Hint(value = "shulker_box_interaction", key = "shulker_box_right_click")
 	List<Item> shulkers;
-	
+
 	private static boolean staticEnabled = false;
 
 	public static MenuType<HeldShulkerBoxMenu> heldShulkerBoxMenuType;
@@ -98,7 +98,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	@Override
 	public void configChanged() {
 		staticEnabled = configEnabled;
-		
+
 		shulkers = MiscUtil.massRegistryGet(GeneralConfig.shulkerBoxes, ForgeRegistries.ITEMS);
 	}
 
@@ -127,6 +127,93 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 			return true;
 
 		return enableShulkerBoxInteraction && shulkerOverride(stack, incoming, slot, action, player, true);
+	}
+
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void onScroll(ScreenEvent.MouseScrolled.Pre event) {
+		if (!allowRotatingBundles)
+			return;
+
+		Minecraft mc = Minecraft.getInstance();
+		Screen gui = mc.screen;
+
+		double scrollDelta = event.getScrollDelta();
+
+		if (mc.player != null && gui instanceof AbstractContainerScreen<?> containerGui) {
+			Slot under = containerGui.getSlotUnderMouse();
+			if (under != null) {
+				ItemStack underStack = under.getItem();
+				if (underStack.is(Items.BUNDLE)) {
+					CompoundTag tag = underStack.getTag();
+					if (tag != null) {
+						ListTag items = tag.getList("Items", 10);
+						if (items.size() > 1) {
+							var menu = containerGui.getMenu();
+							event.setCanceled(true);
+							if (scrollDelta < -0.1 || scrollDelta > 0.1) {
+								rotateBundle(underStack, scrollDelta);
+								QuarkNetwork.sendToServer(new ScrollOnBundleMessage(menu.containerId, menu.getStateId(), under.index, scrollDelta));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public static void scrollOnBundle(ServerPlayer player, int containerId, int stateId, int slotNum, double scrollDelta) {
+		if (!staticEnabled || !allowRotatingBundles)
+			return;
+
+		if (-0.1 <= scrollDelta && scrollDelta <= 0.1) return;
+
+		player.resetLastActionTime();
+		if (player.containerMenu.containerId == containerId) {
+			if (player.isSpectator()) {
+				player.containerMenu.sendAllDataToRemote();
+			} else if (!player.containerMenu.stillValid(player)) {
+				Quark.LOG.debug("Player {} interacted with invalid menu {}", player, player.containerMenu);
+			} else {
+				boolean flag = stateId != player.containerMenu.getStateId();
+				player.containerMenu.suppressRemoteUpdates();
+
+				Slot under = player.containerMenu.getSlot(slotNum);
+				if (under != null) {
+					ItemStack underStack = under.getItem();
+					rotateBundle(underStack, scrollDelta);
+				}
+
+				player.containerMenu.resumeRemoteUpdates();
+				if (flag) {
+					player.containerMenu.broadcastFullState();
+				} else {
+					player.containerMenu.broadcastChanges();
+				}
+			}
+		}
+	}
+
+	private static void rotateBundle(ItemStack stack, double scrollDelta) {
+		if (stack.is(Items.BUNDLE)) {
+			CompoundTag tag = stack.getTag();
+			if (tag != null) {
+				ListTag items = tag.getList("Items", 10);
+				if (items.size() > 1) {
+					ListTag rotatedItems = new ListTag();
+					if (scrollDelta < 0) {
+						rotatedItems.add(items.get(items.size() - 1));
+						for (int i = 0; i < items.size() - 1; i++)
+							rotatedItems.add(items.get(i));
+					} else {
+						for (int i = 1; i < items.size(); i++)
+							rotatedItems.add(items.get(i));
+						rotatedItems.add(items.get(0));
+					}
+					tag.put("Items", rotatedItems);
+				}
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -259,9 +346,9 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 
 				NetworkHooks.openScreen(splayer, container, buf -> buf.writeInt(lockedSlot));
 			}
-			else 
+			else
 				player.playSound(SoundEvents.SHULKER_BOX_OPEN, 1F, 1F);
-			
+
 			return true;
 		}
 

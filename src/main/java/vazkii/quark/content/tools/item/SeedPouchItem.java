@@ -1,13 +1,5 @@
 package vazkii.quark.content.tools.item;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -32,6 +24,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.tuple.Pair;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.api.ITrowelable;
 import vazkii.quark.api.IUsageTickerOverride;
@@ -40,6 +33,11 @@ import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.module.SeedPouchModule;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class SeedPouchItem extends QuarkItem implements IUsageTickerOverride, ITrowelable {
 
@@ -52,7 +50,6 @@ public class SeedPouchItem extends QuarkItem implements IUsageTickerOverride, IT
 		super("seed_pouch", module,
 				new Item.Properties()
 				.stacksTo(1)
-				.durability(SeedPouchModule.maxItems + 1)
 				.tab(CreativeModeTab.TAB_TOOLS));
 	}
 
@@ -141,6 +138,22 @@ public class SeedPouchItem extends QuarkItem implements IUsageTickerOverride, IT
 		entity.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + entity.getLevel().getRandom().nextFloat() * 0.4F);
 	}
 
+	@Override
+	public boolean isBarVisible(@Nonnull ItemStack stack) {
+		return true;
+	}
+
+	@Override
+	public int getBarWidth(@Nonnull ItemStack stack) {
+		var contents = getContents(stack);
+		int count = contents == null ? 0 : contents.getRight();
+		return Math.round(count * 13.0F / SeedPouchModule.maxItems);
+	}
+
+	@Override
+	public int getBarColor(@Nonnull ItemStack stack) {
+		return BAR_COLOR;
+	}
 
 	@OnlyIn(Dist.CLIENT)
 	public static float itemFraction(ItemStack stack, ClientLevel world, LivingEntity entityIn, int i) {
@@ -193,18 +206,10 @@ public class SeedPouchItem extends QuarkItem implements IUsageTickerOverride, IT
 	public static void setCount(ItemStack stack, int count) {
 		if(count <= 0) {
 			stack.getTag().remove(TAG_STORED_ITEM);
-			stack.setDamageValue(0);
-
 			return;
 		}
 
 		ItemNBTHelper.setInt(stack, TAG_COUNT, count);
-		stack.setDamageValue(SeedPouchModule.maxItems + 1 - count);
-	}
-
-	@Override
-	public int getBarColor(@Nonnull ItemStack stack) {
-		return BAR_COLOR;
 	}
 
 	@Nonnull

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * For JEI intergration. ItemLike objects with Hint applied in a QuarkModule will automatically
+ * For JEI integration. ItemLike objects with Hint applied in a QuarkModule will automatically
  * be added to JEI Information
  */
 @Target(ElementType.FIELD)
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 public @interface Hint {
 
 	/**
-	 * Flag value to check before applying this Hint 
+	 * Flag value to check before applying this Hint
 	 */
 	String value() default "";
 	boolean negate() default false;
@@ -28,5 +28,5 @@ public @interface Hint {
 	 * Extra content to put in the translation, reference with %s
 	 */
 	String[] content() default "";
-	
+
 }
