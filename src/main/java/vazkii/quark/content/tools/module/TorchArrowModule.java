@@ -2,12 +2,16 @@ package vazkii.quark.content.tools.module;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.item.QuarkArrowItem;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
@@ -25,6 +29,8 @@ public class TorchArrowModule extends QuarkModule {
 	public static EntityType<TorchArrow> torchArrowType;
 	
 	@Hint public static Item torch_arrow;
+
+	public static final TagKey<Item> ignoreMultishot = ItemTags.create(new ResourceLocation( "quark:ignore_multishot"));
 	
 	@Override
 	public void register() {

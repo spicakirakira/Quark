@@ -15,6 +15,7 @@
     "BlockItemMixin",
     "BoatMixin",
     "BonusLevelTableConditionMixin",
+    "CrossbowMultishotMixin",
     "DamageEnchantmentMixin",
     "DamageSourceMixin",
     "DiggerItemMixin",
