@@ -105,6 +105,9 @@ public class PathfinderMapsModule extends QuarkModule {
 
 	@Config(description = "Experimental. Determines if quills should be multithreaded instead. Will ignore quill speed. This could drastically improve performance as it execute the logic off the main thread ideally causing no lag at all")
 	public static boolean multiThreaded = true;
+
+	@Config(description = "Allows retrying after a pathfinder quill fails to find a biome nearby. Turn off if you think its op")
+	public static boolean allowRetrying = true;
 	
 	@Config public static int searchRadius = 6400;
 	@Config public static int xpFromTrade = 5;

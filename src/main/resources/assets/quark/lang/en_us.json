@@ -445,7 +445,8 @@
 	"quark.misc.configure_quark_here": "Configure Quark Here!",
 	"quark.misc.only_one_quill": "A Pathfinder's Quill is already searching...",
 	"quark.misc.quill_finished": "A Pathfinder Map has been completed.",
-	"quark.misc.quill_failed": "A Pathfinder's Quill has failed its search.",
+	"quark.misc.quill_failed": "A Pathfinder's Quill could not find any biome nearby.",
+	"quark.misc.quill_retry": "A Pathfinder's Quill could not find any biome nearby. Try somewhere else.",
 	"quark.misc.quill_blank": "Blank",
 	"quark.misc.quill_searching": "Searching",
 

@@ -167,8 +167,17 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
             ItemStack runningStack = search(stack, sl, player, slot);
 
             if (runningStack != stack) {
-                String msg = runningStack.isEmpty() ?
-                        getFailedMessage() : getFinishedMessage();
+                String msg;
+
+                if(runningStack.isEmpty()){
+                    if(PathfinderMapsModule.allowRetrying){
+                        runningStack = this.resetSearchingTags(stack);
+                        msg = getRetryMessage();
+                    }
+                    else msg = getFailMessage();
+                }else msg = getSuccessMessage();
+
+
                 player.displayClientMessage(Component.translatable(msg), true);
 
                 Vec3 pos = player.getPosition(1F);
@@ -179,11 +188,26 @@ public class PathfindersQuillItem extends QuarkItem implements IItemColorProvide
         }
     }
 
-    protected String getFinishedMessage() {
+    protected ItemStack resetSearchingTags(ItemStack stack){
+        stack.removeTagKey(TAG_SOURCE_X);
+        stack.removeTagKey(TAG_SOURCE_Z);
+        stack.removeTagKey(TAG_IS_SEARCHING);
+        stack.removeTagKey(TAG_POS_Z);
+        stack.removeTagKey(TAG_POS_Z);
+        stack.removeTagKey(TAG_POS_LEG);
+        stack.removeTagKey(TAG_POS_LEG_INDEX);
+        return stack;
+    }
+
+    protected String getRetryMessage(){
+        return "quark.misc.quill_retry";
+    }
+
+    protected String getSuccessMessage() {
         return "quark.misc.quill_finished";
     }
 
-    protected String getFailedMessage() {
+    protected String getFailMessage() {
         return "quark.misc.quill_failed";
     }
 
