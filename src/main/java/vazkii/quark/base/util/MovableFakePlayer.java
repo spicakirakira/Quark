@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
+@Deprecated(forRemoval = true)
 public class MovableFakePlayer extends FakePlayer {
 
 	public MovableFakePlayer(ServerLevel world, GameProfile name) {

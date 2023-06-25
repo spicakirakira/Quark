@@ -25,7 +25,7 @@ public class VariantFurnacesModule extends QuarkModule {
 
 	public static Block deepslateFurnace;
 	@Hint public static Block blackstoneFurnace;
-	
+
 	@Override
 	public void register() {
 		deepslateFurnace = new VariantFurnaceBlock("deepslate", this, Properties.copy(Blocks.DEEPSLATE).lightLevel(litBlockEmission(13)));
