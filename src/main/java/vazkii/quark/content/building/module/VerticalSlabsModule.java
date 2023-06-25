@@ -29,7 +29,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
-import vazkii.quark.content.building.block.VerticalSlabBlock;
+import vazkii.quark.content.building.block.QuarkVerticalSlabBlock;
 import vazkii.quark.content.building.block.WeatheringCopperVerticalSlabBlock;
 
 @LoadModule(category = ModuleCategory.BUILDING)
@@ -63,7 +63,7 @@ public class VerticalSlabsModule extends QuarkModule {
 				// 1.19
 				Blocks.MANGROVE_SLAB, Blocks.MUD_BRICK_SLAB
 				)
-		.forEach(b -> new VerticalSlabBlock(b, this));
+		.forEach(b -> new QuarkVerticalSlabBlock(b, this));
 
 		List<WeatheringCopperVerticalSlabBlock> copperVerticalSlabs = new ArrayList<>();
 		ImmutableSet.of(
@@ -73,7 +73,7 @@ public class VerticalSlabsModule extends QuarkModule {
 				Pair.of(Blocks.OXIDIZED_CUT_COPPER_SLAB, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB))
 		.forEach(p -> {
 			WeatheringCopperVerticalSlabBlock cleanSlab = new WeatheringCopperVerticalSlabBlock(p.getLeft(), this);
-			VerticalSlabBlock waxedSlab = new VerticalSlabBlock(p.getRight(), this);
+			QuarkVerticalSlabBlock waxedSlab = new QuarkVerticalSlabBlock(p.getRight(), this);
 
 			copperVerticalSlabs.add(cleanSlab);
 			ToolInteractionHandler.registerWaxedBlock(this, cleanSlab, waxedSlab);
@@ -98,7 +98,7 @@ public class VerticalSlabsModule extends QuarkModule {
 		VariantHandler.SLABS.forEach(b -> {
 			if(b instanceof IVerticalSlabProvider provider)
 				provider.getVerticalSlab(b, this);
-			else new VerticalSlabBlock(b, this);
+			else new QuarkVerticalSlabBlock(b, this);
 		});
 	}
 	
@@ -160,7 +160,7 @@ public class VerticalSlabsModule extends QuarkModule {
 	}
 	
 	public interface IVerticalSlabProvider {
-		VerticalSlabBlock getVerticalSlab(Block block, QuarkModule module);
+		QuarkVerticalSlabBlock getVerticalSlab(Block block, QuarkModule module);
 
 	}
 

@@ -1,8 +1,5 @@
 package vazkii.quark.content.building.block;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
@@ -17,11 +14,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
-import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -44,35 +37,34 @@ import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.block.QuarkSlabBlock;
 import vazkii.quark.base.module.QuarkModule;
 
-public class VerticalSlabBlock extends QuarkBlock implements SimpleWaterloggedBlock, IBlockColorProvider {
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
+/**
+ * Base extensible class in case mods want to add their own slabs
+ */
+public class VerticalSlabBlock extends Block implements SimpleWaterloggedBlock, IBlockColorProvider {
 
 	public static final EnumProperty<VerticalSlabType> TYPE = EnumProperty.create("type", VerticalSlabType.class);
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-	public final Block parent;
+	public final Supplier<Block> parent;
 
-	public VerticalSlabBlock(Block parent, QuarkModule module) {
-		super(IQuarkBlock.inherit(parent, s -> s.replace("_slab", "_vertical_slab")), 
-				module, CreativeModeTab.TAB_BUILDING_BLOCKS, Block.Properties.copy(parent));
+	public VerticalSlabBlock(Supplier<Block> parent, Properties properties) {
+		super(properties);
 		this.parent = parent;
-
-		if(!(parent instanceof SlabBlock))
-			throw new IllegalArgumentException("Can't rotate a non-slab block into a vertical slab.");
-
-		if(parent instanceof QuarkSlabBlock quarkSlab)
-			setCondition(quarkSlab.parent::isEnabled);
-
 		registerDefaultState(defaultBlockState().setValue(TYPE, VerticalSlabType.NORTH).setValue(WATERLOGGED, false));
 	}
 	
 	@Override
 	public boolean isFlammable(BlockState state, BlockGetter world, BlockPos pos, Direction face) {
-		return parent.isFlammable(state, world, pos, face);
+		return parent.get().isFlammable(state, world, pos, face);
 	}
 
 	@Override
 	public int getFlammability(BlockState state, BlockGetter world, BlockPos pos, Direction face) {
-		return parent.getFlammability(state, world, pos, face);
+		return parent.get().getFlammability(state, world, pos, face);
 	}
 	
 	@Nonnull
@@ -113,7 +105,7 @@ public class VerticalSlabBlock extends QuarkBlock implements SimpleWaterloggedBl
 
 	@Override
 	public boolean isConduitFrame(BlockState state, LevelReader world, BlockPos pos, BlockPos conduit) {
-		return parent.isConduitFrame(state, world, pos, conduit);
+		return parent.get().isConduitFrame(state, world, pos, conduit);
 	}
 
 	@Override

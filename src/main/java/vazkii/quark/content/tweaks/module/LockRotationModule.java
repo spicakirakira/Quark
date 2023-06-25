@@ -54,8 +54,8 @@ import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.SetLockProfileMessage;
+import vazkii.quark.content.building.block.QuarkVerticalSlabBlock;
 import vazkii.quark.content.building.block.VerticalSlabBlock;
-import vazkii.quark.content.building.block.VerticalSlabBlock.VerticalSlabType;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class LockRotationModule extends QuarkModule {
@@ -116,8 +116,8 @@ public class LockRotationModule extends QuarkModule {
 			setState = state.setValue(BlockStateProperties.FACING, face);
 
 		// Vertical Slabs
-		else if (props.containsKey(VerticalSlabBlock.TYPE) && props.get(VerticalSlabBlock.TYPE) != VerticalSlabType.DOUBLE && face.getAxis() != Axis.Y)
-			setState = state.setValue(VerticalSlabBlock.TYPE, Objects.requireNonNull(VerticalSlabType.fromDirection(face)));
+		else if (props.containsKey(QuarkVerticalSlabBlock.TYPE) && props.get(QuarkVerticalSlabBlock.TYPE) != VerticalSlabBlock.VerticalSlabType.DOUBLE && face.getAxis() != Axis.Y)
+			setState = state.setValue(QuarkVerticalSlabBlock.TYPE, Objects.requireNonNull(VerticalSlabBlock.VerticalSlabType.fromDirection(face)));
 
 		// Horizontal Facing
 		else if(props.containsKey(BlockStateProperties.HORIZONTAL_FACING) && face.getAxis() != Axis.Y) {
