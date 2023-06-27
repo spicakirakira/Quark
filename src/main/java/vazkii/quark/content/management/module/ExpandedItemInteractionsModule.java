@@ -339,8 +339,11 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 				slot.mayPickup(player);
 	}
 
-	private static boolean shulkerOverride(ItemStack stack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean isStackedOnMe) {
-		if(isStackedOnMe && canOpenShulkerBox(stack, incoming, slot, player)) {
+	private static boolean shulkerOverride(ItemStack shulkerStack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean isStackedOnMe) {
+		//sanity check since some mods like to ignore max shulkerStack size...
+		if (shulkerStack.getCount() != 1) return false;
+
+		if (isStackedOnMe && canOpenShulkerBox(shulkerStack, incoming, slot, player)) {
 			int lockedSlot = slot.getSlotIndex();
 			if(player instanceof ServerPlayer splayer) {
 				HeldShulkerBoxContainer container = new HeldShulkerBoxContainer(splayer, lockedSlot);
@@ -353,8 +356,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 			return true;
 		}
 
-		if (!incoming.isEmpty() && tryAddToShulkerBox(player, stack, incoming, slot, true, true, isStackedOnMe) != null) {
-			ItemStack finished = tryAddToShulkerBox(player, stack, incoming, slot, false, isStackedOnMe, isStackedOnMe);
+		if (!incoming.isEmpty() && tryAddToShulkerBox(player, shulkerStack, incoming, slot, true, true, isStackedOnMe) != null) {
+			ItemStack finished = tryAddToShulkerBox(player, shulkerStack, incoming, slot, false, isStackedOnMe, isStackedOnMe);
 
 			if (finished != null) {
 				if (isStackedOnMe) {
