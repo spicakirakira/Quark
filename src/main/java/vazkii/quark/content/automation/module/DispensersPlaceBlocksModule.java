@@ -62,7 +62,7 @@ public class DispensersPlaceBlocksModule extends QuarkModule {
 					if(item instanceof BlockItem) {
 						DispenseItemBehavior original = registry.get(item);
 						boolean exists = original != null && original.getClass() != DefaultDispenseItemBehavior.class;
-						
+						if(original instanceof BlockBehavior) continue; //some blocks map to same item (mob heads)
 						if(exists) {
 							if(wrapExistingBehaviors && original instanceof OptionalDispenseItemBehavior opt)
 								registry.put(item, new BlockBehavior(opt));
@@ -112,7 +112,8 @@ public class DispensersPlaceBlocksModule extends QuarkModule {
 			else if(block instanceof SlabBlock)
 				against = Direction.UP;
 
-			setSuccess(item.place(new NotStupidDirectionalPlaceContext(source.getLevel(), pos, direction, stack, against)) == InteractionResult.SUCCESS);
+			setSuccess(item.place(new NotStupidDirectionalPlaceContext(source.getLevel(), pos, direction, stack, against))
+					.consumesAction());
 
 			return stack;
 		}
