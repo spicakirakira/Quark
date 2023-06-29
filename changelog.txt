@@ -1,4 +1,10 @@
-- Added config options to change which tool types pickarangs can have
-- Echorangs can now break sculk blocks (normal pickarangs still can't)
-- Fixed broken simple harvesting
-- Pickarangs now also have the hoe tool type
+- fixed crash with block placing modules and mob heads
+- fixed pathfinder quill messages being swapped
+- added option to allow pathfinder quill to retry searching when it fails
+- shulker drop ins have a safety check that wont make them work with stacks greater than 1
+- fixed and improved glass item frame renderer when vertical. Also improved its performance caching world access calls outside of renderer
+- added tag for items that multishot should ignored. Only contains torch arrows
+- fixes in harvesting module
+- villagers can use simple harvest
+- maps can be washed
+- bundle can be scrolled
