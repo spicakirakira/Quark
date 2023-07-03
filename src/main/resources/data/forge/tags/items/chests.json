@@ -11,17 +11,6 @@
         "quark:bamboo_chest",
         "quark:bamboo_trapped_chest",
         "quark:ancient_chest",
-        "quark:ancient_trapped_chest",
-        { "id": "quark:lootr_nether_brick_chest", "required": false },
-        { "id": "quark:lootr_purpur_chest", "required": false },
-        { "id": "quark:lootr_prismarine_chest", "required": false },
-        { "id": "quark:lootr_azalea_chest", "required": false },
-        { "id": "quark:lootr_azalea_trapped_chest", "required": false },
-        { "id": "quark:lootr_blossom_chest", "required": false },
-        { "id": "quark:lootr_blossom_trapped_chest", "required": false },
-        { "id": "quark:lootr_bamboo_chest", "required": false },
-        { "id": "quark:lootr_bamboo_trapped_chest", "required": false },
-        { "id": "quark:lootr_ancient_chest", "required": false },
-        { "id": "quark:lootr_ancient_trapped_chest", "required": false }
+        "quark:ancient_trapped_chest"
     ]
 }

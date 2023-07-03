@@ -82,6 +82,10 @@ repositories {
             includeGroup "vazkii.autoreglib"
         }
     }
+    maven {
+        name "TerraformersMC"
+        url "https://maven.terraformersmc.com/"
+    }
     /*maven {
         // for JEI
         name "progwml6"
@@ -104,6 +108,8 @@ dependencies {
     minecraft "net.minecraftforge:forge:${config.mc_version}-${deps.forge}"
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    runtimeOnly fg.deobf("dev.emi:emi-forge:${deps.emi}")
 
     implementation fg.deobf("com.github.glitchfiend:TerraBlender-forge:${deps.terrablender}")
     implementation fg.deobf("vazkii.autoreglib:AutoRegLib:${deps.arl}")
