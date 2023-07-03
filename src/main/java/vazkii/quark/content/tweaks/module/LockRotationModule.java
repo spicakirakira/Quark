@@ -1,17 +1,9 @@
 package vazkii.quark.content.tweaks.module;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
-
-import org.lwjgl.opengl.GL11;
-
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -42,8 +34,10 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 import vazkii.arl.network.MessageSerializer;
 import vazkii.quark.api.IRotationLockable;
 import vazkii.quark.base.client.handler.ModKeybindHandler;
@@ -56,6 +50,11 @@ import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.SetLockProfileMessage;
 import vazkii.quark.content.building.block.QuarkVerticalSlabBlock;
 import vazkii.quark.content.building.block.VerticalSlabBlock;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.UUID;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class LockRotationModule extends QuarkModule {
@@ -237,6 +236,13 @@ public class LockRotationModule extends QuarkModule {
 			}
 
 			lockProfiles.put(uuid, profile);
+		}
+	}
+
+	@SubscribeEvent
+	public void respawn(PlayerEvent.Clone event) {
+		if (event.getOriginal().getPersistentData().getBoolean(TAG_LOCKED_ONCE)) {
+			event.getEntity().getPersistentData().putBoolean(TAG_LOCKED_ONCE, true);
 		}
 	}
 
