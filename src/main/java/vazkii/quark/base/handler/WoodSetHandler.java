@@ -1,15 +1,6 @@
 package vazkii.quark.base.handler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableSet;
-
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Direction;
@@ -19,12 +10,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.PressurePlateBlock.Sensitivity;
-import net.minecraft.world.level.block.RotatedPillarBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
@@ -38,17 +25,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
-import vazkii.quark.base.block.IQuarkBlock;
-import vazkii.quark.base.block.QuarkBlock;
-import vazkii.quark.base.block.QuarkDoorBlock;
-import vazkii.quark.base.block.QuarkFenceBlock;
-import vazkii.quark.base.block.QuarkFenceGateBlock;
-import vazkii.quark.base.block.QuarkPillarBlock;
-import vazkii.quark.base.block.QuarkPressurePlateBlock;
-import vazkii.quark.base.block.QuarkStandingSignBlock;
-import vazkii.quark.base.block.QuarkTrapdoorBlock;
-import vazkii.quark.base.block.QuarkWallSignBlock;
-import vazkii.quark.base.block.QuarkWoodenButtonBlock;
+import vazkii.quark.base.block.*;
 import vazkii.quark.base.client.render.QuarkBoatRenderer;
 import vazkii.quark.base.item.QuarkSignItem;
 import vazkii.quark.base.item.boat.QuarkBoat;
@@ -61,18 +38,16 @@ import vazkii.quark.content.building.block.HollowLogBlock;
 import vazkii.quark.content.building.block.VariantBookshelfBlock;
 import vazkii.quark.content.building.block.VariantLadderBlock;
 import vazkii.quark.content.building.block.WoodPostBlock;
-import vazkii.quark.content.building.module.HollowLogsModule;
-import vazkii.quark.content.building.module.VariantBookshelvesModule;
-import vazkii.quark.content.building.module.VariantChestsModule;
-import vazkii.quark.content.building.module.VariantLaddersModule;
-import vazkii.quark.content.building.module.VerticalPlanksModule;
-import vazkii.quark.content.building.module.WoodenPostsModule;
+import vazkii.quark.content.building.module.*;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 public class WoodSetHandler {
 
 	public static record QuarkBoatType(String name, Item boat, Item chestBoat, Block planks) {}
 	private static final Map<String, QuarkBoatType> quarkBoatTypes = new HashMap<>();
-	
+
 	public static EntityType<QuarkBoat> quarkBoatEntityType = null;
 	public static EntityType<QuarkChestBoat> quarkChestBoatEntityType = null;
 
@@ -84,7 +59,7 @@ public class WoodSetHandler {
 				.clientTrackingRange(10)
 				.setCustomClientFactory((spawnEntity, world) -> new QuarkBoat(quarkBoatEntityType, world))
 				.build("quark_boat");
-		
+
 		quarkChestBoatEntityType = EntityType.Builder.<QuarkChestBoat>of(QuarkChestBoat::new, MobCategory.MISC)
 				.sized(1.375F, 0.5625F)
 				.clientTrackingRange(10)
@@ -120,7 +95,7 @@ public class WoodSetHandler {
 	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor) {
 		return addWoodSet(module, name, color, barkColor, true, true);
 	}
-	
+
 	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor, boolean hasLog, boolean hasBoat) {
 		WoodType type = WoodType.register(WoodType.create(Quark.MOD_ID + ":" + name));
 		WoodSet set = new WoodSet(name, module, type);
@@ -130,10 +105,10 @@ public class WoodSetHandler {
 			set.wood = new QuarkPillarBlock(name + "_wood", module, CreativeModeTab.TAB_BUILDING_BLOCKS, BlockBehaviour.Properties.of(Material.WOOD, barkColor).strength(2.0F).sound(SoundType.WOOD));
 			set.strippedLog = log("stripped_" + name + "_log", module, color, color);
 			set.strippedWood = new QuarkPillarBlock("stripped_" + name + "_wood", module, CreativeModeTab.TAB_BUILDING_BLOCKS, BlockBehaviour.Properties.of(Material.WOOD, color).strength(2.0F).sound(SoundType.WOOD));
-		}		
-		
+		}
+
 		set.planks = new QuarkBlock(name + "_planks", module, CreativeModeTab.TAB_BUILDING_BLOCKS, Properties.of(Material.WOOD, color).strength(2.0F, 3.0F).sound(SoundType.WOOD));
-		
+
 		set.slab = VariantHandler.addSlab((IQuarkBlock) set.planks).getBlock();
 		set.stairs = VariantHandler.addStairs((IQuarkBlock) set.planks).getBlock();
 		set.fence = new QuarkFenceBlock(name + "_fence", module, CreativeModeTab.TAB_DECORATIONS, BlockBehaviour.Properties.of(Material.WOOD, color).strength(2.0F, 3.0F).sound(SoundType.WOOD));
@@ -150,20 +125,20 @@ public class WoodSetHandler {
 
 		set.bookshelf = new VariantBookshelfBlock(name, module, true).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(VariantBookshelvesModule.class));
 		set.ladder = new VariantLadderBlock(name, module, true).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(VariantLaddersModule.class));
-		
+
 		set.post = new WoodPostBlock(module, set.fence, "", false).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(WoodenPostsModule.class));
 		set.strippedPost = new WoodPostBlock(module, set.fence, "stripped_", false).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(WoodenPostsModule.class));
-		
+
 		set.verticalPlanks = VerticalPlanksModule.add(name, set.planks, module).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(VerticalPlanksModule.class));
 
 		if(hasLog) {
 			set.hollowLog = new HollowLogBlock(set.log, module, false).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(HollowLogsModule.class));
 		}
-		
-		VariantChestsModule.addChest(name, module, Block.Properties.copy(Blocks.CHEST), true);
+
+		VariantChestsModule.addChest(name, module, () -> Block.Properties.copy(Blocks.CHEST), true);
 
 		set.signItem = new QuarkSignItem(module, set.sign, set.wallSign);
-		
+
 		if(hasBoat) {
 			set.boatItem = new QuarkBoatItem(name, module, false);
 			set.chestBoatItem = new QuarkBoatItem(name, module, true);
@@ -204,7 +179,7 @@ public class WoodSetHandler {
 				BlockBehaviour.Properties.of(Material.WOOD, s -> s.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y ? topColor : sideColor)
 				.strength(2.0F).sound(SoundType.WOOD));
 	}
-	
+
 	public static void addQuarkBoatType(String name, QuarkBoatType type) {
 		quarkBoatTypes.put(name, type);
 	}

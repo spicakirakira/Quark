@@ -437,6 +437,12 @@
     "quark:raw_gold_bricks_vertical_slab",
     "quark:carved_mud_bricks",
     "quark:mud_pillar",
-    "quark:mud_brick_lattice"
+    "quark:mud_brick_lattice",
+    { "id": "quark:lootr_nether_brick_chest", "required": false },
+    { "id": "quark:lootr_purpur_chest", "required": false },
+    { "id": "quark:lootr_prismarine_chest", "required": false },
+    { "id": "quark:lootr_nether_brick_trapped_chest", "required": false },
+    { "id": "quark:lootr_purpur_trapped_chest", "required": false },
+    { "id": "quark:lootr_prismarine_trapped_chest", "required": false }
   ]
 }

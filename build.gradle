@@ -70,6 +70,7 @@ minecraft {
 mixin {
     add sourceSets.main, 'quark.mixins.refmap.json'
     config 'quark.mixins.json'
+    config 'quark_integrations.mixins.json'
 }
 
 repositories {
@@ -108,6 +109,7 @@ dependencies {
     implementation fg.deobf("vazkii.autoreglib:AutoRegLib:${deps.arl}")
     implementation fg.deobf("curse.maven:jei-238222:${deps.jei}")
     implementation fg.deobf("curse.maven:flan-forge-493246:${deps.flan}")
+    implementation fg.deobf("curse.maven:lootr-361276:${deps.lootr}")
 }
 
 spotless {
@@ -164,7 +166,7 @@ jar {
             "Implementation-Version": "${version}",
             "Implementation-Vendor" :"vazkii",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "quark.mixins.json"
+            "MixinConfigs": "quark.mixins.json,quark_integrations.mixins.json"
         ])
     }
 

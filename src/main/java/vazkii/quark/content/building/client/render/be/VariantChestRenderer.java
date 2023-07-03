@@ -43,10 +43,10 @@ public class VariantChestRenderer extends GenericChestBERenderer<ChestBlockEntit
 		if(chest instanceof IChestTextureProvider prov) {
 
 			String path = prov.getChestTexturePath();
-			if(!prov.isTrap())
-				add(event, atlas, chest, path, "normal", "left", "right");
-			else
+			if (prov.isTrap())
 				add(event, atlas, chest, path, "trap", "trap_left", "trap_right");
+			else
+				add(event, atlas, chest, path, "normal", "left", "right");
 		}
 	}
 

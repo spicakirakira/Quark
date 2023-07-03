@@ -43,18 +43,26 @@ public class VariantTrappedChestBlock extends ChestBlock implements IBlockItemPr
 
 	private final String path;
 
-	public VariantTrappedChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
+	public VariantTrappedChestBlock(String prefix, String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
 		super(props, supplier);
-		RegistryHelper.registerBlock(this, type + "_trapped_chest");
+		RegistryHelper.registerBlock(this, (prefix != null ? prefix + "_" : "") + type + "_trapped_chest");
 
 		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_REDSTONE);
 
 		this.type = type;
 		this.module = module;
 
-		path = (this instanceof Compat ? "compat/" : "") + type + "/";
+		path = (isCompat() ? "compat/" : "") + type + "/";
 	}
-	
+
+	public VariantTrappedChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
+		this(null, type, module, supplier, props);
+	}
+
+	protected boolean isCompat() {
+		return false;
+	}
+
 	@Override
 	public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
 		return 0;
@@ -106,6 +114,10 @@ public class VariantTrappedChestBlock extends ChestBlock implements IBlockItemPr
 			setCondition(() -> ModList.get().isLoaded(mod));
 		}
 
+		@Override
+		protected boolean isCompat() {
+			return true;
+		}
 	}
 
 	@Override

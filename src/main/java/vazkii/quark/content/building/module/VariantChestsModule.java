@@ -1,16 +1,6 @@
 package vazkii.quark.content.building.module;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BooleanSupplier;
-
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
-
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +17,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -39,6 +31,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
+import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.handler.StructureBlockReplacementHandler;
 import vazkii.quark.base.handler.StructureBlockReplacementHandler.StructureHolder;
 import vazkii.quark.base.module.LoadModule;
@@ -54,7 +47,14 @@ import vazkii.quark.content.building.block.be.VariantChestBlockEntity;
 import vazkii.quark.content.building.block.be.VariantTrappedChestBlockEntity;
 import vazkii.quark.content.building.client.render.be.VariantChestRenderer;
 import vazkii.quark.content.building.recipe.MixedExclusionRecipe;
+import vazkii.quark.integration.lootr.ILootrIntegration;
 import vazkii.quark.mixin.accessor.AccessorAbstractChestedHorse;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @LoadModule(category = ModuleCategory.BUILDING, hasSubscriptions = true, antiOverlap = { "woodworks" })
 public class VariantChestsModule extends QuarkModule {
@@ -67,8 +67,10 @@ public class VariantChestsModule extends QuarkModule {
 	public static BlockEntityType<VariantChestBlockEntity> chestTEType;
 	public static BlockEntityType<VariantTrappedChestBlockEntity> trappedChestTEType;
 
-	private static final List<Supplier<Block>> chestTypes = new LinkedList<>();
-	private static final List<Supplier<Block>> trappedChestTypes = new LinkedList<>();
+	private static final List<ChestInfo> chestTypes = new LinkedList<>();
+
+	public static final List<Block> chests = new LinkedList<>();
+	public static final List<Block> trappedChests = new LinkedList<>();
 
 	private static final List<Block> allChests = new LinkedList<>();
 	private static final Map<ResourceLocation, Block> chestMappings = new HashMap<>();
@@ -254,11 +256,22 @@ public class VariantChestsModule extends QuarkModule {
 
 	@Override
 	public void postRegister() {
-		chestTEType = registerChests(VariantChestBlockEntity::new, chestTypes);
-		trappedChestTEType = registerChests(VariantTrappedChestBlockEntity::new, trappedChestTypes);
+		chestTEType = registerChests(VariantChestBlockEntity::new, () -> chestTEType,
+			VariantChestBlock::new, VariantChestBlock.Compat::new,
+			allChests::addAll, chests::addAll);
+		trappedChestTEType = registerChests(VariantTrappedChestBlockEntity::new, () -> trappedChestTEType,
+			VariantTrappedChestBlock::new, VariantTrappedChestBlock.Compat::new,
+			allChests::addAll, trappedChests::addAll);
 
 		RegistryHelper.register(chestTEType, "variant_chest", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
 		RegistryHelper.register(trappedChestTEType, "variant_trapped_chest", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
+
+		ILootrIntegration.INSTANCE.postRegister();
+	}
+
+	@Override
+	public void loadComplete() {
+		ILootrIntegration.INSTANCE.loadComplete();
 	}
 
 	@Override
@@ -266,6 +279,8 @@ public class VariantChestsModule extends QuarkModule {
 	public void clientSetup() {
 		BlockEntityRenderers.register(chestTEType, VariantChestRenderer::new);
 		BlockEntityRenderers.register(trappedChestTEType, VariantChestRenderer::new);
+
+		ILootrIntegration.INSTANCE.clientSetup();
 	}
 
 	@Override
@@ -306,35 +321,49 @@ public class VariantChestsModule extends QuarkModule {
 	}
 
 	private void addChest(String name, Block from) {
-		addChest(name, Block.Properties.copy(from));
+		addChest(name, () -> Block.Properties.copy(from));
 	}
 
-	public void addChest(String name, Block.Properties props) {
+	public void addChest(String name, Supplier<Block.Properties> props) {
 		addChest(name, this, props, false);
 	}
 
-	public static void addChest(String name, QuarkModule module, Block.Properties props, boolean external) {
+	public static void addChest(String name, QuarkModule module, Supplier<Block.Properties> props, boolean external) {
 		BooleanSupplier cond = external ? (() -> ModuleLoader.INSTANCE.isModuleEnabled(VariantChestsModule.class)) : (() -> true);
 
-		chestTypes.add(() -> new VariantChestBlock(name, module, () -> chestTEType, props).setCondition(cond));
-		trappedChestTypes.add(() -> new VariantTrappedChestBlock(name, module, () -> trappedChestTEType, props).setCondition(cond));
+		chestTypes.add(new ChestInfo(name, module, props, cond, null));
 	}
 
 	private void addModChest(String nameRaw, Block from) {
 		String[] toks = nameRaw.split(":");
 		String name = toks[1];
 		String mod = toks[0];
-		addModChest(name, mod, Block.Properties.copy(from));
+		addModChest(name, mod, () -> Block.Properties.copy(from));
 	}
 
-	private void addModChest(String name, String mod, Block.Properties props) {
-		chestTypes.add(() -> new VariantChestBlock.Compat(name, mod, this, () -> chestTEType, props));
-		trappedChestTypes.add(() -> new VariantTrappedChestBlock.Compat(name, mod, this, () -> trappedChestTEType, props));
+	private void addModChest(String name, String mod, Supplier<Block.Properties> props) {
+		chestTypes.add(new ChestInfo(name, this, props, null, mod));
 	}
 
-	public static <T extends BlockEntity> BlockEntityType<T> registerChests(BlockEntitySupplier<? extends T> factory, List<Supplier<Block>> list) {
-		List<Block> blockTypes = list.stream().map(Supplier::get).toList();
-		allChests.addAll(blockTypes);
+	@SafeVarargs
+	public static <T extends BlockEntity> BlockEntityType<T> registerChests(BlockEntitySupplier<? extends T> factory,
+																			Supplier<BlockEntityType<? extends ChestBlockEntity>> tileType,
+																			ChestConstructor chestType, CompatChestConstructor compatType,
+																			Consumer<List<Block>>... toStitch) {
+		List<Block> blockTypes = chestTypes.stream().map(it -> {
+			Block block = it.mod != null ?
+				compatType.createChest(it.type, it.mod, it.module, tileType, it.props.get()) :
+				chestType.createChest(it.type, it.module, tileType, it.props.get());
+
+			if (it.condition != null && block instanceof IQuarkBlock quarkBlock)
+				quarkBlock.setCondition(it.condition);
+
+			return block;
+		}).toList();
+
+		for (var consumer : toStitch)
+			consumer.accept(blockTypes);
+
 		return BlockEntityType.Builder.<T>of(factory, blockTypes.toArray(new Block[0])).build(null);
 	}
 
@@ -343,6 +372,7 @@ public class VariantChestsModule extends QuarkModule {
 		if (event.getAtlas().location().toString().equals("minecraft:textures/atlas/chest.png")) {
 			for (Block b : allChests)
 				VariantChestRenderer.accept(event, b);
+			ILootrIntegration.INSTANCE.stitch(event);
 		}
 	}
 
@@ -404,4 +434,20 @@ public class VariantChestsModule extends QuarkModule {
 		boolean isTrap();
 	}
 
+	private record ChestInfo(String type,
+							QuarkModule module,
+							Supplier<BlockBehaviour.Properties> props,
+							@Nullable BooleanSupplier condition,
+							@Nullable String mod) {
+	}
+
+	@FunctionalInterface
+	public interface ChestConstructor {
+		Block createChest(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, BlockBehaviour.Properties props);
+	}
+
+	@FunctionalInterface
+	public interface CompatChestConstructor {
+		Block createChest(String type, String mod, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, BlockBehaviour.Properties props);
+	}
 }
