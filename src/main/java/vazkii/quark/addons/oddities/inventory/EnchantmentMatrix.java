@@ -155,7 +155,7 @@ public class EnchantmentMatrix {
 			if (isValid
 					&& !EnchantmentsBegoneModule.shouldBegone(enchantment)
 					&& !MatrixEnchantingModule.disallowedEnchantments.contains(id)
-					&& (enchantment.canApplyAtEnchantingTable(target) || (book && enchantment.isAllowedOnBooks()))) {
+					&& (enchantment.canEnchant(target) || (book && enchantment.isAllowedOnBooks()))) {
 				int enchantLevel = 1;
 				if (book) {
 					for (int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
