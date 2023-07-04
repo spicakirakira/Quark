@@ -174,7 +174,20 @@ public class GameNerfsModule extends QuarkModule {
 				out.setTag(new CompoundTag());
 
 			Map<Enchantment, Integer> enchOutput = EnchantmentHelper.getEnchantments(out);
-			enchOutput.putAll(enchRight);
+			for (Enchantment enchantment : enchRight.keySet()) {
+				if (enchantment.canEnchant(out)) {
+					int level = enchRight.get(enchantment);
+					if (enchOutput.containsKey(enchantment)) {
+						int levelPresent = enchOutput.get(enchantment);
+						if (level > levelPresent)
+							enchOutput.put(enchantment, level);
+						else if (level == levelPresent && enchantment.getMaxLevel() > level)
+							enchOutput.put(enchantment, level + 1);
+					} else {
+						enchOutput.put(enchantment, level);
+					}
+				}
+			}
 			enchOutput.remove(Enchantments.MENDING);
 
 			EnchantmentHelper.setEnchantments(enchOutput, out);
