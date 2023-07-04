@@ -295,7 +295,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	@Override
 	protected void doPush(@Nonnull Entity entityIn) {
 		super.doPush(entityIn);
-		if (level.getDifficulty() != Difficulty.PEACEFUL && !noSpike) {
+		if (level.getDifficulty() != Difficulty.PEACEFUL && !noSpike && !hasPassenger(entityIn)) {
 			if (entityIn instanceof LivingEntity && !(entityIn instanceof Crab))
 				entityIn.hurt(DamageSource.CACTUS, 1f);
 		}
