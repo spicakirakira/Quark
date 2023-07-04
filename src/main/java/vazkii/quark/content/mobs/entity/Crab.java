@@ -253,6 +253,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	public boolean isInvulnerableTo(@Nonnull DamageSource source) {
 		return super.isInvulnerableTo(source) ||
 			source == DamageSource.CACTUS ||
+			source == DamageSource.SWEET_BERRY_BUSH ||
 			source == DamageSource.LIGHTNING_BOLT ||
 			getSizeModifier() > 1 && source.isFire();
 	}
