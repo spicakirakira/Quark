@@ -24,6 +24,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -124,6 +126,20 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 		entityData.define(SIZE_MODIFIER, 1f);
 		entityData.define(VARIANT, -1);
 		entityData.define(RAVING, false);
+	}
+
+	@Nonnull
+	@Override
+	public InteractionResult mobInteract(@Nonnull Player player, @Nonnull InteractionHand hand) {
+		if (getSizeModifier() >= 2 && !this.isFood(player.getItemInHand(hand)) && !this.isVehicle() && !player.isSecondaryUseActive()) {
+			if (!this.level.isClientSide) {
+				player.startRiding(this);
+			}
+
+			return InteractionResult.sidedSuccess(this.level.isClientSide);
+		}
+
+		return super.mobInteract(player, hand);
 	}
 
 	@Nullable
