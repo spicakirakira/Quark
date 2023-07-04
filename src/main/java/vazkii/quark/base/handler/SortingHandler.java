@@ -475,6 +475,7 @@ public final class SortingHandler {
 		TRIDENT(classPredicate(TridentItem.class), BOW_COMPARATOR),
 		ARROWS(classPredicate(ArrowItem.class)),
 		POTION(classPredicate(PotionItem.class), POTION_COMPARATOR),
+		TIPPED_ARROW(classPredicate(TippedArrowItem.class), POTION_COMPARATOR),
 		MINECART(classPredicate(MinecartItem.class)),
 		RAIL(list(Blocks.RAIL, Blocks.POWERED_RAIL, Blocks.DETECTOR_RAIL, Blocks.ACTIVATOR_RAIL)),
 		DYE(classPredicate(DyeItem.class)),
