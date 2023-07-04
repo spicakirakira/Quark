@@ -1,10 +1,5 @@
 package vazkii.quark.integration.lootr;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -13,7 +8,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -28,21 +23,15 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.ModList;
 import noobanidus.mods.lootr.block.entities.LootrChestBlockEntity;
 import noobanidus.mods.lootr.config.ConfigManager;
 import noobanidus.mods.lootr.util.ChestUtil;
 import vazkii.arl.interf.IItemPropertiesFiller;
 import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.content.building.block.VariantChestBlock;
 import vazkii.quark.content.building.block.VariantTrappedChestBlock;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -53,6 +42,8 @@ public class LootrVariantTrappedChestBlock extends VariantTrappedChestBlock impl
 	public LootrVariantTrappedChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties properties) {
 		super("lootr", type, module, supplier, properties.strength(2.5f));
 	}
+
+	// BEGIN LOOTR COPY
 
 	@Override
 	public float getExplosionResistance() {
@@ -67,7 +58,7 @@ public class LootrVariantTrappedChestBlock extends VariantTrappedChestBlock impl
 
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-		return new LootrVariantTrappedChestBlockEntity(pPos, pState);
+		return new LootrVariantTrappedChestBlockEntity(pPos, pState); // Modified
 	}
 
 	@Override
@@ -121,45 +112,16 @@ public class LootrVariantTrappedChestBlock extends VariantTrappedChestBlock impl
 		return pLevel.isClientSide ? LootrChestBlockEntity::lootrLidAnimateTick : null;
 	}
 
+	// END LOOTR COPY
+
 	@Override
 	public void fillItemProperties(Item.Properties props) {
 		props.tab(null);
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public BlockItem provideItemBlock(Block block, VariantChestBlock.Item.Properties props) {
-		return new Item(block, props);
-	}
-
-	public static class Item extends BlockItem {
-
-		public Item(Block block, Properties props) {
-			super(block, props);
-		}
-
-		@Override
-		@OnlyIn(Dist.CLIENT)
-		public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-			consumer.accept(new IClientItemExtensions() {
-
-				@Override
-				public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-					Minecraft mc = Minecraft.getInstance();
-
-					return new BlockEntityWithoutLevelRenderer(mc.getBlockEntityRenderDispatcher(), mc.getEntityModels()) {
-						private final BlockEntity tile = new LootrVariantTrappedChestBlockEntity(BlockPos.ZERO, getBlock().defaultBlockState());
-
-						@Override
-						public void renderByItem(@Nonnull ItemStack stack, @Nonnull ItemTransforms.TransformType transformType, @Nonnull PoseStack pose, @Nonnull MultiBufferSource buffer, int x, int y) {
-							mc.getBlockEntityRenderDispatcher().renderItem(tile, pose, buffer, x, y);
-						}
-
-					};
-				}
-
-			});
-		}
+	public BlockItem provideItemBlock(Block block, Item.Properties props) {
+		return new LootrVariantChestBlock.Item(block, props, true);
 	}
 
 	public static class Compat extends LootrVariantTrappedChestBlock {

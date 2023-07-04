@@ -7,7 +7,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,11 +18,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -36,6 +40,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.ModList;
+import noobanidus.mods.lootr.LootrTags;
 import noobanidus.mods.lootr.block.entities.LootrChestBlockEntity;
 import noobanidus.mods.lootr.config.ConfigManager;
 import noobanidus.mods.lootr.util.ChestUtil;
@@ -56,6 +61,8 @@ public class LootrVariantChestBlock extends VariantChestBlock implements IItemPr
 	public LootrVariantChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties properties) {
 		super("lootr", type, module, supplier, properties.strength(2.5f));
 	}
+
+	// BEGIN LOOTR COPY
 
 	@Override
 	public float getExplosionResistance() {
@@ -80,7 +87,7 @@ public class LootrVariantChestBlock extends VariantChestBlock implements IItemPr
 
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return new LootrVariantChestBlockEntity(pos, state);
+		return new LootrVariantChestBlockEntity(pos, state); // Modified
 	}
 
 	@Override
@@ -144,21 +151,53 @@ public class LootrVariantChestBlock extends VariantChestBlock implements IItemPr
 
 	}
 
+	// END LOOTR COPY
+
 	@Override
-	public void fillItemProperties(LootrVariantTrappedChestBlock.Item.Properties props) {
+	public void fillItemProperties(Item.Properties props) {
 		props.tab(null);
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public BlockItem provideItemBlock(Block block, VariantChestBlock.Item.Properties props) {
-		return new Item(block, props);
+	public BlockItem provideItemBlock(Block block, Item.Properties props) {
+		return new Item(block, props, false);
 	}
 
 	public static class Item extends BlockItem {
 
-		public Item(Block block, Properties props) {
+		private final boolean trap;
+
+		public Item(Block block, Properties props, boolean trap) {
 			super(block, props);
+			this.trap = trap;
+		}
+
+		@Override
+		public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+			if (!context.isSecondaryUseActive()) {
+				Player player = context.getPlayer();
+				Level level = context.getLevel();
+				BlockPos pos = context.getClickedPos();
+				Block block = getBlock();
+
+				if (player != null && player.isCreative()) {
+					BlockState state = level.getBlockState(pos);
+					TagKey<Block> key = trap ? LootrTags.Blocks.TRAPPED_CHESTS : LootrTags.Blocks.CHESTS;
+
+					if (state.is(key) && !state.is(block)) {
+						BlockEntity entity = level.getBlockEntity(pos);
+						CompoundTag nbt = entity == null ? null : entity.serializeNBT();
+						level.setBlock(pos, block.withPropertiesOf(state), 18); // Same as debug stick
+						level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
+						BlockEntity newEntity = level.getBlockEntity(pos);
+						if (newEntity != null && nbt != null) newEntity.load(nbt);
+
+						return InteractionResult.SUCCESS;
+					}
+				}
+			}
+
+			return super.onItemUseFirst(stack, context);
 		}
 
 		@Override
