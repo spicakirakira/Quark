@@ -19,7 +19,7 @@ import java.util.*;
 public class QuarkMixinPlugin implements IMixinConfigPlugin {
 	@Override
 	public void onLoad(String mixinPackage) {
-//		MixinExtrasBootstrap.init();
+
 	}
 
 	@Override

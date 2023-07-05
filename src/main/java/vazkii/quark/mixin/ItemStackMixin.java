@@ -3,7 +3,11 @@ package vazkii.quark.mixin;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -45,10 +49,26 @@ public class ItemStackMixin implements PseudoAccessorItemStack {
 		callbackInfoReturnable.setReturnValue(AncientTomesModule.shiftRarity((ItemStack) (Object) this, callbackInfoReturnable.getReturnValue()));
 	}
 
-//	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
-//	private boolean hasTagIfBaked(boolean hasTag) {
-//		return hasTag || GoldToolsHaveFortuneModule.shouldShowEnchantments((ItemStack) (Object) this);
-//	}
+	@Inject(method = "getTooltipLines", at = @At("HEAD"))
+	private void hasTagIfBaked(Player player, TooltipFlag flag, CallbackInfoReturnable<List<Component>> cir, @Share("removedEnchantments") LocalBooleanRef ref) {
+		ItemStack self = (ItemStack) (Object) this;
+		if (!self.hasTag() && GoldToolsHaveFortuneModule.shouldShowEnchantments(self)) {
+			ref.set(true);
+			self.setTag(new CompoundTag());
+		}
+	}
+
+	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
+	private boolean hasTagIfBaked(boolean hasTag, @Share("removedEnchantments") LocalBooleanRef ref) {
+		return hasTag || ref.get();
+	}
+
+	@Inject(method = "getTooltipLines", at = @At("RETURN"))
+	private void removeTagIfBaked(Player player, TooltipFlag flag, CallbackInfoReturnable<List<Component>> cir, @Share("removedEnchantments") LocalBooleanRef ref) {
+		ItemStack self = (ItemStack) (Object) this;
+		if (ref.get())
+			self.setTag(null);
+	}
 
 	@ModifyArg(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;appendEnchantmentNames(Ljava/util/List;Lnet/minecraft/nbt/ListTag;)V"))
 	private ListTag hideSmallerEnchantments(ListTag tag) {
