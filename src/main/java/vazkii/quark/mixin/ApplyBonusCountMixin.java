@@ -13,11 +13,11 @@ import vazkii.quark.content.tweaks.module.GoldToolsHaveFortuneModule;
 @Mixin(ApplyBonusCount.class)
 public class ApplyBonusCountMixin {
 
-	@Redirect(method = "run", at = @At(value = "INVOKE", 
+	@Redirect(method = "run", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I"))
 	public int getLevel(Enchantment enchantment, ItemStack stack) {
 		int val = EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack);
-		return GoldToolsHaveFortuneModule.getFortuneLevel(enchantment, stack, val);
+		return GoldToolsHaveFortuneModule.getActualEnchantmentLevel(enchantment, stack, val);
 	}
-	
+
 }

@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "quark.mixins.refmap.json",
   "package": "vazkii.quark.mixin",
+  "plugin": "vazkii.quark.mixinsupport.QuarkMixinPlugin",
   "mixins": [
     "AnimalMixin",
     "AnvilMenuMixin",
@@ -29,6 +30,7 @@
     "FallingBlockEntityMixin",
     "HalfTransparentBlockMixin",
     "HarvestFarmlandMixin",
+    "IForgeItemMixin",
     "IronBarsBlockMixin",
     "ItemMixin",
     "ItemsMixin",

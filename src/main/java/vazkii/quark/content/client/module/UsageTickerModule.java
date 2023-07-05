@@ -1,11 +1,6 @@
 package vazkii.quark.content.client.module;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 import com.mojang.blaze3d.platform.Window;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -15,7 +10,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -33,6 +27,10 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 @LoadModule(category = ModuleCategory.CLIENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class UsageTickerModule extends QuarkModule {
@@ -216,7 +214,7 @@ public class UsageTickerModule extends QuarkModule {
 		@OnlyIn(Dist.CLIENT)
 		public int getStackCount(Player player, ItemStack displayStack, ItemStack original, boolean renderPass) {
 			int val = 1;
-			
+
 			if(displayStack.isStackable()) {
 				Predicate<ItemStack> predicate = (stackAt) -> ItemStack.isSameItemSameTags(stackAt, displayStack);
 
@@ -241,7 +239,7 @@ public class UsageTickerModule extends QuarkModule {
 		}
 
 		private static boolean isProjectileWeapon(ItemStack stack) {
-			return (stack.getItem() instanceof ProjectileWeaponItem) && EnchantmentHelper.getTagEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) == 0;
+			return (stack.getItem() instanceof ProjectileWeaponItem) && stack.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) == 0;
 		}
 
 		@OnlyIn(Dist.CLIENT)
@@ -255,7 +253,7 @@ public class UsageTickerModule extends QuarkModule {
 
 			if(logicalStack.isEmpty())
 				return ItemStack.EMPTY;
-			
+
 			return logicalStack;
 		}
 	}

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -25,6 +26,7 @@ import vazkii.quark.content.client.resources.AttributeSlot;
 import vazkii.quark.content.client.tooltip.AttributeTooltips;
 import vazkii.quark.content.management.module.ItemSharingModule;
 import vazkii.quark.content.tools.module.AncientTomesModule;
+import vazkii.quark.content.tweaks.module.GoldToolsHaveFortuneModule;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,22 @@ public class ItemStackMixin implements PseudoAccessorItemStack {
 	@Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
 	private void getRarity(CallbackInfoReturnable<Rarity> callbackInfoReturnable) {
 		callbackInfoReturnable.setReturnValue(AncientTomesModule.shiftRarity((ItemStack) (Object) this, callbackInfoReturnable.getReturnValue()));
+	}
+
+//	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
+//	private boolean hasTagIfBaked(boolean hasTag) {
+//		return hasTag || GoldToolsHaveFortuneModule.shouldShowEnchantments((ItemStack) (Object) this);
+//	}
+
+	@ModifyArg(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;appendEnchantmentNames(Ljava/util/List;Lnet/minecraft/nbt/ListTag;)V"))
+	private ListTag hideSmallerEnchantments(ListTag tag) {
+		return GoldToolsHaveFortuneModule.hideSmallerEnchantments((ItemStack) (Object) this, tag);
+	}
+
+	@ModifyArg(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;appendEnchantmentNames(Ljava/util/List;Lnet/minecraft/nbt/ListTag;)V"))
+	private List<Component> appendEnchantmentNames(List<Component> components) {
+		GoldToolsHaveFortuneModule.fakeEnchantmentTooltip((ItemStack) (Object) this, components);
+		return components;
 	}
 
 	@Unique

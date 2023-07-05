@@ -1,29 +1,18 @@
 package vazkii.quark.content.tweaks.module;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.entity.living.LootingLevelEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -31,6 +20,8 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.Config.Max;
 import vazkii.quark.base.module.config.Config.Min;
 import vazkii.quark.base.module.hint.Hint;
+
+import java.util.*;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class GoldToolsHaveFortuneModule extends QuarkModule {
@@ -47,86 +38,151 @@ public class GoldToolsHaveFortuneModule extends QuarkModule {
 	@Min(0)
 	@Max(4)
 	public static int harvestLevel = 2;
-	
-	@Config public static boolean displayFortuneInTooltip = true;
+
+	@Config public static boolean displayBakedEnchantmentsInTooltip = true;
 	@Config public static boolean italicTooltip = true;
+
+	@Config(description = "Enchantments other than Gold's Fortune/Looting to bake into items. Format is \"item+enchant@level\", such as \"minecraft:stick+sharpness@10\".")
+	public static List<String> bakedEnchantments = Lists.newArrayList();
+
+	// Daschbun
+	private static final Map<Item, Object2IntMap<Enchantment>> wellBakedEnchantments = new HashMap<>();
 
 	@Hint(key = "gold_tool_fortune", content = "fortuneLevel")
 	List<Item> gold_tools = Arrays.asList(Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD);
 	@Hint(key = "gold_tool_harvest_level", content = "harvestLevel")
 	List<Item> gold_tools_2 = gold_tools;
 
-
 	private static boolean staticEnabled;
 
 	@Override
 	public void configChanged() {
 		staticEnabled = enabled;
-	}
-	
-	@SubscribeEvent
-	public void onLootingCheck(LootingLevelEvent event) {
-		DamageSource source = event.getDamageSource();
-		if(source != null && source.getEntity() != null) {
-			Entity entity = source.getEntity();
-			if(entity instanceof LivingEntity le) {
-				ItemStack stack = le.getMainHandItem();
-				
-				if(stack.getItem() instanceof SwordItem) {
-					int level = event.getLootingLevel();
-					int target = getEffectiveLevel(stack, level);
-					
-					if(target > level)
-						event.setLootingLevel(target);
+		wellBakedEnchantments.clear();
+		for (String enchantment : bakedEnchantments) {
+			String[] split1 = enchantment.split("\\+");
+			if (split1.length == 2) {
+				ResourceLocation itemLoc = ResourceLocation.tryParse(split1[0]);
+				if (itemLoc != null) {
+					Item item = ForgeRegistries.ITEMS.getValue(itemLoc);
+					if (item != null) {
+						String[] split2 = split1[1].split("@");
+						if (split2.length == 0 || split2.length > 2)
+							continue;
+						ResourceLocation enchantLoc = ResourceLocation.tryParse(split2[0]);
+						if (enchantLoc != null) {
+							Enchantment enchant = ForgeRegistries.ENCHANTMENTS.getValue(enchantLoc);
+							if (enchant != null) {
+								try {
+									int strength = split2.length == 1 ? 1 : Integer.parseInt(split2[1]);
+									var pastry = wellBakedEnchantments.computeIfAbsent(item, it -> new Object2IntArrayMap<>());
+									pastry.put(enchant, Math.max(strength, pastry.getOrDefault(enchant, 0)));
+								} catch (NumberFormatException e) {
+									// NO-OP
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (fortuneLevel > 0) {
+			for (Item item : ForgeRegistries.ITEMS) {
+				if (item instanceof TieredItem tiered && tiered.getTier() == Tiers.GOLD) {
+					Enchantment enchant = item instanceof SwordItem ? Enchantments.MOB_LOOTING : Enchantments.BLOCK_FORTUNE;
+					var pastry = wellBakedEnchantments.computeIfAbsent(item, it -> new Object2IntArrayMap<>());
+					pastry.put(enchant, Math.max(fortuneLevel, pastry.getOrDefault(enchant, 0)));
 				}
 			}
 		}
 	}
-	
-	@SubscribeEvent
-	@OnlyIn(Dist.CLIENT)
-	public void onTooltip(ItemTooltipEvent event) {
-		if(!displayFortuneInTooltip)
-			return;
-		
-		ItemStack stack = event.getItemStack();
-		int level = getEffectiveLevel(stack, 0);
-		if(level == fortuneLevel) {
-			Enchantment enchant = stack.getItem() instanceof SwordItem ? Enchantments.MOB_LOOTING : Enchantments.BLOCK_FORTUNE;
-			int enchantLevel = EnchantmentHelper.getItemEnchantmentLevel(enchant, stack);
-			if(enchantLevel < level) {
-				Component comp = enchant.getFullname(level);
-				if(italicTooltip)
-					comp = comp.copy().withStyle(ChatFormatting.ITALIC);
-				
-				event.getToolTip().add(comp);
+
+	public static int getActualEnchantmentLevel(Enchantment enchant, ItemStack stack, int prev) {
+		Item item = stack.getItem();
+
+		if (staticEnabled && wellBakedEnchantments.containsKey(item)) {
+			var pastry = wellBakedEnchantments.get(item);
+			if (pastry.containsKey(enchant)) {
+				int forcedLevel = pastry.getOrDefault(enchant, 0);
+				if (forcedLevel > prev)
+					return forcedLevel;
+			}
+		}
+
+		return prev;
+	}
+
+	public static void addEnchantmentsIfMissing(ItemStack stack, Map<Enchantment, Integer> map) {
+		Item item = stack.getItem();
+
+		if (staticEnabled && wellBakedEnchantments.containsKey(item) && displayBakedEnchantmentsInTooltip) {
+			var pastry = wellBakedEnchantments.get(item);
+			for (Enchantment enchantment : pastry.keySet()) {
+				int level = map.getOrDefault(enchantment, 0);
+				int effectiveLevel = getActualEnchantmentLevel(enchantment, stack, level);
+				if (level < effectiveLevel)
+					map.put(enchantment, effectiveLevel);
 			}
 		}
 	}
-	
-	private static int getEffectiveLevel(ItemStack stack, int prevLvl) {
-		if(stack.getItem() instanceof TieredItem ti) {
-			Tier tier = ti.getTier();
-			
-			if(tier == Tiers.GOLD)
-				return Math.max(prevLvl, fortuneLevel);
-		}
-		
-		return prevLvl;
-	}
 
-	public static int getFortuneLevel(Enchantment enchant, ItemStack stack, int prev) {
-		if(!staticEnabled || prev >= fortuneLevel || enchant != Enchantments.BLOCK_FORTUNE || !(stack.getItem() instanceof DiggerItem))
-			return prev;
+	// Tier
 
-		return getEffectiveLevel(stack, prev);
-	}
-	
 	public static Tier getEffectiveTier(Item item, Tier realTier) {
 		if(!staticEnabled || (realTier != Tiers.GOLD))
 			return realTier;
 
 		return TIERS[harvestLevel];
+	}
+
+	// Tooltip stuff
+
+	public static boolean shouldShowEnchantments(ItemStack stack) {
+		return wellBakedEnchantments.containsKey(stack.getItem());
+	}
+
+	public static void fakeEnchantmentTooltip(ItemStack stack, List<Component> components) {
+		for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
+			int actualLevel = EnchantmentHelper.getTagEnchantmentLevel(entry.getKey(), stack);
+			if (actualLevel != entry.getValue()) {
+				Component comp = entry.getKey().getFullname(entry.getValue());
+				if (italicTooltip)
+					comp = comp.copy().withStyle(ChatFormatting.ITALIC);
+
+				if (actualLevel != 0)
+					comp = Component.translatable("quark.misc.enchantment_with_actual_level", comp,
+						Component.translatable("enchantment.level." + actualLevel)).withStyle(ChatFormatting.GRAY);
+
+				components.add(comp);
+			}
+		}
+	}
+
+	public static ListTag hideSmallerEnchantments(ItemStack stack, ListTag tag) {
+		if (staticEnabled && displayBakedEnchantmentsInTooltip) {
+			List<ResourceLocation> toRemove = Lists.newArrayList();
+			for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
+				int actualLevel = EnchantmentHelper.getTagEnchantmentLevel(entry.getKey(), stack);
+				if (actualLevel != entry.getValue() && actualLevel != 0) {
+					toRemove.add(EnchantmentHelper.getEnchantmentId(entry.getKey()));
+				}
+			}
+
+			if (!toRemove.isEmpty()) {
+				tag = tag.copy();
+				tag.removeIf(it -> {
+					if (it instanceof CompoundTag compound) {
+						ResourceLocation loc = EnchantmentHelper.getEnchantmentId(compound);
+						if (loc != null) {
+							return toRemove.contains(loc);
+						}
+					}
+					return false;
+				});
+			}
+		}
+		return tag;
 	}
 
 }

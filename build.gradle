@@ -12,6 +12,7 @@ buildscript {
 
 plugins {
     id 'com.diffplug.gradle.spotless' version '4.5.1'
+//    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 apply plugin: 'net.minecraftforge.gradle'
@@ -102,11 +103,24 @@ repositories {
         }
     }
 
+//    maven {
+//        name "jitpack"
+//        url "https://jitpack.io"
+//    }
+
 }
+
+//configurations {
+//    shade
+//    implementation.extendsFrom shade
+//}
 
 dependencies {
     minecraft "net.minecraftforge:forge:${config.mc_version}-${deps.forge}"
 
+//    implementation "com.github.LlamaLad7:MixinExtras:0.1.1"
+//    shade "com.github.LlamaLad7:MixinExtras:0.1.1"
+//    annotationProcessor "com.github.LlamaLad7:MixinExtras:0.1.1"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     runtimeOnly fg.deobf("dev.emi:emi-forge:${deps.emi}")
@@ -117,6 +131,22 @@ dependencies {
     implementation fg.deobf("curse.maven:flan-forge-493246:${deps.flan}")
     implementation fg.deobf("curse.maven:lootr-361276:${deps.lootr}")
 }
+
+//assemble.dependsOn shadowJar
+//
+//shadowJar {
+//    classifier ""
+//    configurations = [project.configurations.shade]
+//
+//    exclude "**/*.bat"
+//    exclude "**/*.psd"
+//    exclude "**/*.exe"
+//    exclude "**/unused"
+//    exclude "**/genscripts"
+//
+//    mergeServiceFiles()
+//    relocate 'com.llamalad7.mixinextras', 'vazkii.quark.shadow.llamalad7.mixinextras'
+//}
 
 spotless {
     enforceCheck = false // workaround around jenkins having wrong line endings in some files
@@ -184,12 +214,12 @@ jar {
 }
 
 task sourcesJar(type: Jar) {
-    classifier = "sources"
+    classifier "sources"
     from sourceSets.main.allJava
 }
 
 task deobfJar(type: Jar) {
-    classifier = "deobf"
+    classifier "deobf"
     from sourceSets.main.output
 }
 
