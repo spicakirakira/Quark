@@ -17,8 +17,8 @@ import vazkii.quark.content.experimental.module.GameNerfsModule;
 public class PistonMovingBlockEntityMixin {
 
 	@WrapOperation(method = {"tick", "finalTick"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
-	private static boolean tick(Level world, BlockPos pos, BlockState newState, int flags, Operation<Boolean> original) {
-		return PistonsMoveTileEntitiesModule.setPistonBlock(world, pos, newState, flags) || original.call(world, pos, newState, flags);
+	private static boolean tick(Level instance, BlockPos pos, BlockState newState, int flags, Operation<Boolean> original) {
+		return PistonsMoveTileEntitiesModule.setPistonBlock(instance, pos, newState, flags) || original.call(instance, pos, newState, flags);
 	}
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 84))
