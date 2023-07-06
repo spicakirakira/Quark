@@ -1,20 +1,6 @@
 package vazkii.quark.content.automation.module;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.WeakHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.google.common.collect.Lists;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -25,11 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.JukeboxBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
@@ -40,6 +22,7 @@ import net.minecraftforge.event.TickEvent.LevelTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.tuple.Pair;
 import vazkii.quark.api.IIndirectConnector;
 import vazkii.quark.api.IPistonCallback;
 import vazkii.quark.api.QuarkCapabilities;
@@ -51,6 +34,11 @@ import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.content.building.module.SturdyStoneModule;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 @LoadModule(category = ModuleCategory.AUTOMATION, hasSubscriptions = true)
 public class PistonsMoveTileEntitiesModule extends QuarkModule {
@@ -99,17 +87,17 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 
 		delays.clear();
 	}
-	
+
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 		MutableComponent comp = Component.translatable("quark.jei.hint.piston_te");
-		
+
 		if(ModuleLoader.INSTANCE.isModuleEnabled(SturdyStoneModule.class))
 			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.piston_sturdy"));
-		
+
 		if(GeneralConfig.pistonPushLimit != 12)
 			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.piston_max_blocks", GeneralConfig.pistonPushLimit));
-		
+
 		consumer.accept(Items.PISTON, comp);
 		consumer.accept(Items.STICKY_PISTON, comp);
 	}
@@ -210,7 +198,7 @@ public class PistonsMoveTileEntitiesModule extends QuarkModule {
 			world.updateNeighborsAt(pos, block);
 		}
 
-		return false; // the value is popped, doesn't matter what we return
+		return true;
 	}
 
 	/**

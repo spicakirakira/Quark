@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.datafixers.util.Pair;
@@ -23,7 +26,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import vazkii.quark.content.client.hax.PseudoAccessorItemStack;
 import vazkii.quark.content.client.resources.AttributeSlot;
@@ -39,14 +41,14 @@ import java.util.Map;
 @Mixin(ItemStack.class)
 public class ItemStackMixin implements PseudoAccessorItemStack {
 
-	@Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true)
-	private void getHoverName(CallbackInfoReturnable<Component> callbackInfoReturnable) {
-		callbackInfoReturnable.setReturnValue(ItemSharingModule.createStackComponent((ItemStack) (Object) this, (MutableComponent) callbackInfoReturnable.getReturnValue()));
+	@ModifyReturnValue(method = "getDisplayName", at = @At("RETURN"))
+	private Component getHoverName(Component prev) {
+		return ItemSharingModule.createStackComponent((ItemStack) (Object) this, (MutableComponent) prev);
 	}
 
-	@Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
-	private void getRarity(CallbackInfoReturnable<Rarity> callbackInfoReturnable) {
-		callbackInfoReturnable.setReturnValue(AncientTomesModule.shiftRarity((ItemStack) (Object) this, callbackInfoReturnable.getReturnValue()));
+	@ModifyReturnValue(method = "getRarity", at = @At("RETURN"))
+	private Rarity getRarity(Rarity prev) {
+		return AncientTomesModule.shiftRarity((ItemStack) (Object) this, prev);
 	}
 
 	@Inject(method = "getTooltipLines", at = @At("HEAD"))
@@ -84,9 +86,6 @@ public class ItemStackMixin implements PseudoAccessorItemStack {
 	@Unique
 	private Map<AttributeSlot, Multimap<Attribute, AttributeModifier>> capturedAttributes = new HashMap<>();
 
-	@Unique
-	private EquipmentSlot capturedSlot;
-
 	@Override
 	public Map<AttributeSlot, Multimap<Attribute, AttributeModifier>> quark$getCapturedAttributes() {
 		return capturedAttributes;
@@ -106,16 +105,10 @@ public class ItemStackMixin implements PseudoAccessorItemStack {
 		capturedAttributes = new HashMap<>();
 	}
 
-	@ModifyArg(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))
-	private EquipmentSlot captureTooltipSlot(EquipmentSlot slot) {
-		capturedSlot = slot;
-		return slot;
-	}
-
-	@ModifyVariable(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z", shift = At.Shift.BEFORE, remap = false))
-	private Multimap<Attribute, AttributeModifier> overrideAttributeTooltips(Multimap<Attribute, AttributeModifier> attributes) {
+	@ModifyReceiver(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z", remap = false))
+	private Multimap<Attribute, AttributeModifier> overrideAttributeTooltips(Multimap<Attribute, AttributeModifier> attributes, @Local EquipmentSlot slot) {
 		if (AttributeTooltips.shouldHideAttributes()) {
-			capturedAttributes.put(AttributeSlot.fromCanonicalSlot(capturedSlot), LinkedHashMultimap.create(attributes));
+			capturedAttributes.put(AttributeSlot.fromCanonicalSlot(slot), LinkedHashMultimap.create(attributes));
 			return ImmutableMultimap.of();
 		}
 		return attributes;

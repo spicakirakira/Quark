@@ -20,42 +20,33 @@ import vazkii.quark.base.module.QuarkModule;
 public class LongRangePickBlockModule extends QuarkModule {
 
 	public static boolean staticEnabled;
-	
-	private static HitResult savedHitResult;
-	
+
 	@Override
 	public void configChanged() {
 		staticEnabled = enabled;
 	}
-		
+
 	@OnlyIn(Dist.CLIENT)
 	public static HitResult transformHitResult(HitResult hitResult) {
-		savedHitResult = hitResult;
-		
 		if(staticEnabled) {
 			Minecraft mc = Minecraft.getInstance();
 			Player player = mc.player;
 			Level level = mc.level;
-			
-			if(savedHitResult != null) {
-				if(savedHitResult instanceof BlockHitResult bhr && !level.getBlockState(bhr.getBlockPos()).isAir())
-					return savedHitResult;
-							
-				if(savedHitResult instanceof EntityHitResult ehr)
-					return savedHitResult;
+
+			if(hitResult != null) {
+				if(hitResult instanceof BlockHitResult bhr && !level.getBlockState(bhr.getBlockPos()).isAir())
+					return hitResult;
+
+				if(hitResult instanceof EntityHitResult ehr)
+					return hitResult;
 			}
-			
+
 			HitResult result = RayTraceHandler.rayTrace(player, level, player, Block.OUTLINE, Fluid.NONE, 200);
 			if(result != null && result.getType() == Type.BLOCK)
 				return result;
 		}
-		
-		return savedHitResult;
+
+		return hitResult;
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	public static HitResult getSavedHitResult() {
-		return savedHitResult;
-	}
-	
+
 }

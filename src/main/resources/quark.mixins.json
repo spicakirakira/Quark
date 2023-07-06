@@ -8,14 +8,12 @@
   "mixins": [
     "AnimalMixin",
     "AnvilMenuMixin",
-    "ApplyBonusCountMixin",
     "ArrowPiercingEnchantmentMixin",
     "BannerDuplicateRecipeMixin",
     "BaseCoralPlantTypeBlockMixin",
     "BeaconBlockEntityMixin",
     "BlockItemMixin",
     "BoatMixin",
-    "BonusLevelTableConditionMixin",
     "CrossbowMultishotMixin",
     "DamageEnchantmentMixin",
     "DamageSourceMixin",
@@ -63,6 +61,7 @@
     "accessor.AccessorAbstractChestedHorse",
     "accessor.AccessorLivingEntity",
     "accessor.AccessorLootTable",
+    "accessor.AccessorPistonStructureResolver",
     "accessor.AccessorPotionBrewing",
     "accessor.AccessorServerGamePacketListenerImpl"
   ],

@@ -1,20 +1,17 @@
 package vazkii.quark.mixin;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.world.item.enchantment.ArrowPiercingEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(ArrowPiercingEnchantment.class)
 public class ArrowPiercingEnchantmentMixin {
 
-	@Inject(method = "checkCompatibility", at = @At("RETURN"), cancellable = true)
-	private void checkCompatibility(Enchantment enchantment, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
-		if(callbackInfoReturnable.getReturnValue())
-			callbackInfoReturnable.setReturnValue(enchantment != Enchantments.BLOCK_EFFICIENCY);
+	@ModifyReturnValue(method = "checkCompatibility", at = @At("RETURN"))
+	private boolean checkCompatibility(boolean compatible, Enchantment enchantment) {
+		return compatible && enchantment != Enchantments.BLOCK_EFFICIENCY;
 	}
 }

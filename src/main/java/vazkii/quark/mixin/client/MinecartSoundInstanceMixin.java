@@ -1,5 +1,6 @@
 package vazkii.quark.mixin.client;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,9 +14,11 @@ import vazkii.quark.content.client.module.WoolShutsUpMinecartsModule;
 @Mixin(MinecartSoundInstance.class)
 public class MinecartSoundInstanceMixin {
 
-	@Shadow private AbstractMinecart minecart;
+	@Shadow
+	@Final
+	private AbstractMinecart minecart;
 
-	@Inject(method = "canPlaySound", at = @At("HEAD"), cancellable = true)	
+	@Inject(method = "canPlaySound", at = @At("HEAD"), cancellable = true)
 	public void canPlay(CallbackInfoReturnable<Boolean> ci) {
 		if(!WoolShutsUpMinecartsModule.canPlay(minecart)) {
 			ci.setReturnValue(false);
@@ -23,5 +26,5 @@ public class MinecartSoundInstanceMixin {
 		}
 	}
 
-	
+
 }

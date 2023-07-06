@@ -1,13 +1,7 @@
 package vazkii.quark.content.tweaks.module;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +13,11 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 @LoadModule(category = ModuleCategory.TWEAKS)
 public class DiamondRepairModule extends QuarkModule {
@@ -42,7 +41,7 @@ public class DiamondRepairModule extends QuarkModule {
 
 	@Config(name = "Unrepairable Items")
 	public static List<String> unrepairableItemsList = Arrays.asList();
-	
+
 	@Config private static boolean enableJeiHints = true;
 
 	private static boolean staticEnabled;
@@ -63,8 +62,8 @@ public class DiamondRepairModule extends QuarkModule {
 					String repairItems = toks[1];
 					String[] repairToks = repairItems.split(",");
 					for(String repairTok : repairToks) {
-						ResourceLocation repairItemRes = new ResourceLocation(repairTok);	
-						
+						ResourceLocation repairItemRes = new ResourceLocation(repairTok);
+
 						if(ForgeRegistries.ITEMS.containsKey(repairItemRes)) {
 							Item item = ForgeRegistries.ITEMS.getValue(itemRes);
 							Item repairItem = ForgeRegistries.ITEMS.getValue(repairItemRes);
@@ -77,22 +76,22 @@ public class DiamondRepairModule extends QuarkModule {
 
 		unrepairableItems = MiscUtil.massRegistryGet(unrepairableItemsList, ForgeRegistries.ITEMS);
 	}
-	
+
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 		if(!enableJeiHints)
 			return;
-		
+
 		Component removed = Component.translatable("quark.jei.hint.repair_item_removed");
 		for(Item item : unrepairableItems)
 			consumer.accept(item, removed);
-		
+
 		for(Item item : repairChanges.keySet()) {
 			Collection<Item> options = repairChanges.get(item);
-			
+
 			int len = options.size();
 			String key = "quark.jei.hint.repair_item_changed" + (len == 1 ? "" : "_multiple");
-			
+
 			MutableComponent formatParams = Component.empty();
 			int i = 1;
 			for(Item repair : options) {
@@ -101,12 +100,12 @@ public class DiamondRepairModule extends QuarkModule {
 					formatParams = formatParams.append(Component.literal(", "));
 				i++;
 			}
-			
+
 			consumer.accept(item, Component.translatable(key, formatParams));
 		}
 	}
 
-	public static boolean isValidRepairItem(Item item, ItemStack stack, ItemStack repairItem) {
+	public static boolean isValidRepairItem(boolean prev, Item item, ItemStack repairItem) {
 		if(staticEnabled) {
 			if(unrepairableItems.contains(item))
 				return false;
@@ -115,7 +114,7 @@ public class DiamondRepairModule extends QuarkModule {
 				return repairChanges.get(item).contains(repairItem.getItem());
 		}
 
-		return item.isValidRepairItem(stack, repairItem);
+		return prev;
 	}
 
 }

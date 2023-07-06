@@ -1,18 +1,16 @@
 package vazkii.quark.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import net.minecraft.client.gui.screens.Screen;
 import vazkii.quark.content.management.module.EasyTransferingModule;
 
 @Mixin(Screen.class)
 public class ScreenMixin {
 
-	@Inject(method = "hasShiftDown", at = @At("RETURN"), cancellable = true)
-	private static void hasShiftDown(CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
-		callbackInfoReturnable.setReturnValue(EasyTransferingModule.hasShiftDown(callbackInfoReturnable.getReturnValue()));
+	@ModifyReturnValue(method = "hasShiftDown", at = @At("RETURN"))
+	private static boolean hasShiftDown(boolean prev) {
+		return EasyTransferingModule.hasShiftDown(prev);
 	}
 }
