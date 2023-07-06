@@ -28,7 +28,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
@@ -580,11 +579,11 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	}
 
 	public int getEfficiencyModifier() {
-		return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, getStack());
+		return getStack().getEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY);
 	}
 
 	public int getPiercingModifier() {
-		return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PIERCING, getStack());
+		return getStack().getEnchantmentLevel(Enchantments.PIERCING);
 	}
 
 	public ItemStack getStack() {

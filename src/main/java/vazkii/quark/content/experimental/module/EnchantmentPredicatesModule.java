@@ -1,9 +1,6 @@
 package vazkii.quark.content.experimental.module;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +17,9 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 
-@LoadModule(category = ModuleCategory.EXPERIMENTAL, enabledByDefault = false, 
+import java.util.List;
+
+@LoadModule(category = ModuleCategory.EXPERIMENTAL, enabledByDefault = false,
 description = "This feature generates Resource Pack Item Model predicates on the items defined in 'Items to Change'\n"
 		+ "for the Enchantments defined in 'Enchantments to Register'.\n\n"
 		+ "Example: if 'minecraft:silk_touch' is added to 'Enchantments to Register', and 'minecraft:netherite_pickaxe'\n"
@@ -45,8 +44,8 @@ public class EnchantmentPredicatesModule extends QuarkModule {
 				for(Enchantment enchant : enchants) {
 					ResourceLocation enchantRes = ForgeRegistries.ENCHANTMENTS.getKey(enchant);
 					ResourceLocation name = new ResourceLocation(Quark.MOD_ID + "_has_enchant_" + enchantRes.getNamespace() + "_" + enchantRes.getPath());
-					ItemPropertyFunction fun = (stack, level, entity, i) -> EnchantmentHelper.getItemEnchantmentLevel(enchant, stack);
-				
+					ItemPropertyFunction fun = (stack, level, entity, i) -> EnchantmentHelper.getTagEnchantmentLevel(enchant, stack);
+
 					for(Item item : items)
 						ItemProperties.register(item, name, fun);
 				}
