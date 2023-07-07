@@ -1,7 +1,5 @@
 package vazkii.quark.addons.oddities.block.pipe;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -33,6 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import vazkii.quark.addons.oddities.block.be.PipeBlockEntity;
 import vazkii.quark.addons.oddities.module.PipesModule;
 import vazkii.quark.base.module.QuarkModule;
+
+import javax.annotation.Nonnull;
+
+import static vazkii.quark.base.handler.MiscUtil.directionProperty;
 
 public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 
@@ -129,9 +131,8 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 	public VoxelShape getShape(@Nonnull BlockState state, @Nonnull BlockGetter worldIn, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
 		int index = 0;
 		for(Direction dir : Direction.values()) {
-			int ord = dir.ordinal();
-			if(state.getValue(CONNECTIONS[ord]))
-				index += (1 << ord);
+			if(state.getValue(directionProperty(dir)))
+				index += (1 << dir.ordinal());
 		}
 
 		VoxelShape cached = shapeCache[index];

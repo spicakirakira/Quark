@@ -35,24 +35,24 @@ public class AncientWoodModule extends QuarkModule {
 
 	@Config(flag = "ancient_fruit_xp")
 	public static boolean ancientFruitGivesExp = true;
-	
+
 	@Config
 	@Min(1)
 	public static int ancientFruitExpValue = 10;
-	
+
 	@Config(description = "Set to 0 to disable loot chest generation")
 	@Min(0)
 	public static int ancientCityLootWeight = 8;
-	
+
 	@Config
 	@Min(0)
 	public static int ancientCityLootQuality = 1;
-	
+
 	public static WoodSet woodSet;
 	public static Block ancient_leaves;
 	@Hint public static Block ancient_sapling;
 	@Hint public static Item ancient_fruit;
-	
+
 	public static QuarkGenericTrigger ancientFruitTrigger;
 
 	@Override
@@ -66,18 +66,18 @@ public class AncientWoodModule extends QuarkModule {
 
 	@Override
 	public void register() {
-		woodSet = WoodSetHandler.addWoodSet(this, "ancient", MaterialColor.TERRACOTTA_WHITE, MaterialColor.TERRACOTTA_WHITE);
+		woodSet = WoodSetHandler.addWoodSet(this, "ancient", MaterialColor.TERRACOTTA_WHITE, MaterialColor.TERRACOTTA_WHITE, true);
 		ancient_leaves = new QuarkLeavesBlock(woodSet.name, this, MaterialColor.PLANT);
 		ancient_sapling = new AncientSaplingBlock(this);
 		ancient_fruit = new AncientFruitItem(this);
 
 		VariantHandler.addFlowerPot(ancient_sapling, RegistryHelper.getInternalName(ancient_sapling).getPath(), Functions.identity());
-		
+
 		QuarkAdvancementHandler.addModifier(new BalancedDietModifier(this, ImmutableSet.of(ancient_fruit)));
-		
+
 		ancientFruitTrigger = QuarkAdvancementHandler.registerGenericTrigger("ancient_fruit_overlevel");
 	}
-	
+
 	@SubscribeEvent
 	public void onLootTableLoad(LootTableLoadEvent event) {
 		int weight = 0;
@@ -93,5 +93,5 @@ public class AncientWoodModule extends QuarkModule {
 			MiscUtil.addToLootTable(event.getTable(), entry);
 		}
 	}
-	
+
 }

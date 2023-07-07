@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import vazkii.quark.api.ICrawlSpaceBlock;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
@@ -25,7 +26,6 @@ import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.util.VanillaWoods;
 import vazkii.quark.base.util.VanillaWoods.Wood;
 import vazkii.quark.content.building.block.HollowLogBlock;
-import vazkii.quark.content.building.block.HollowPillarBlock;
 
 @LoadModule(category = ModuleCategory.BUILDING, hasSubscriptions = true)
 public class HollowLogsModule extends QuarkModule {
@@ -33,18 +33,20 @@ public class HollowLogsModule extends QuarkModule {
 	private static final String TAG_TRYING_TO_CRAWL = "quark:trying_crawl";
 
 	public static QuarkGenericTrigger crawlTrigger;
-	
+
 	@Config(flag = "hollow_log_auto_crawl")
 	public static boolean enableAutoCrawl = true;
-	
-	@Hint(key = "hollow_logs", value = "hollow_log_auto_crawl") 
+
+	@Hint(key = "hollow_logs", value = "hollow_log_auto_crawl")
 	TagKey<Block> hollowLogsTag;
 
 	@Override
 	public void register() {
-		for(Wood wood : VanillaWoods.ALL)
+		for(Wood wood : VanillaWoods.ALL) {
 			new HollowLogBlock(wood.log(), this, !wood.nether());
-		
+//			new HollowWoodBlock(wood.wood(), this, !wood.nether());
+		}
+
 		crawlTrigger = QuarkAdvancementHandler.registerGenericTrigger("hollow_log_crawl");
 	}
 
@@ -58,46 +60,52 @@ public class HollowLogsModule extends QuarkModule {
 		if(enableAutoCrawl && event.phase == Phase.START) {
 			Player player = event.player;
 			BlockPos playerPos = player.blockPosition();
-			boolean isTrying = player.isCrouching() && !player.isSwimming() &&
-					player.level.getBlockState(playerPos).getCollisionShape(player.level, playerPos).isEmpty();
+			boolean isTrying = player.isVisuallyCrawling() ||
+				(player.isCrouching() && !player.isColliding(playerPos, player.level.getBlockState(playerPos)));
 			boolean wasTrying = player.getPersistentData().getBoolean(TAG_TRYING_TO_CRAWL);
-			
-			if(isTrying && !wasTrying) {
-				Direction dir = player.getDirection();
-				BlockPos pos = playerPos.relative(dir);
-				
-				if(!tryClimb(player, dir, pos))
-					tryClimb(player, dir, pos.above());
+
+			if (!player.isVisuallyCrawling()) {
+				if (isTrying && !wasTrying) {
+					Direction dir = player.getDirection();
+					Direction opp = dir.getOpposite();
+					if (dir.getAxis() != Axis.Y) {
+						BlockPos pos = playerPos.relative(dir);
+
+						if (!tryClimb(player, opp, playerPos)) // Crawl out
+							if (!tryClimb(player, opp, playerPos.above())) // Crawl out
+								if (!tryClimb(player, dir, pos)) // Crawl into
+									tryClimb(player, dir, pos.above()); // Crawl into
+					}
+				}
 			}
-			
+
 			if(isTrying != wasTrying)
 				player.getPersistentData().putBoolean(TAG_TRYING_TO_CRAWL, isTrying);
 		}
 	}
-	
+
 	private boolean tryClimb(Player player, Direction dir, BlockPos pos) {
 		BlockState state = player.level.getBlockState(pos);
 		Block block = state.getBlock();
-		
-		if(block instanceof HollowPillarBlock) {
-			Axis axis = state.getValue(HollowPillarBlock.AXIS);
-			if(axis != Axis.Y && axis == dir.getAxis()) {
+
+		if(block instanceof ICrawlSpaceBlock crawlSpace) {
+			if(crawlSpace.canCrawl(player.level, state, pos, dir)) {
 				player.setPose(Pose.SWIMMING);
 				player.setSwimming(true);
-				
-				double x = pos.getX() + 0.5 - (dir.getStepX() * 0.4);
-				double y = pos.getY() + 0.13;
-				double z = pos.getZ() + 0.5 - (dir.getStepZ() * 0.4);
-				
+
+				double x = pos.getX() + 0.5 - (dir.getStepX() * 0.3);
+				double y = pos.getY() + crawlSpace.crawlHeight(player.level, state, pos, dir);
+				double z = pos.getZ() + 0.5 - (dir.getStepZ() * 0.3);
+
 				player.setPos(x, y, z);
-				
-				if(player instanceof ServerPlayer sp)
+
+				if(player instanceof ServerPlayer sp && crawlSpace.isLog(sp, state, pos, dir))
 					crawlTrigger.trigger(sp);
-				
+
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 }

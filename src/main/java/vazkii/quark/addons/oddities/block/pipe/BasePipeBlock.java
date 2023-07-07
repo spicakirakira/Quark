@@ -1,11 +1,5 @@
 package vazkii.quark.addons.oddities.block.pipe;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -18,20 +12,16 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.fluids.FluidType;
 import org.jetbrains.annotations.Nullable;
 import vazkii.quark.addons.oddities.block.be.PipeBlockEntity;
 import vazkii.quark.addons.oddities.module.PipesModule;
@@ -40,18 +30,31 @@ import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
 
+import javax.annotation.Nonnull;
+import java.util.HashSet;
+import java.util.Set;
+
+import static vazkii.quark.base.handler.MiscUtil.directionProperty;
+
 public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 
-	protected static final BooleanProperty DOWN = BooleanProperty.create("down");
-	protected static final BooleanProperty UP = BooleanProperty.create("up");
-	protected static final BooleanProperty NORTH = BooleanProperty.create("north");
-	protected static final BooleanProperty SOUTH = BooleanProperty.create("south");
-	protected static final BooleanProperty WEST = BooleanProperty.create("west");
-	protected static final BooleanProperty EAST = BooleanProperty.create("east");
+	protected static final BooleanProperty DOWN = BlockStateProperties.DOWN;
+	protected static final BooleanProperty UP = BlockStateProperties.UP;
+	protected static final BooleanProperty NORTH = BlockStateProperties.NORTH;
+	protected static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
+	protected static final BooleanProperty WEST = BlockStateProperties.WEST;
+	protected static final BooleanProperty EAST = BlockStateProperties.EAST;
 
-	protected static final BooleanProperty[] CONNECTIONS = new BooleanProperty[] {
-			DOWN, UP, NORTH, SOUTH, WEST, EAST
-	};
+	protected static BooleanProperty property(Direction direction) {
+		return switch (direction) {
+			case DOWN -> DOWN;
+			case UP -> UP;
+			case NORTH -> NORTH;
+			case SOUTH -> SOUTH;
+			case WEST -> WEST;
+			case EAST -> EAST;
+		};
+	}
 
 	protected BasePipeBlock(String name, QuarkModule module) {
 		super(name, module, CreativeModeTab.TAB_REDSTONE,
@@ -123,6 +126,23 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 	}
 
 	@Override
+	public BlockState rotate(BlockState state, LevelAccessor level, BlockPos pos, Rotation direction) {
+		BlockState newState = state;
+		for (Direction dir : Direction.values())
+			newState = newState.setValue(property(dir), state.getValue(property(direction.rotate(dir))));
+		return newState;
+	}
+
+	@Nonnull
+	@Override
+	public BlockState mirror(@Nonnull BlockState state, @Nonnull Mirror mirror) {
+		BlockState newState = state;
+		for (Direction dir : Direction.values())
+			newState = newState.setValue(property(dir), state.getValue(property(mirror.mirror(dir))));
+		return newState;
+	}
+
+	@Override
 	public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
 		if(level.getBlockEntity(pos) instanceof PipeBlockEntity tile){
 			tile.refreshAllConnections();
@@ -147,18 +167,16 @@ public abstract class BasePipeBlock extends QuarkBlock implements EntityBlock {
 		BlockState newState = defaultBlockState();
 
 		for(Direction facing : Direction.values()) {
-			BooleanProperty prop = CONNECTIONS[facing.ordinal()];
 			PipeBlockEntity.ConnectionType type = PipeBlockEntity.computeConnectionTo(level, pos, facing);
 
-			newState = newState.setValue(prop, allowsFullConnection(type));
+			newState = newState.setValue(directionProperty(facing), allowsFullConnection(type));
 		}
 
 		return newState;
 	}
 
 	public static boolean isConnected(BlockState state, Direction side) {
-		BooleanProperty prop = CONNECTIONS[side.ordinal()];
-		return state.getValue(prop);
+		return state.getValue(directionProperty(side));
 	}
 
 	@Override

@@ -34,10 +34,7 @@ import vazkii.quark.base.item.boat.QuarkBoatItem;
 import vazkii.quark.base.item.boat.QuarkChestBoat;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.content.building.block.HollowLogBlock;
-import vazkii.quark.content.building.block.VariantBookshelfBlock;
-import vazkii.quark.content.building.block.VariantLadderBlock;
-import vazkii.quark.content.building.block.WoodPostBlock;
+import vazkii.quark.content.building.block.*;
 import vazkii.quark.content.building.module.*;
 
 import java.util.*;
@@ -92,11 +89,11 @@ public class WoodSetHandler {
 		});
 	}
 
-	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor) {
-		return addWoodSet(module, name, color, barkColor, true, true);
+	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor, boolean flammable) {
+		return addWoodSet(module, name, color, barkColor, true, true, flammable);
 	}
 
-	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor, boolean hasLog, boolean hasBoat) {
+	public static WoodSet addWoodSet(QuarkModule module, String name, MaterialColor color, MaterialColor barkColor, boolean hasLog, boolean hasBoat, boolean flammable) {
 		WoodType type = WoodType.register(WoodType.create(Quark.MOD_ID + ":" + name));
 		WoodSet set = new WoodSet(name, module, type);
 
@@ -132,7 +129,8 @@ public class WoodSetHandler {
 		set.verticalPlanks = VerticalPlanksModule.add(name, set.planks, module).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(VerticalPlanksModule.class));
 
 		if(hasLog) {
-			set.hollowLog = new HollowLogBlock(set.log, module, false).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(HollowLogsModule.class));
+			set.hollowLog = new HollowLogBlock(set.log, module, flammable).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(HollowLogsModule.class));
+//			set.hollowWood = new HollowWoodBlock(set.wood, module, flammable).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabledOrOverlapping(HollowLogsModule.class));
 		}
 
 		VariantChestsModule.addChest(name, module, () -> Block.Properties.copy(Blocks.CHEST), true);

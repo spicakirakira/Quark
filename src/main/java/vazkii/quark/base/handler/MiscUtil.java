@@ -41,6 +41,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -90,6 +92,18 @@ public class MiscUtil {
 			Direction.WEST,
 			Direction.EAST
 	};
+
+
+	public static BooleanProperty directionProperty(Direction direction) {
+		return switch (direction) {
+			case DOWN -> BlockStateProperties.DOWN;
+			case UP -> BlockStateProperties.UP;
+			case NORTH -> BlockStateProperties.NORTH;
+			case SOUTH -> BlockStateProperties.SOUTH;
+			case WEST -> BlockStateProperties.WEST;
+			case EAST -> BlockStateProperties.EAST;
+		};
+	}
 
 	@OnlyIn(Dist.CLIENT)
 	public static void drawChatBubble(PoseStack matrix, int x, int y, Font font, String text, float alpha, boolean extendRight) {

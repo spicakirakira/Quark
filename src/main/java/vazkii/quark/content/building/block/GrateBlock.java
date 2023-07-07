@@ -3,6 +3,7 @@ package vazkii.quark.content.building.block;
 import it.unimi.dsi.fastutil.floats.Float2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -36,6 +37,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.ForgeEventFactory;
+import vazkii.quark.api.ICrawlSpaceBlock;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.block.SimpleFluidloggedBlock;
 import vazkii.quark.base.handler.RenderLayerHandler;
@@ -45,7 +47,7 @@ import vazkii.quark.base.module.QuarkModule;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
+public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock, ICrawlSpaceBlock {
 	private static final VoxelShape TRUE_SHAPE = box(0, 15, 0, 16, 16, 16);
 	private static final Float2ObjectArrayMap<VoxelShape> WALK_BLOCK_CACHE = new Float2ObjectArrayMap<>();
 
@@ -70,6 +72,21 @@ public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
 	@Override
 	public boolean hasDynamicShape() {
 		return true;
+	}
+
+	@Override
+	public boolean canCrawl(Level level, BlockState state, BlockPos pos, Direction direction) {
+		return true;
+	}
+
+	@Override
+	public double crawlHeight(Level level, BlockState state, BlockPos pos, Direction direction) {
+		return 0;
+	}
+
+	@Override
+	public boolean isLog(ServerPlayer sp, BlockState state, BlockPos pos, Direction direction) {
+		return false;
 	}
 
 	@Nonnull
@@ -148,11 +165,6 @@ public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
 	@Override
 	public boolean isValidSpawn(BlockState state, BlockGetter world, BlockPos pos, Type type, EntityType<?> entityType) {
 		return false;
-	}
-
-	@Override
-	public boolean useShapeForLightOcclusion(@Nonnull BlockState state) {
-		return true;
 	}
 
 	@Override

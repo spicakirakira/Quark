@@ -4,10 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -20,15 +20,15 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import vazkii.quark.api.ICrawlSpaceBlock;
 import vazkii.quark.base.block.QuarkPillarBlock;
 import vazkii.quark.base.module.QuarkModule;
 
 import javax.annotation.Nonnull;
 
-public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterloggedBlock {
+public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterloggedBlock, ICrawlSpaceBlock {
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
@@ -47,6 +47,11 @@ public class HollowPillarBlock extends QuarkPillarBlock implements SimpleWaterlo
         super(regname, module, creativeTab, properties);
 
         registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false));
+    }
+
+    @Override
+    public boolean canCrawl(Level level, BlockState state, BlockPos pos, Direction direction) {
+        return state.getValue(HollowPillarBlock.AXIS) == direction.getAxis();
     }
 
     @Override
