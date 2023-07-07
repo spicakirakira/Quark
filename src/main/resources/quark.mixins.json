@@ -12,6 +12,7 @@
     "BannerDuplicateRecipeMixin",
     "BaseCoralPlantTypeBlockMixin",
     "BeaconBlockEntityMixin",
+    "BeehiveBlockEntityMixin",
     "BlockItemMixin",
     "BoatMixin",
     "CrossbowMultishotMixin",
