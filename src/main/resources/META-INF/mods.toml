@@ -27,6 +27,6 @@ description='''Small things, improving Minecraft bit by bit.'''
 [[dependencies.quark]]
     modId="lootr"
     mandatory=false
-    versionRange="[0.4.24.62,)"
+    versionRange="[0.4.24.61,)"
     ordering="AFTER"
     side="BOTH"
