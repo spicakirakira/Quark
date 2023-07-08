@@ -37,8 +37,6 @@ public abstract class HollowFrameBlock extends QuarkBlock implements SimpleWater
     private static final VoxelShape SHAPE_WEST = Block.box(0, 2, 2, 2, 14, 14);
     private static final VoxelShape SHAPE_EAST = Block.box(14, 2, 2, 16, 14, 14);
 
-    private static final VoxelShape SHAPE_FALSE_BOTTOM = Block.box(2, 0, 2, 14, 1.5, 14);
-
     private static final byte FLAG_BOTTOM = 1;
     private static final byte FLAG_TOP = 1 << 1;
     private static final byte FLAG_NORTH = 1 << 2;
@@ -47,7 +45,6 @@ public abstract class HollowFrameBlock extends QuarkBlock implements SimpleWater
     private static final byte FLAG_EAST = 1 << 5;
 
     private static final VoxelShape[] SHAPES = new VoxelShape[1 << 6];
-    private static final VoxelShape[] FALSE_BOTTOM_SHAPES = new VoxelShape[1 << 6];
 
     static {
         for (byte shapeCode = 0; shapeCode < 1 << 6; shapeCode++) {
@@ -61,7 +58,6 @@ public abstract class HollowFrameBlock extends QuarkBlock implements SimpleWater
             if (east(shapeCode)) shape = Shapes.join(shape, SHAPE_EAST, BooleanOp.ONLY_FIRST);
 
             SHAPES[shapeCode] = shape;
-            FALSE_BOTTOM_SHAPES[shapeCode] = Shapes.or(shape, SHAPE_FALSE_BOTTOM);
         }
     }
 
@@ -150,7 +146,7 @@ public abstract class HollowFrameBlock extends QuarkBlock implements SimpleWater
         if (ctx.isDescending()) {
             code &= ~FLAG_TOP;
             if (ctx instanceof EntityCollisionContext eCtx && eCtx.getEntity() instanceof LivingEntity living &&
-                living.getBbHeight() + living.getY() >= pos.getY() + SHAPE_BOTTOM.max(Direction.Axis.Y))
+                living.getY() >= pos.getY() + SHAPE_BOTTOM.max(Direction.Axis.Y))
                 code &= ~FLAG_BOTTOM;
         }
         return SHAPES[code];
@@ -158,10 +154,10 @@ public abstract class HollowFrameBlock extends QuarkBlock implements SimpleWater
 
     @Override
     public boolean isLadder(BlockState state, LevelReader level, BlockPos pos, LivingEntity entity) {
-        byte shapeCode = getShapeCode(state);
-        if ((entity.isVisuallyCrawling() || entity.isShiftKeyDown()) && !top(shapeCode) && entity.getY() >= pos.getY() + SHAPE_BOTTOM.max(Direction.Axis.Y))
+        if (entity.isVisuallyCrawling() && entity.isShiftKeyDown())
             return false;
 
+        byte shapeCode = getShapeCode(state);
         if (!bottom(shapeCode) && !top(shapeCode))
             return false;
 
