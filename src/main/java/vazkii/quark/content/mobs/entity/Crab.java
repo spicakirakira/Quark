@@ -12,6 +12,7 @@ package vazkii.quark.content.mobs.entity;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
@@ -36,6 +37,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -49,6 +51,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.*;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.fluids.FluidType;
@@ -140,6 +144,41 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 		}
 
 		return super.mobInteract(player, hand);
+	}
+
+	@Override
+	public double getPassengersRidingOffset() {
+		return super.getPassengersRidingOffset() / 0.75 * 0.9;
+	}
+
+	@Nonnull
+	@Override
+	public Vec3 getDismountLocationForPassenger(@Nonnull LivingEntity entity) {
+		Direction direction = this.getMotionDirection();
+		if (direction.getAxis() != Direction.Axis.Y) {
+			float scale = getScale();
+			int[][] aint = DismountHelper.offsetsForDirection(direction);
+			BlockPos blockpos = this.blockPosition();
+			BlockPos.MutableBlockPos mutPos = new BlockPos.MutableBlockPos();
+
+			for (Pose pose : entity.getDismountPoses()) {
+				AABB aabb = entity.getLocalBoundsForPose(pose);
+
+				for (int[] aint1 : aint) {
+					mutPos.set(blockpos.getX() + aint1[0] * scale, blockpos.getY(), blockpos.getZ() + aint1[1] * scale);
+					double d0 = this.level.getBlockFloorHeight(mutPos);
+					if (DismountHelper.isBlockFloorValid(d0)) {
+						Vec3 vec3 = Vec3.upFromBottomCenterOf(mutPos, d0);
+						if (DismountHelper.canDismountTo(this.level, entity, aabb.move(vec3))) {
+							entity.setPose(pose);
+							return vec3;
+						}
+					}
+				}
+			}
+
+		}
+		return super.getDismountLocationForPassenger(entity);
 	}
 
 	@Nullable
