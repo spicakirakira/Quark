@@ -75,6 +75,9 @@ public class GameNerfsModule extends QuarkModule {
 	@Config(description = "Fixes several piston physics exploits, most notably including TNT duping")
 	public static boolean disablePistonPhysicsExploits = true;
 
+	@Config(description = "Fixes mushroom growth being able to replace blocks")
+	public static boolean disableMushroomBlockRemoval = true;
+
 	@Config
 	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
 
@@ -111,6 +114,10 @@ public class GameNerfsModule extends QuarkModule {
 
 	public static boolean stopPistonPhysicsExploits() {
 		return staticEnabled && disablePistonPhysicsExploits;
+	}
+
+	public static boolean shouldMushroomsUseTreeReplacementLogic() {
+		return staticEnabled && disableMushroomBlockRemoval;
 	}
 
 	@SubscribeEvent

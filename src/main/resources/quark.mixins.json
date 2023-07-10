@@ -29,6 +29,8 @@
     "FallingBlockEntityMixin",
     "HalfTransparentBlockMixin",
     "HarvestFarmlandMixin",
+    "HugeBrownMushroomFeatureMixin",
+    "HugeRedMushroomFeatureMixin",
     "IForgeItemMixin",
     "IronBarsBlockMixin",
     "ItemMixin",
