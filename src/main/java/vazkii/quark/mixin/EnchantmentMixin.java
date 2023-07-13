@@ -18,6 +18,12 @@ public class EnchantmentMixin {
 		return !EnchantmentsBegoneModule.shouldBegone(self) && (prev || canPiercingApply(self, stack));
 	}
 
+	@ModifyReturnValue(method = "canApplyAtEnchantingTable", at = @At("RETURN"))
+	private boolean canApplyAtEnchantingTable(boolean prev, ItemStack stack) {
+		Enchantment self = (Enchantment) (Object) this;
+		return !EnchantmentsBegoneModule.shouldBegone(self);
+	}
+
 	private static boolean canPiercingApply(Enchantment enchantment, ItemStack stack) {
 		return enchantment == Enchantments.PIERCING && stack.getItem() instanceof PickarangItem;
 	}
