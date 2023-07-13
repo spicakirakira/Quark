@@ -24,6 +24,12 @@ public class EnchantmentMixin {
 		return prev && !EnchantmentsBegoneModule.shouldBegone(self);
 	}
 
+	@ModifyReturnValue(method = "isDiscoverable", at = @At("RETURN"))
+	private boolean isDiscoverable(boolean prev) {
+		Enchantment self = (Enchantment) (Object) this;
+		return prev && !EnchantmentsBegoneModule.shouldBegone(self);
+	}
+
 	private static boolean canPiercingApply(Enchantment enchantment, ItemStack stack) {
 		return enchantment == Enchantments.PIERCING && stack.getItem() instanceof PickarangItem;
 	}
