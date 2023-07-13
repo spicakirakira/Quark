@@ -21,7 +21,7 @@ public class EnchantmentMixin {
 	@ModifyReturnValue(method = "canApplyAtEnchantingTable", at = @At("RETURN"), remap = false)
 	private boolean canApplyAtEnchantingTable(boolean prev, ItemStack stack) {
 		Enchantment self = (Enchantment) (Object) this;
-		return !EnchantmentsBegoneModule.shouldBegone(self);
+		return prev && !EnchantmentsBegoneModule.shouldBegone(self);
 	}
 
 	private static boolean canPiercingApply(Enchantment enchantment, ItemStack stack) {
