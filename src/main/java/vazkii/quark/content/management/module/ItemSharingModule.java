@@ -13,6 +13,7 @@ package vazkii.quark.content.management.module;
 import com.mojang.blaze3d.platform.InputConstants.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
@@ -114,13 +115,13 @@ public class ItemSharingModule extends QuarkModule {
 				ItemStack stack = slot.getItem();
 
 				if(!stack.isEmpty()) {
-					if(mc.level != null && mc.level.getGameTime() - lastShareTimestamp > 10) {
+					if(mc.level != null && mc.level.getGameTime() - lastShareTimestamp > 100) {
 						lastShareTimestamp = mc.level.getGameTime();
 					} else return false;
 
 					if (mc.player instanceof AccessorLocalPlayer accessorLocalPlayer) {
 						Component itemComp = stack.getDisplayName();
-						String rawMessage = itemComp.getString();
+						String rawMessage = SharedConstants.filterText(itemComp.getString());
 
 						@SuppressWarnings("UnstableApiUsage")
 						String transformedMessage = ForgeHooksClient.onClientSendMessage(rawMessage);
