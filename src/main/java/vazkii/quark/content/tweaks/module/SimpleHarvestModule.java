@@ -262,8 +262,8 @@ public class SimpleHarvestModule extends QuarkModule {
     }
 
     private static ActionType getAction(BlockState state, boolean doRightClick) {
-        if (crops.containsKey(state)) return ActionType.HARVEST;
-        else if (doRightClick && rightClickCrops.contains(state.getBlock())) return ActionType.CLICK;
+        if (doRightClick && rightClickCrops.contains(state.getBlock())) return ActionType.CLICK;
+        else if (crops.containsKey(state)) return ActionType.HARVEST;
         return ActionType.NONE;
     }
 
