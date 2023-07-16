@@ -1,23 +1,19 @@
 package vazkii.quark.addons.oddities.inventory;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlot.Type;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import vazkii.arl.util.InventoryIIH;
 import vazkii.quark.addons.oddities.inventory.slot.BackpackSlot;
 import vazkii.quark.addons.oddities.inventory.slot.CachedItemHandlerSlot;
 import vazkii.quark.addons.oddities.module.BackpackModule;
+
+import javax.annotation.Nonnull;
 
 public class BackpackMenu extends InventoryMenu {
 
@@ -93,7 +89,7 @@ public class BackpackMenu extends InventoryMenu {
 			}
 
 			else if (index < invEnd) {
-				if (!this.moveItemStackTo(stack, hotbarStart, hotbarEnd, false) && !this.moveItemStackTo(stack, backpackStart, backpackEnd, false))
+				if (!this.moveItemStackTo(stack, backpackStart, backpackEnd, false) && !this.moveItemStackTo(stack, hotbarStart, hotbarEnd, false))
 					return ItemStack.EMPTY;
 			}
 
