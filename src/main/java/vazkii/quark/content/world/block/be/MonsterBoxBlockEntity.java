@@ -93,13 +93,15 @@ public class MonsterBoxBlockEntity extends ARLBlockEntity {
 						EntityType<?> entitytype = egg.getType(stack.getTag());
 						e = entitytype.spawn(serverLevel, stack, null, pos, MobSpawnType.SPAWNER, true, true);
 
-						double motionMultiplier = 0.4;
-						e.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-						double mx = (level.random.nextFloat() - 0.5) * motionMultiplier;
-						double my = (level.random.nextFloat() - 0.5) * motionMultiplier;
-						double mz = (level.random.nextFloat() - 0.5) * motionMultiplier;
-						e.setDeltaMovement(mx, my, mz);
-						e.getPersistentData().putBoolean(MonsterBoxModule.TAG_MONSTER_BOX_SPAWNED, true);
+						if (e != null) {
+							double motionMultiplier = 0.4;
+							e.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+							double mx = (level.random.nextFloat() - 0.5) * motionMultiplier;
+							double my = (level.random.nextFloat() - 0.5) * motionMultiplier;
+							double mz = (level.random.nextFloat() - 0.5) * motionMultiplier;
+							e.setDeltaMovement(mx, my, mz);
+							e.getPersistentData().putBoolean(MonsterBoxModule.TAG_MONSTER_BOX_SPAWNED, true);
+						}
 					}
 				});
 			}
