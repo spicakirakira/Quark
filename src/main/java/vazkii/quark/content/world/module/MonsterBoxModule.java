@@ -47,6 +47,7 @@ public class MonsterBoxModule extends QuarkModule {
 	@Config public static int maxMobCount = 8;
 	@Config public static DimensionConfig dimensions = DimensionConfig.overworld(false);
 	@Config public static boolean enableExtraLootTable = true;
+	@Config public static double activationRange = 2.5;
 
 	@Config(description = "How many blocks to search vertically from a position before trying to place a block. Higher means you'll get more boxes in open spaces.")
 	public static int searchRange = 15;
