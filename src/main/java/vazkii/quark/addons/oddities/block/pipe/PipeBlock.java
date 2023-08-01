@@ -81,7 +81,9 @@ public class PipeBlock extends BasePipeBlock implements SimpleWaterloggedBlock {
 				SoundEvent sound = type.getPlaceSound();
 				worldIn.playSound(player, pos, sound, SoundSource.BLOCKS, (type.getVolume() + 1.0F) / 2.0F, type.getPitch() * 0.8F);
 
-				stack.shrink(1);
+				if (!player.getAbilities().instabuild) {
+					stack.shrink(1);
+				}
 			}
 			return InteractionResult.SUCCESS;
 		}
