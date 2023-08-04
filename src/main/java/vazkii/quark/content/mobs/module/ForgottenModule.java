@@ -41,7 +41,7 @@ public class ForgottenModule extends QuarkModule {
 
 	@Hint public static Item forgotten_hat;
 
-	@Config(description = "1 in this many Skeletons that spawn under the threshold are replaced with Forgotten.")
+	@Config(description = "This is the probability of a Skeleton that spawns under the height threshold being replaced with a Forgotten.")
 	public double forgottenSpawnRate = 0.05;
 
 	@Config public int maxHeightForSpawn = 0;
