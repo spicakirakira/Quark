@@ -49,7 +49,7 @@ public class MonsterBoxBlockEntity extends ARLBlockEntity {
 		if(!doBreak) {
 			List<? extends Player> players = level.players();
 			for(Player p : players)
-				if(p.distanceToSqr(x + 0.5, y + 0.5, z + 0.5) < 6.25 && !p.isSpectator()) {
+				if(p.distanceToSqr(x + 0.5, y + 0.5, z + 0.5) < MonsterBoxModule.activationRange * MonsterBoxModule.activationRange && !p.isSpectator()) {
 					doBreak = true;
 					break;
 				}
