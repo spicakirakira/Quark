@@ -20,17 +20,20 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.BrewingHandler;
 import vazkii.quark.base.handler.EntityAttributeHandler;
+import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
 import vazkii.quark.base.handler.advancement.mod.BalancedDietModifier;
 import vazkii.quark.base.handler.advancement.mod.FuriousCocktailModifier;
 import vazkii.quark.base.handler.advancement.mod.TwoByTwoModifier;
 import vazkii.quark.base.item.QuarkItem;
+import vazkii.quark.base.item.QuarkMobBucketItem;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -67,6 +70,7 @@ public class CrabsModule extends QuarkModule {
 
 	@Hint(key = "crab_info") Item crab_leg;
 	@Hint(key = "crab_info") Item crab_shell;
+	@Hint(key = "crab_info") public static Item crab_bucket;
 
 	@Override
 	public void register() {
@@ -88,6 +92,8 @@ public class CrabsModule extends QuarkModule {
 
 		crab_shell = new QuarkItem("crab_shell", this, new Item.Properties().tab(CreativeModeTab.TAB_BREWING))
 				.setCondition(() -> enableBrewing);
+
+		crab_bucket = new QuarkMobBucketItem(() -> crabType, () -> Fluids.WATER, () -> QuarkSounds.BUCKET_EMPTY_CRAB, "crab_bucket", this);
 
 		resilience = new QuarkEffect("resilience", MobEffectCategory.BENEFICIAL, 0x5b1a04);
 		resilience.addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, "2ddf3f0a-f386-47b6-aeb0-6bd32851f215", 0.5, AttributeModifier.Operation.ADDITION);

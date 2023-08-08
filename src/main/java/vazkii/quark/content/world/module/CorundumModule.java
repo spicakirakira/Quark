@@ -1,12 +1,6 @@
 package vazkii.quark.content.world.module;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.google.common.collect.Lists;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MaterialColor;
+import org.apache.commons.lang3.tuple.Pair;
 import vazkii.quark.api.IIndirectConnector;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.QuarkInheritedPaneBlock;
@@ -28,12 +23,16 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.hint.Hint;
+import vazkii.quark.base.util.CorundumColor;
 import vazkii.quark.content.tools.module.BeaconRedirectionModule;
 import vazkii.quark.content.world.block.CorundumBlock;
 import vazkii.quark.content.world.block.CorundumClusterBlock;
 import vazkii.quark.content.world.undergroundstyle.CorundumStyle;
 import vazkii.quark.content.world.undergroundstyle.base.AbstractUndergroundStyleModule;
 import vazkii.quark.content.world.undergroundstyle.base.UndergroundStyleConfig;
+
+import java.util.List;
+import java.util.function.BiConsumer;
 
 @LoadModule(category = ModuleCategory.WORLD)
 public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle> {
@@ -74,15 +73,8 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 
 	@Override
 	public void register() {
-		add("red", 0xff0000, MaterialColor.COLOR_RED);
-		add("orange", 0xff8000, MaterialColor.COLOR_ORANGE);
-		add("yellow", 0xffff00, MaterialColor.COLOR_YELLOW);
-		add("green", 0x00ff00, MaterialColor.COLOR_GREEN);
-		add("blue", 0x00ffff, MaterialColor.COLOR_LIGHT_BLUE);
-		add("indigo", 0x0000ff, MaterialColor.COLOR_BLUE);
-		add("violet", 0xff00ff, MaterialColor.COLOR_MAGENTA);
-		add("white", 0xffffff, MaterialColor.SNOW);
-		add("black", 0x000000, MaterialColor.COLOR_BLACK);
+		for (CorundumColor color : CorundumColor.values())
+			add(color.name, color.beaconColor, color.materialColor);
 
 		super.register();
 	}
@@ -95,14 +87,14 @@ public class CorundumModule extends AbstractUndergroundStyleModule<CorundumStyle
 	@Override
 	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
 		MutableComponent comp = Component.translatable("quark.jei.hint.corundum_cluster_grow");
-		
+
 		if(ModuleLoader.INSTANCE.isModuleEnabled(BeaconRedirectionModule.class))
 			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.corundum_cluster_redirect"));
-		
+
 		for(Block block : clusters)
 			consumer.accept(block.asItem(), comp);
 	}
-	
+
 	private void add(String name, int color, MaterialColor material) {
 		CorundumBlock crystal = new CorundumBlock(name + "_corundum", color, this, material, false);
 		crystals.add(crystal);

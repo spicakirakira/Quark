@@ -40,7 +40,7 @@ public class QuarkSounds {
 	public static final SoundEvent ENTITY_FOXHOUND_WHINE = register("entity.foxhound.whine");
 	public static final SoundEvent ENTITY_FOXHOUND_EAT = register("entity.foxhound.eat");
 	public static final SoundEvent ENTITY_FOXHOUND_CRACKLE = register("entity.foxhound.crackle");
-	
+
 	public static final SoundEvent ENTITY_CRAB_DIE = register("entity.crab.die");
 	public static final SoundEvent ENTITY_CRAB_HURT = register("entity.crab.hurt");
 	public static final SoundEvent ENTITY_CRAB_IDLE = register("entity.crab.idle");
@@ -73,6 +73,9 @@ public class QuarkSounds {
 
 	public static final SoundEvent ITEM_CAMERA_SHUTTER = register("item.camera.shutter");
 	public static final SoundEvent ITEM_SOUL_POWDER_SPAWN = register("item.soul_powder.spawn");
+
+	public static final SoundEvent BUCKET_FILL_CRAB = register("item.bucket.fill_crab");
+	public static final SoundEvent BUCKET_EMPTY_CRAB = register("item.bucket.empty_crab");
 
 	public static final SoundEvent PET_DEVICE = register("pet.device");
 	public static final SoundEvent PET_NEKO = register("pet.neko");

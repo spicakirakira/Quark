@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -36,6 +37,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +67,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.BiConsumer;
 
-public class Crab extends Animal implements IEntityAdditionalSpawnData {
+public class Crab extends Animal implements IEntityAdditionalSpawnData, Bucketable {
 
 	public static final int COLORS = 3;
 	public static final ResourceLocation CRAB_LOOT_TABLE = new ResourceLocation("quark", "entities/crab");
@@ -73,6 +75,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	private static final EntityDataAccessor<Float> SIZE_MODIFIER = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Boolean> RAVING = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.BOOLEAN);
 
 	private int lightningCooldown;
 	private Ingredient temptationItems;
@@ -96,11 +99,60 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	}
 
 	@Override
+	public boolean fromBucket() {
+		return this.entityData.get(FROM_BUCKET);
+	}
+
+	@Override
+	public void setFromBucket(boolean fromBucket) {
+		this.entityData.set(FROM_BUCKET, fromBucket);
+	}
+
+	@Override
+	@SuppressWarnings("deprecation")
+	public void saveToBucketTag(@Nonnull ItemStack stack) {
+		Bucketable.saveDefaultDataToBucketTag(this, stack);
+		CompoundTag tag = stack.getOrCreateTag();
+
+		if (noSpike) tag.putBoolean("NoSpike", true);
+		tag.putInt("Variant", getVariant());
+	}
+
+	@Override
+	@SuppressWarnings("deprecation")
+	public void loadFromBucketTag(@Nonnull CompoundTag tag) {
+		Bucketable.loadDefaultDataFromBucketTag(this, tag);
+
+		if (tag.contains("NoSpike")) noSpike = tag.getBoolean("NoSpike");
+		if (tag.contains("Variant", Tag.TAG_ANY_NUMERIC)) entityData.set(VARIANT, tag.getInt("Variant"));
+	}
+
+	@Nonnull
+	@Override
+	public ItemStack getBucketItemStack() {
+		return new ItemStack(CrabsModule.crab_bucket);
+	}
+
+	@Nonnull
+	@Override
+	public SoundEvent getPickupSound() {
+		return QuarkSounds.BUCKET_FILL_CRAB;
+	}
+
+	@Override
+	public boolean requiresCustomPersistence() {
+		return super.requiresCustomPersistence() || this.fromBucket();
+	}
+
+	@Override
+	public boolean removeWhenFarAway(double dist) {
+		return !this.fromBucket() && !this.hasCustomName();
+	}
+
+	@Override
 	public void updateDynamicGameEventListener(@Nonnull BiConsumer<DynamicGameEventListener<?>, ServerLevel> acceptor) {
 		Level level = this.level;
-		if (level instanceof ServerLevel serverlevel) {
-			acceptor.accept(this.dynamicJukeboxListener, serverlevel);
-		}
+		if (level instanceof ServerLevel serverlevel) acceptor.accept(this.dynamicJukeboxListener, serverlevel);
 	}
 
 	public static boolean spawnPredicate(EntityType<? extends Animal> type, LevelAccessor world, MobSpawnType reason, BlockPos pos, RandomSource random) {
@@ -130,17 +182,22 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 		entityData.define(SIZE_MODIFIER, 1f);
 		entityData.define(VARIANT, -1);
 		entityData.define(RAVING, false);
+		entityData.define(FROM_BUCKET, false);
 	}
 
 	@Nonnull
 	@Override
 	public InteractionResult mobInteract(@Nonnull Player player, @Nonnull InteractionHand hand) {
-		if (getSizeModifier() >= 2 && !this.isFood(player.getItemInHand(hand)) && !this.isVehicle() && !player.isSecondaryUseActive()) {
-			if (!this.level.isClientSide) {
-				player.startRiding(this);
-			}
+		if (getSizeModifier() >= 2) {
+			if (!this.isFood(player.getItemInHand(hand)) && !this.isVehicle() && !player.isSecondaryUseActive()) {
+				if (!this.level.isClientSide) player.startRiding(this);
 
-			return InteractionResult.sidedSuccess(this.level.isClientSide);
+				return InteractionResult.sidedSuccess(this.level.isClientSide);
+			}
+		} else {
+			var result = Bucketable.bucketMobPickup(player, hand, this);
+			if (result.isPresent())
+				return result.get();
 		}
 
 		return super.mobInteract(player, hand);
@@ -266,9 +323,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	public float getStepHeight() {
 		float baseStep = wasTouchingWater ? 1F : 0.6F;
 		AttributeInstance stepHeightAttribute = getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
-		if (stepHeightAttribute != null) {
-			return (float) Math.max(0, baseStep + stepHeightAttribute.getValue());
-		}
+		if (stepHeightAttribute != null) return (float) Math.max(0, baseStep + stepHeightAttribute.getValue());
 		return baseStep;
 	}
 
@@ -336,10 +391,9 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 	@Override
 	protected void doPush(@Nonnull Entity entityIn) {
 		super.doPush(entityIn);
-		if (level.getDifficulty() != Difficulty.PEACEFUL && !noSpike && !hasPassenger(entityIn)) {
+		if (level.getDifficulty() != Difficulty.PEACEFUL && !noSpike && !hasPassenger(entityIn))
 			if (entityIn instanceof LivingEntity && !(entityIn instanceof Crab))
 				entityIn.hurt(DamageSource.CACTUS, 1f);
-		}
 	}
 
 	@Override
@@ -438,6 +492,8 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 
 		if(compound.contains("Variant"))
 			entityData.set(VARIANT, compound.getInt("Variant"));
+
+		this.setFromBucket(compound.getBoolean("FromBucket"));
 	}
 
 	@Override
@@ -447,6 +503,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 		compound.putInt("LightningCooldown", lightningCooldown);
 		compound.putInt("Variant", entityData.get(VARIANT));
 		compound.putBoolean("NoSpike", noSpike);
+		compound.putBoolean("FromBucket", this.fromBucket());
 	}
 
 	public class JukeboxListener implements GameEventListener {
@@ -477,9 +534,7 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData {
 			} else if (message.gameEvent() == GameEvent.JUKEBOX_STOP_PLAY) {
 				Crab.this.party(new BlockPos(message.source()), false);
 				return true;
-			} else {
-				return false;
-			}
+			} else return false;
 		}
 	}
 
