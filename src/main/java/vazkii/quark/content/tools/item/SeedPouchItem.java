@@ -205,7 +205,11 @@ public class SeedPouchItem extends QuarkItem implements IUsageTickerOverride, IT
 
 	public static void setCount(ItemStack stack, int count) {
 		if(count <= 0) {
-			stack.getTag().remove(TAG_STORED_ITEM);
+			CompoundTag tag = stack.getTag();
+			if (tag != null) {
+				tag.remove(TAG_STORED_ITEM);
+				tag.remove(TAG_COUNT);
+			}
 			return;
 		}
 
