@@ -32,10 +32,22 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class HoeHarvestingModule extends QuarkModule {
+
+	@Config
+	@Config.Min(1)
+	@Config.Max(5)
+	public static int regularHoeRadius = 2;
+
+	@Config
+	@Config.Min(1)
+	@Config.Max(5)
+	public static int highTierHoeRadius = 3;
+
 
 	@Hint(key = "hoe_harvesting")
 	TagKey<Item> hoes = Tags.Items.TOOLS_HOES;
@@ -49,9 +61,9 @@ public class HoeHarvestingModule extends QuarkModule {
 		if(!isHoe(hoe))
 			return 1;
 		else if (hoe.is(bigHarvestingHoesTag))
-			return 3;
+			return regularHoeRadius;
 		else
-			return 2;
+			return highTierHoeRadius;
 	}
 
 	public static boolean isHoe(ItemStack itemStack) {
