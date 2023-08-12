@@ -8,13 +8,15 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -32,10 +34,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.interf.IBlockColorProvider;
 import vazkii.arl.interf.IItemColorProvider;
-import vazkii.quark.base.block.IQuarkBlock;
-import vazkii.quark.base.block.QuarkBlock;
-import vazkii.quark.base.block.QuarkSlabBlock;
-import vazkii.quark.base.module.QuarkModule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,7 +54,7 @@ public class VerticalSlabBlock extends Block implements SimpleWaterloggedBlock, 
 		this.parent = parent;
 		registerDefaultState(defaultBlockState().setValue(TYPE, VerticalSlabType.NORTH).setValue(WATERLOGGED, false));
 	}
-	
+
 	@Override
 	public boolean isFlammable(BlockState state, BlockGetter world, BlockPos pos, Direction face) {
 		return parent.get().isFlammable(state, world, pos, face);
@@ -66,7 +64,7 @@ public class VerticalSlabBlock extends Block implements SimpleWaterloggedBlock, 
 	public int getFlammability(BlockState state, BlockGetter world, BlockPos pos, Direction face) {
 		return parent.get().getFlammability(state, world, pos, face);
 	}
-	
+
 	@Nonnull
 	@Override
 	public BlockState rotate(BlockState state, @Nonnull Rotation rot) {
@@ -140,7 +138,7 @@ public class VerticalSlabBlock extends Block implements SimpleWaterloggedBlock, 
 		ItemStack itemstack = useContext.getItemInHand();
 		VerticalSlabType slabtype = state.getValue(TYPE);
 		return slabtype != VerticalSlabType.DOUBLE && itemstack.getItem() == this.asItem() &&
-			(useContext.replacingClickedOnBlock() && (useContext.getClickedFace() == slabtype.direction && getDirectionForPlacement(useContext) == slabtype.direction) || 
+			(useContext.replacingClickedOnBlock() && (useContext.getClickedFace() == slabtype.direction && getDirectionForPlacement(useContext) == slabtype.direction) ||
 			(!useContext.replacingClickedOnBlock() && useContext.getClickedFace() != slabtype.direction));
 	}
 
@@ -177,13 +175,13 @@ public class VerticalSlabBlock extends Block implements SimpleWaterloggedBlock, 
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public BlockColor getBlockColor() {
-		return parent instanceof IBlockColorProvider provider ? provider.getBlockColor() : null;
+		return parent.get() instanceof IBlockColorProvider provider ? provider.getBlockColor() : null;
 	}
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public ItemColor getItemColor() {
-		return parent instanceof IItemColorProvider provider ? provider.getItemColor() : null;
+		return parent.get() instanceof IItemColorProvider provider ? provider.getItemColor() : null;
 	}
 
 	public enum VerticalSlabType implements StringRepresentable {
