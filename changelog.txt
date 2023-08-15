@@ -1,1 +1,3 @@
-- Fixed startup crash (for real this time!!)
+- Fixed crash with Rubidium
+- Fixed having pat all mobs enabled toggling sitting
+- Optimized item share packet size
