@@ -20,6 +20,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'pmd'
 
+jarJar.enable()
+
 ext.configFile = file('build.properties')
 ext.depsFile = file('dependencies.properties')
 ext.config = parseConfig(configFile)
