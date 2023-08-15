@@ -1,2 +1,1 @@
-- Fixed startup crash when Lootr is not installed
-- Fixed startup crash with Rubidium
+- Fixed startup crash (for real this time!!)
