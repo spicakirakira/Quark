@@ -60,7 +60,7 @@ public abstract class ItemRendererMixin {
 		return ColorRunesModule.getEntityGlintDirect();
 	}
 
-	@ModifyConstant(method = "renderQuadList", constant = @Constant(floatValue = 1F))
+	@ModifyConstant(method = "renderQuadList", constant = @Constant(floatValue = 1F), require = 0) // Allow failure in case of rubidium
 	public float renderQuads(float constant) {
 		return ItemSharingModule.alphaValue * constant;
 	}
