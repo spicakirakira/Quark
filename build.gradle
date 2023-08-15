@@ -171,8 +171,7 @@ def parseConfig(File config) {
 }
 
 jar {
-    //rename the default output, for some better... sanity with scipts
-    archiveName = "${baseName}-${version}.${extension}"
+    classifier "pure" // Jar without jar-in-jar
 
      manifest {
         attributes([
@@ -202,6 +201,16 @@ task sourcesJar(type: Jar) {
 task deobfJar(type: Jar) {
     classifier "deobf"
     from sourceSets.main.output
+}
+
+tasks.jarJar.configure {
+    classifier "" // "Main" jar should be the one with jar-in-jar
+
+    exclude "**/*.bat"
+    exclude "**/*.psd"
+    exclude "**/*.exe"
+    exclude "**/unused"
+    exclude "**/genscripts"
 }
 
 artifacts {
