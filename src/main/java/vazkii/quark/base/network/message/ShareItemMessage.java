@@ -1,6 +1,5 @@
 package vazkii.quark.base.network.message;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,7 +18,6 @@ public class ShareItemMessage implements IMessage {
 
 	public ItemStack stack;
 	public String message;
-	public Component component;
 	public Instant timeStamp;
 	public long salt;
 	public MessageSignature signature;
@@ -28,10 +26,9 @@ public class ShareItemMessage implements IMessage {
 
 	public ShareItemMessage() { }
 
-	public ShareItemMessage(ItemStack stack, String message, Component component, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
+	public ShareItemMessage(ItemStack stack, String message, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
 		this.stack = stack;
 		this.message = message;
-		this.component = component;
 		this.timeStamp = timeStamp;
 		this.salt = salt;
 		this.signature = signature;
@@ -43,7 +40,7 @@ public class ShareItemMessage implements IMessage {
 	public boolean receive(Context context) {
 		ServerPlayer player = context.getSender();
 		if (player != null && player.server != null)
-			context.enqueueWork(() -> ItemSharingModule.shareItem(player, message, component, stack, timeStamp, salt, signature, signedPreview, lastSeenMessages));
+			context.enqueueWork(() -> ItemSharingModule.shareItem(player, message, stack, timeStamp, salt, signature, signedPreview, lastSeenMessages));
 
 		return true;
 	}

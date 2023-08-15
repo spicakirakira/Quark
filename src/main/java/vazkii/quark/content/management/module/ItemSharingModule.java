@@ -132,7 +132,7 @@ public class ItemSharingModule extends QuarkModule {
 							LastSeenMessages.Update update = mc.player.connection.generateMessageAcknowledgements();
 							MessageSignature signature = accessorLocalPlayer.quark$signMessage(sign, content, update.lastSeen());
 
-							ShareItemMessage message = new ShareItemMessage(stack, content.plain(), content.decorated(), sign.timeStamp(), sign.salt(), signature, content.isDecorated(), update);
+							ShareItemMessage message = new ShareItemMessage(stack, content.plain(), sign.timeStamp(), sign.salt(), signature, content.isDecorated(), update);
 							QuarkNetwork.sendToServer(message);
 
 							return true;
@@ -145,19 +145,15 @@ public class ItemSharingModule extends QuarkModule {
 		return false;
 	}
 
-	public static void shareItem(ServerPlayer player, String message, Component component, ItemStack stack, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
+	public static void shareItem(ServerPlayer player, String message, ItemStack stack, Instant timeStamp, long salt, MessageSignature signature, boolean signedPreview, LastSeenMessages.Update lastSeenMessages) {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(ItemSharingModule.class))
 			return;
 
 		Component itemComp = stack.getDisplayName();
 
-		// This is done to ensure that arbitrary components can't be sent - only the stack's component.
-		// Component is checked on this side to ensure the signing was of the correct component.
-		if (itemComp.equals(component)) {
-			((AccessorServerGamePacketListenerImpl) player.connection).quark$chatPreviewCache().set(message, itemComp);
+		((AccessorServerGamePacketListenerImpl) player.connection).quark$chatPreviewCache().set(message, itemComp);
 
-			player.connection.handleChat(new ServerboundChatPacket(message, timeStamp, salt, signature, signedPreview, lastSeenMessages));
-		}
+		player.connection.handleChat(new ServerboundChatPacket(message, timeStamp, salt, signature, signedPreview, lastSeenMessages));
 	}
 
 	public static MutableComponent createStackComponent(ItemStack stack, MutableComponent component) {
