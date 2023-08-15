@@ -1,7 +1,9 @@
 package vazkii.quark.content.client.module;
 
 import java.sql.Date;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.function.Predicate;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -36,16 +38,36 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.Config;
 import vazkii.quark.content.experimental.module.OverlayShaderModule;
 
 @LoadModule(category = ModuleCategory.CLIENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class CameraModule extends QuarkModule {
+
+	@Config(description = "Date format that will be displayed in screenshots. Must be a valid one (i.e. MM/dd/yyyy)")
+	@Config.Predicate(DatePredicate.class)
+	private static String dateFormat = "MM/dd/yyyy";
 
 	private static final int RULER_COLOR = 0x33000000;
 
 	private static final int RULERS = 4;
 	private static final int BORERS = 6;
 	private static final int OVERLAYS = 5;
+
+
+	private static class DatePredicate implements Predicate<Object>{
+		@Override
+		public boolean test(Object o) {
+			if(o instanceof String s){
+				try	{
+					new SimpleDateFormat(s);
+					return true;
+				}catch (Exception ignored){
+				}
+			}
+			return false;
+		}
+	}
 
 	private static final ResourceLocation[] SHADERS = new ResourceLocation[] {
 			null,
@@ -262,7 +284,7 @@ public class CameraModule extends QuarkModule {
 
 		switch (currOverlay) {
 			case 1 -> { // Date
-				overlayText = new SimpleDateFormat("MM/dd/yyyy").format(new Date(System.currentTimeMillis()));
+				overlayText = new SimpleDateFormat(dateFormat).format(new Date(System.currentTimeMillis()));
 				overlayColor = 0xf77700;
 			}
 			case 2 -> { // Postcard

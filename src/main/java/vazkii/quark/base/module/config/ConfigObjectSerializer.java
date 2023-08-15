@@ -1,5 +1,13 @@
 package vazkii.quark.base.module.config;
 
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.text.WordUtils;
+import org.jetbrains.annotations.Nullable;
+import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.type.IConfigType;
+import vazkii.quark.base.module.hint.HintManager;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
@@ -11,13 +19,6 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.text.WordUtils;
-
-import net.minecraftforge.common.ForgeConfigSpec;
-import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.base.module.config.type.IConfigType;
-import vazkii.quark.base.module.hint.HintManager;
-
 public final class ConfigObjectSerializer {
 
 	public static void serialize(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object) throws ReflectiveOperationException {
@@ -28,7 +29,7 @@ public final class ConfigObjectSerializer {
 				pushConfig(builder, flagManager, callbacks, object, f, config);
 		}
 	}
-	
+
 	public static void loadHints(ConfigFlagManager flagManager, QuarkModule module) {
 		List<Field> fields = recursivelyGetFields(module.getClass());
 		HintManager.loadHints(fields, flagManager, module);
@@ -56,6 +57,7 @@ public final class ConfigObjectSerializer {
 		Config.Restriction restriction = field.getDeclaredAnnotation(Config.Restriction.class);
 		Config.Min min = field.getDeclaredAnnotation(Config.Min.class);
 		Config.Max max = field.getDeclaredAnnotation(Config.Max.class);
+		Config.Predicate predicate = field.getDeclaredAnnotation(Config.Predicate.class);
 
 		String nl = "";
 		Class<?> type = field.getType();
@@ -128,9 +130,9 @@ public final class ConfigObjectSerializer {
 		ForgeConfigSpec.ConfigValue<?> value;
 		if (defaultValue instanceof List) {
 			Supplier<List<?>> listSupplier = () -> (List<?>) supplier.get();
-			value = builder.defineList(name, (List<?>) defaultValue, listSupplier, restrict(restriction, min, max));
+			value = builder.defineList(name, (List<?>) defaultValue, listSupplier, restrict(restriction, min, max, predicate));
 		} else
-			value = builder.defineObj(name, defaultValue, supplier, restrict(restriction, min, max));
+			value = builder.defineObj(name, defaultValue, supplier, restrict(restriction, min, max, predicate));
 
 		callbacks.add(() -> {
 			try {
@@ -147,14 +149,26 @@ public final class ConfigObjectSerializer {
 		});
 	}
 
-	private static Predicate<Object> restrict(Config.Restriction restriction, Config.Min min, Config.Max max) {
+	private static Predicate<Object> restrict(@Nullable Config.Restriction restriction, @Nullable Config.Min min,
+											  @Nullable Config.Max max, @Nullable Config.Predicate predicate) {
 		String[] restrictions = restriction == null ? null : restriction.value();
 		double minVal = min == null ? -Double.MAX_VALUE : min.value();
 		double maxVal = max == null ? Double.MAX_VALUE : max.value();
 		boolean minExclusive = min != null && min.exclusive();
 		boolean maxExclusive = max != null && max.exclusive();
 
-		return (o) -> restrict(o, minVal, minExclusive, maxVal, maxExclusive, restrictions);
+		Predicate<Object> pred = (o) -> restrict(o, minVal, minExclusive, maxVal, maxExclusive, restrictions);
+		if(predicate != null){
+			try {
+				Constructor<? extends Predicate<Object>> constr = predicate.value().getDeclaredConstructor();
+				constr.setAccessible(true);
+				Predicate<Object> additionalPredicate = constr.newInstance();
+				pred = pred.and(additionalPredicate);
+			}catch (Exception e){
+				throw new IllegalArgumentException("Failed to parse config Predicate annotation: " + e);
+			}
+		}
+		return pred;
 	}
 
 	private static boolean restrict(Object o, double minVal, boolean minExclusive, double maxVal, boolean maxExclusive, String[] restrictions) {
