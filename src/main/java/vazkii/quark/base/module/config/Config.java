@@ -22,8 +22,8 @@ public @interface Config {
 
 	@Target(ElementType.FIELD)
 	@Retention(RetentionPolicy.RUNTIME)
-	@interface Predicate {
-		Class<? extends java.util.function.Predicate<Object>> value();
+	@interface Condition {
+		Class<? extends Predicate<?>> value();
 	}
 
 	@Target(ElementType.FIELD)
@@ -39,5 +39,5 @@ public @interface Config {
 		double value();
 		boolean exclusive() default false;
 	}
-	
+
 }

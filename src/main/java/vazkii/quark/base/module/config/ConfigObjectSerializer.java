@@ -57,7 +57,7 @@ public final class ConfigObjectSerializer {
 		Config.Restriction restriction = field.getDeclaredAnnotation(Config.Restriction.class);
 		Config.Min min = field.getDeclaredAnnotation(Config.Min.class);
 		Config.Max max = field.getDeclaredAnnotation(Config.Max.class);
-		Config.Predicate predicate = field.getDeclaredAnnotation(Config.Predicate.class);
+		Config.Condition condition = field.getDeclaredAnnotation(Config.Condition.class);
 
 		String nl = "";
 		Class<?> type = field.getType();
@@ -130,9 +130,9 @@ public final class ConfigObjectSerializer {
 		ForgeConfigSpec.ConfigValue<?> value;
 		if (defaultValue instanceof List) {
 			Supplier<List<?>> listSupplier = () -> (List<?>) supplier.get();
-			value = builder.defineList(name, (List<?>) defaultValue, listSupplier, restrict(restriction, min, max, predicate));
+			value = builder.defineList(name, (List<?>) defaultValue, listSupplier, restrict(restriction, min, max, condition));
 		} else
-			value = builder.defineObj(name, defaultValue, supplier, restrict(restriction, min, max, predicate));
+			value = builder.defineObj(name, defaultValue, supplier, restrict(restriction, min, max, condition));
 
 		callbacks.add(() -> {
 			try {
@@ -150,7 +150,7 @@ public final class ConfigObjectSerializer {
 	}
 
 	private static Predicate<Object> restrict(@Nullable Config.Restriction restriction, @Nullable Config.Min min,
-											  @Nullable Config.Max max, @Nullable Config.Predicate predicate) {
+											  @Nullable Config.Max max, @Nullable Config.Condition condition) {
 		String[] restrictions = restriction == null ? null : restriction.value();
 		double minVal = min == null ? -Double.MAX_VALUE : min.value();
 		double maxVal = max == null ? Double.MAX_VALUE : max.value();
@@ -158,14 +158,14 @@ public final class ConfigObjectSerializer {
 		boolean maxExclusive = max != null && max.exclusive();
 
 		Predicate<Object> pred = (o) -> restrict(o, minVal, minExclusive, maxVal, maxExclusive, restrictions);
-		if(predicate != null){
+		if(condition != null){
 			try {
-				Constructor<? extends Predicate<Object>> constr = predicate.value().getDeclaredConstructor();
+				Constructor<? extends Predicate<Object>> constr = condition.value().getDeclaredConstructor();
 				constr.setAccessible(true);
 				Predicate<Object> additionalPredicate = constr.newInstance();
 				pred = pred.and(additionalPredicate);
-			}catch (Exception e){
-				throw new IllegalArgumentException("Failed to parse config Predicate annotation: " + e);
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Failed to parse config Predicate annotation: ", e);
 			}
 		}
 		return pred;
