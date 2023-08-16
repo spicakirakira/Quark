@@ -23,7 +23,7 @@ public @interface Config {
 	@Target(ElementType.FIELD)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface Condition {
-		Class<? extends Predicate<?>> value();
+		Class<? extends Predicate<Object>> value();
 	}
 
 	@Target(ElementType.FIELD)
