@@ -85,7 +85,7 @@ public class RecipeCrawlHandler {
 					recipesToLazyDigest.add(recipe);
 					MinecraftForge.EVENT_BUS.post(event);
 				} catch (Exception e) {
-					Quark.LOG.warn("Failed to scan recipe " + recipe.getId() + ". This should be reported to " + recipe.getId().getNamespace() + "!");
+					Quark.LOG.warn("Failed to scan recipe " + recipe.getId() + ". This should be reported to " + recipe.getId().getNamespace() + "!", e);
 				}
 			}
 		}
