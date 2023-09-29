@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -31,8 +32,9 @@ public class RecipeCrawlHandler {
 	private static Multimap<Item, ItemStack> recipeDigestion = HashMultimap.create();
 	private static Multimap<Item, ItemStack> backwardsDigestion = HashMultimap.create();
 
-	private static Object mutex = new Object();
+	private static final Object mutex = new Object();
 	private static boolean needsCrawl = false;
+	private static boolean mayCrawl = false;
 
 	@SubscribeEvent
 	public static void addListener(AddReloadListenerEvent event) {
@@ -50,7 +52,13 @@ public class RecipeCrawlHandler {
 		});
 	}
 
+	@SubscribeEvent
+	public static void tagsHaveUpdated(TagsUpdatedEvent event) {
+		mayCrawl = true;
+	}
+
 	private static void clear() {
+		mayCrawl = false;
 		MinecraftForge.EVENT_BUS.post(new RecipeCrawlEvent.Reset());
 	}
 
@@ -94,7 +102,7 @@ public class RecipeCrawlHandler {
 	@SubscribeEvent
 	public static void onTick(ServerTickEvent tick) {
 		synchronized(mutex) {
-			if(needsCrawl) {
+			if(mayCrawl && needsCrawl) {
 				RecipeManager manager = tick.getServer().getRecipeManager();
 				load(manager);
 				needsCrawl = false;
