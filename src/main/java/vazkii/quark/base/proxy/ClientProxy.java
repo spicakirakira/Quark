@@ -72,6 +72,8 @@ public class ClientProxy extends CommonProxy {
 		bus.addListener(this::registerKeybinds);
 		bus.addListener(this::registerAdditionalModels);
 		bus.addListener(this::registerClientTooltipComponentFactories);
+		bus.addListener(this::registerItemColors);
+		bus.addListener(this::registerBlockColors);
 	}
 
 	public void clientSetup(FMLClientSetupEvent event) {
@@ -113,6 +115,16 @@ public class ClientProxy extends CommonProxy {
 	@OnlyIn(Dist.CLIENT)
 	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
 		ModuleLoader.INSTANCE.registerClientTooltipComponentFactories(event);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
+		ModuleLoader.INSTANCE.registerItemColors(event);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+		ModuleLoader.INSTANCE.registerBlockColors(event);
 	}
 
 	@Override

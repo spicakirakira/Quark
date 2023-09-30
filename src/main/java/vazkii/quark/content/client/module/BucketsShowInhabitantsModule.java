@@ -18,8 +18,6 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.Quark;
@@ -39,7 +37,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntUnaryOperator;
 
-@LoadModule(category = ModuleCategory.CLIENT, subscribeOn = Dist.CLIENT)
+@LoadModule(category = ModuleCategory.CLIENT)
 public class BucketsShowInhabitantsModule extends QuarkModule {
 
 	@Config
@@ -70,8 +68,8 @@ public class BucketsShowInhabitantsModule extends QuarkModule {
 		});
 	}
 
+	@Override
 	@OnlyIn(Dist.CLIENT)
-	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void registerItemColors(RegisterColorHandlersEvent.Item evt) {
 		Holder.Reference<Item> tropicalBucket = ForgeRegistries.ITEMS.getDelegateOrThrow(Items.TROPICAL_FISH_BUCKET);
 		ItemColor parent = ((AccessorItemColors) evt.getItemColors()).quark$getItemColors().get(tropicalBucket);
