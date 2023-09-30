@@ -94,6 +94,7 @@
     "client.ScreenMixin",
     "client.ThrownTridentRendererMixin",
     "client.accessor.AccessorBlockColors",
+    "client.accessor.AccessorItemColors",
     "client.accessor.AccessorLocalPlayer",
     "client.accessor.AccessorModelManager",
     "client.accessor.AccessorMultiPlayerGameMode",
