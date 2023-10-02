@@ -173,14 +173,14 @@ public class VariantSelectorModule extends QuarkModule {
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void onRender(RenderGuiOverlayEvent.Pre event) {
-		if(event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
+		if(event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type())
 			return;
 		
 		Minecraft mc = Minecraft.getInstance();
 		Player player = mc.player;
 		String savedVariant = getSavedVariant(player);
 		
-		if(savedVariant != null && !savedVariant.isEmpty()) {
+		if(savedVariant != null) {
 			ItemStack mainHand = player.getMainHandItem();
 			ItemStack displayLeft = mainHand.copy();
 			
