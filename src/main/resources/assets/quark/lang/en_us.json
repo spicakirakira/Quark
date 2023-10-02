@@ -323,6 +323,7 @@
 	"quark.keybind.narrator_full_readout": "Narrator Full Readout",
 	"quark.keybind.shift_lock": "Shift Lock",
 	"quark.keybind.autorun": "Walk Automatically",
+	"quark.keybind.variant_selector": "Variant Selector",
 
 	"quark.readout.not_ingame": "Not ingame",
 	"quark.readout.looking": "Looking at %s",

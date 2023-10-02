@@ -24,7 +24,7 @@ import vazkii.quark.base.network.message.SetLockProfileMessage;
 import vazkii.quark.base.network.message.ShareItemMessage;
 import vazkii.quark.base.network.message.SortInventoryMessage;
 import vazkii.quark.base.network.message.UpdateTridentMessage;
-import vazkii.quark.base.network.message.experimental.PlaceVariantChangedMessage;
+import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.base.network.message.oddities.HandleBackpackMessage;
 import vazkii.quark.base.network.message.oddities.MatrixEnchanterOperationMessage;
 import vazkii.quark.base.network.message.oddities.ScrollCrateMessage;
@@ -42,6 +42,7 @@ public final class QuarkNetwork {
 
 		network = new NetworkHandler(Quark.MOD_ID, PROTOCOL_VERSION);
 
+		// Base Quark
 		network.register(SortInventoryMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(InventoryTransferMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(DoubleDoorMessage.class, NetworkDirection.PLAY_TO_SERVER);
@@ -52,15 +53,19 @@ public final class QuarkNetwork {
 		network.register(ShareItemMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(ScrollOnBundleMessage.class, NetworkDirection.PLAY_TO_SERVER);
 
+		// Oddities
 		network.register(HandleBackpackMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(MatrixEnchanterOperationMessage.class, NetworkDirection.PLAY_TO_SERVER);
 		network.register(ScrollCrateMessage.class, NetworkDirection.PLAY_TO_SERVER);
 
+		// Experimental
+		network.register(PlaceVariantUpdateMessage.class, NetworkDirection.PLAY_TO_SERVER);
+		
+		// Clientbound
 		network.register(DoEmoteMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(EditSignMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(UpdateTridentMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 
-		network.register(PlaceVariantChangedMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 	}
 
 	public static void sendToPlayer(IMessage msg, ServerPlayer player) {
