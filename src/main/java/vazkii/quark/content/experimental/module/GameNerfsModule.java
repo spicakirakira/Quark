@@ -78,6 +78,9 @@ public class GameNerfsModule extends QuarkModule {
 	@Config(description = "Fixes mushroom growth being able to replace blocks")
 	public static boolean disableMushroomBlockRemoval = true;
 
+	@Config(description = "Makes tripwire hooks unable to be duplicated")
+	public static boolean disableTripwireHookDupe = true;
+
 	@Config
 	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");
 
@@ -118,6 +121,10 @@ public class GameNerfsModule extends QuarkModule {
 
 	public static boolean shouldMushroomsUseTreeReplacementLogic() {
 		return staticEnabled && disableMushroomBlockRemoval;
+	}
+
+	public static boolean shouldTripwireHooksCheckForAir() {
+		return staticEnabled && disableTripwireHookDupe;
 	}
 
 	@SubscribeEvent

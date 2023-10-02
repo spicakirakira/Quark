@@ -58,6 +58,7 @@
     "StructureTemplateMixin",
     "TemptGoalMixin",
     "TrapDoorBlockMixin",
+    "TripWireHookBlockMixin",
     "WallBlockMixin",
     "WeatheringCopperMixin",
     "accessor.AccessorAbstractArrow",
