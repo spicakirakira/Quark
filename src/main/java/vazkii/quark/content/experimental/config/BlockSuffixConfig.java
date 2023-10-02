@@ -1,4 +1,4 @@
-package vazkii.quark.content.tools.config;
+package vazkii.quark.content.experimental.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +24,7 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	public List<String> testedMods;
 	
 	private Map<Block, VariantMap> blockVariants = new HashMap<>();
+	private Map<Block, Block> originals = new HashMap<>();
 	
 	private List<String> sortedSuffixes;
 	
@@ -74,6 +75,11 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		return block;
 	}
 	
+	// TODO this will break if the block hasnt been cached yet, we need a smarter way to revert the mapping
+	public Block getOriginalBlock(Block block) {
+		return originals.containsKey(block) ? originals.get(block) : block;
+	}
+	
 	private VariantMap getVariants(Block block) {
 		if(blockVariants.containsKey(block))
 			return blockVariants.get(block);
@@ -82,8 +88,10 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		
 		for(String s : sortedSuffixes) {
 			Block suffixed = getSuffixedBlock(block, s);
-			if(suffixed != null)
+			if(suffixed != null) {
 				newVariants.put(s, suffixed);
+				originals.put(suffixed, block);
+			}
 		}
 		
 		if(newVariants.isEmpty())
