@@ -1,12 +1,5 @@
 package vazkii.quark.base.module.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import org.apache.commons.lang3.text.WordUtils;
-import org.jetbrains.annotations.Nullable;
-import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.base.module.config.type.IConfigType;
-import vazkii.quark.base.module.hint.HintManager;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -19,14 +12,26 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.text.WordUtils;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraftforge.common.ForgeConfigSpec;
+import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.type.IConfigType;
+import vazkii.quark.base.module.hint.HintManager;
+
 public final class ConfigObjectSerializer {
 
 	public static void serialize(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object) throws ReflectiveOperationException {
+		serialize(builder, flagManager, callbacks, object, object);
+	}
+	
+	public static void serialize(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object, Object root) throws ReflectiveOperationException {
 		List<Field> fields = recursivelyGetFields(object.getClass());
 		for(Field f : fields) {
 			Config config = f.getDeclaredAnnotation(Config.class);
 			if(config != null)
-				pushConfig(builder, flagManager, callbacks, object, f, config);
+				pushConfig(builder, flagManager, callbacks, object, root, f, config);
 		}
 	}
 
@@ -47,7 +52,7 @@ public final class ConfigObjectSerializer {
 		return list;
 	}
 
-	private static void pushConfig(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object, Field field, Config config) throws ReflectiveOperationException {
+	private static void pushConfig(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object, Object root, Field field, Config config) throws ReflectiveOperationException {
 		field.setAccessible(true);
 
 		String name = config.name();
@@ -58,6 +63,7 @@ public final class ConfigObjectSerializer {
 		Config.Min min = field.getDeclaredAnnotation(Config.Min.class);
 		Config.Max max = field.getDeclaredAnnotation(Config.Max.class);
 		Config.Condition condition = field.getDeclaredAnnotation(Config.Condition.class);
+		QuarkModule rootModule = (root instanceof QuarkModule ? (QuarkModule) root : null);
 
 		String nl = "";
 		Class<?> type = field.getType();
@@ -117,8 +123,8 @@ public final class ConfigObjectSerializer {
 			name = name.toLowerCase(Locale.ROOT).replaceAll(" ", "_");
 
 			builder.push(name, defaultValue);
-			serialize(builder, flagManager, callbacks, defaultValue);
-			callbacks.add(() -> configType.onReload(flagManager));
+			serialize(builder, flagManager, callbacks, defaultValue, root);
+			callbacks.add(() -> configType.onReload(rootModule, flagManager));
 			builder.pop();
 
 			return;

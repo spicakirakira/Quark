@@ -1,14 +1,21 @@
 package vazkii.quark.content.experimental.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import vazkii.quark.base.Quark;
+import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.ConfigFlagManager;
 import vazkii.quark.base.module.config.type.AbstractConfigType;
@@ -18,41 +25,80 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	private static final VariantMap EMPTY_VARIANT_MAP = new VariantMap(new HashMap<>());
 	
 	@Config
-	public List<String> knownSuffixes;
+	private List<String> variantTypes;
+	
+	@Config(description = "By default, only a mod's namespace is scanned for variants for its items (e.g. if coolmod adds coolmod:fun_block, it'll search only for coolmod:fun_block_stairs).\n"
+			+ " Mods in this list are also scanned for variants if none are found in itself (e.g. if quark is in the list and coolmod:fun_block_stairs doesn't exist, it'll try to look for quark:fun_block_stairs next)")
+	private List<String> testedMods;
 	
 	@Config
-	public List<String> testedMods;
+	private boolean printVariantMapToLog = false;
+	
+	@Config(description = "Format is 'alias=original' in each value (e.g. 'wall=fence' means that a failed search for, minecraft:cobblestone_fence will try cobblestone_wall next)")
+	private List<String> aliases;
+	
+	@Config(description = "Ends of block IDs to try and remove when looking for variants. (e.g. minecraft:oak_planks goes into minecraft:oak_stairs, so we have to include '_planks' in this list for it to find them or else it'll only look for minecraft:oak_planks_stairs)")
+	private List<String> stripCandidates = Arrays.asList("_planks", "_wool", "s");
+	
+	@Config
+	private List<String> blacklist = new ArrayList<>();
 	
 	private Map<Block, VariantMap> blockVariants = new HashMap<>();
 	private Map<Block, Block> originals = new HashMap<>();
+	private Multimap<String, String> aliasMap = HashMultimap.create();
 	
+	private List<String> visibleVariants;
 	private List<String> sortedSuffixes;
 	
-	public BlockSuffixConfig(List<String> knownSuffixes, List<String> testedMods) {
-		this.knownSuffixes = knownSuffixes;
+	public BlockSuffixConfig(List<String> variantTypes, List<String> testedMods, List<String> aliases) {
+		this.variantTypes = variantTypes;
 		this.testedMods = testedMods;
+		this.aliases = aliases;
 	}
 	
 	@Override
-	public void onReload(ConfigFlagManager flagManager) {
+	public void onReload(QuarkModule module, ConfigFlagManager flagManager) {
 		blockVariants.clear();
+		originals.clear();
+		aliasMap.clear();
 		
-		sortedSuffixes = new ArrayList<>(knownSuffixes);
+		if(module != null && !module.enabled)
+			return;
+		
+		visibleVariants = new ArrayList<>(variantTypes);
+		// TODO support for manual variants
+		
+		sortedSuffixes = new ArrayList<>(visibleVariants);
 		sortedSuffixes.sort((s1, s2) -> { // sort by amount of _
 			int ct1 = s1.replaceAll("[^_]", "").length();
 			int ct2 = s2.replaceAll("[^_]", "").length();
 			
 			return ct2 - ct1;
 		});
+		
+		for(String s : aliases) {
+			String[] toks = s.split("=");
+			aliasMap.put(toks[1], toks[0]);
+		}
+		
+		// Map all variants
+		Registry.BLOCK.forEach(this::getVariants);
+		
+		if(printVariantMapToLog)
+			logVariantMap();
 	}
 	
 	public String getVariantForBlock(Block block) {
 		String name = Registry.BLOCK.getKey(block).getPath();
 		
-		for(String s : sortedSuffixes) {
-			String check = String.format("_%s", s);
-			if(name.endsWith(check))
-				return s;
+		for(String suffix : sortedSuffixes) {
+			if(name.endsWith(String.format("_%s", suffix)))
+				return suffix;
+			
+			if(aliasMap.containsKey(suffix))
+				for(String alias : aliasMap.get(suffix))
+					if(name.endsWith(String.format("_%s", alias)))
+						return suffix;
 		}
 		
 		return null;
@@ -75,9 +121,12 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		return block;
 	}
 	
-	// TODO this will break if the block hasnt been cached yet, we need a smarter way to revert the mapping
 	public Block getOriginalBlock(Block block) {
 		return originals.containsKey(block) ? originals.get(block) : block;
+	}
+	
+	public boolean isVariant(Block block) {
+		return blockVariants.containsKey(block) && !blockVariants.get(block).isEmpty();
 	}
 	
 	private VariantMap getVariants(Block block) {
@@ -86,13 +135,15 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		
 		Map<String, Block> newVariants = new HashMap<>();
 		
-		for(String s : sortedSuffixes) {
-			Block suffixed = getSuffixedBlock(block, s);
-			if(suffixed != null) {
-				newVariants.put(s, suffixed);
-				originals.put(suffixed, block);
+		if(!isBlacklisted(block))
+			for(String s : sortedSuffixes) {
+				Block suffixed = getSuffixedBlock(block, s);
+				if(suffixed != null && !isBlacklisted(block)) {
+					newVariants.put(s, suffixed);
+					originals.put(suffixed, block);
+				}
 			}
-		}
+
 		
 		if(newVariants.isEmpty())
 			blockVariants.put(block, EMPTY_VARIANT_MAP);
@@ -120,30 +171,55 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	}
 	
 	private Block getSuffixedBlock(String namespace, String name, String suffix) {
-		if(name.endsWith("planks")) {
-			String singular = name.substring(0, name.length() - 7);
-			Block singularAttempt = getSuffixedBlock(namespace, singular, suffix);
-			if(singularAttempt != null)
-				return singularAttempt;
-		}
-		
-		if(name.endsWith("s")) {
-			String singular = name.substring(0, name.length() - 1);
-			Block singularAttempt = getSuffixedBlock(namespace, singular, suffix);
-			if(singularAttempt != null)
-				return singularAttempt;
+		for(String strip : stripCandidates)
+		if(name.endsWith(strip)) {
+			String stripped = name.substring(0, name.length() - strip.length());
+			Block strippedAttempt = getSuffixedBlock(namespace, stripped, suffix);
+			if(strippedAttempt != null)
+				return strippedAttempt;
 		}
 		
 		String targetStr = String.format("%s:%s_%s", namespace, name, suffix);
 		ResourceLocation target = new ResourceLocation(targetStr);
 		Block ret = Registry.BLOCK.get(target);
 		
-		if(ret == Blocks.AIR)
+		if(ret == Blocks.AIR) {
+			if(aliasMap.containsKey(suffix))
+				for(String alias : aliasMap.get(suffix)) {
+					Block aliasAttempt = getSuffixedBlock(namespace, name, alias);
+					if(aliasAttempt != null)
+						return aliasAttempt;
+				}
+			
 			return null;
+		}
 		
 		return ret;
 	}
 	
-	private record VariantMap(Map<String, Block> variants) { }
+	private boolean isBlacklisted(Block block) {
+		 return !blacklist.isEmpty() && blacklist.contains(Registry.BLOCK.getKey(block).toString());
+	}
+	
+	public boolean isKnownVariant(String variant) {
+		return visibleVariants.contains(variant);
+	}
+	
+	public List<String> getVisibleVariants() {
+		return visibleVariants;
+	} 
+	
+	private void logVariantMap() {
+		for(Entry<Block, Block> entry : originals.entrySet())
+			Quark.LOG.info("{} is variant of {}", entry.getKey(), entry.getValue());
+	}
+	
+	private record VariantMap(Map<String, Block> variants) {
+		
+		private boolean isEmpty() {
+			return variants.isEmpty();
+		}
+		
+	}
 	
 }

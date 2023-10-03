@@ -61,8 +61,10 @@ public class VariantSelectorModule extends QuarkModule {
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
-			Arrays.asList("slab", "stairs", "wall", "fence", "vertical_slab"),
-			Arrays.asList("quark"));
+			Arrays.asList("slab", "stairs", "fence", "fence_gate", "vertical_slab"),
+			Arrays.asList("quark"),
+			Arrays.asList("wall=fence", "carpet=slab")
+			);
 
 	public static Item hammer;
 
@@ -95,7 +97,7 @@ public class VariantSelectorModule extends QuarkModule {
 		if(variant == null)
 			variant = "";
 
-		if(variant.isEmpty() || variants.knownSuffixes.contains(variant))
+		if(variant.isEmpty() || variants.isKnownVariant(variant))
 			player.getPersistentData().putString(TAG_CURRENT_VARIANT, variant);
 	}
 
@@ -155,7 +157,7 @@ public class VariantSelectorModule extends QuarkModule {
 				}
 
 				if(!stack.isEmpty() && stack.getItem() instanceof BlockItem)
-					mc.setScreen(new VariantSelectorScreen(stack, variantSelectorKey, clientVariant, variants.knownSuffixes));
+					mc.setScreen(new VariantSelectorScreen(stack, variantSelectorKey, clientVariant, variants.getVisibleVariants()));
 
 				return;
 			}
