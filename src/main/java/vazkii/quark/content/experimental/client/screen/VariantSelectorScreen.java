@@ -26,8 +26,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import vazkii.quark.base.network.QuarkNetwork;
-import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.content.experimental.module.VariantSelectorModule;
 
 public class VariantSelectorScreen extends Screen {
@@ -178,8 +176,7 @@ public class VariantSelectorScreen extends Screen {
 			
 			if(slotSelected != -1) {
 				String variant = slotSelected == 0 ? "" : variants.get(slotSelected - 1);
-				VariantSelectorModule.setClientVariant(variant);
-				QuarkNetwork.sendToServer(new PlaceVariantUpdateMessage(variant));
+				VariantSelectorModule.setClientVariant(variant, true);
 				mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			}
 		}

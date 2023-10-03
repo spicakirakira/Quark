@@ -1,6 +1,11 @@
 package vazkii.quark.content.experimental.module;
 
+import java.util.Arrays;
+
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.platform.Window;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -12,6 +17,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -22,20 +28,21 @@ import net.minecraftforge.client.event.InputEvent.Key;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.lwjgl.glfw.GLFW;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.client.handler.ModKeybindHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.network.QuarkNetwork;
+import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.content.experimental.client.screen.VariantSelectorScreen;
 import vazkii.quark.content.experimental.config.BlockSuffixConfig;
 import vazkii.quark.content.experimental.item.HammerItem;
-
-import java.util.Arrays;
 
 @LoadModule(category = ModuleCategory.EXPERIMENTAL, hasSubscriptions = true, enabledByDefault = false,
 		description = "Allows placing variant blocks automatically via a selector menu, can also disable all variant block recipes and items")
@@ -43,7 +50,7 @@ public class VariantSelectorModule extends QuarkModule {
 
 	private static final String TAG_CURRENT_VARIANT = Quark.MOD_ID + ":CurrentSelectedVariant";
 
-	private static String clientVariant = "";
+	private static String clientVariant = null;
 	private static boolean staticEnabled;
 
 	@Config(description = "Set this to true to automatically convert any dropped variant items into their originals. Do this ONLY if you intend to take control of every recipe via a data pack or equivalent, as this will introduce dupes otherwise.")
@@ -84,7 +91,6 @@ public class VariantSelectorModule extends QuarkModule {
 		return player.getPersistentData().getString(TAG_CURRENT_VARIANT);
 	}
 
-	// TODO on login player should lose variant
 	public static void setSavedVariant(ServerPlayer player, String variant) {
 		if(variant == null)
 			variant = "";
@@ -94,8 +100,14 @@ public class VariantSelectorModule extends QuarkModule {
 	}
 
 	@OnlyIn(Dist.CLIENT)
-	public static void setClientVariant(String variant) {
+	public static void setClientVariant(String variant, boolean sync) {
 		clientVariant = variant;
+		
+		if(sync) {
+			if(variant == null)
+				variant = "";
+			QuarkNetwork.sendToServer(new PlaceVariantUpdateMessage(variant));
+		}
 	}
 
 	private static Block getMainHandVariantBlock(Player player, String variant) {
@@ -147,6 +159,22 @@ public class VariantSelectorModule extends QuarkModule {
 
 				return;
 			}
+		}
+	}
+	
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void clientTick(ClientTickEvent event) {
+		if(event.phase != Phase.END)
+			return;
+		
+		Minecraft mc = Minecraft.getInstance();
+		Level level = mc.level;
+		if(level == null)
+			setClientVariant(null, false);
+		else {
+			if(clientVariant == null)
+				setClientVariant("", true);
 		}
 	}
 
