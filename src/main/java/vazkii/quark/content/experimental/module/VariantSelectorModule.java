@@ -45,7 +45,7 @@ import vazkii.quark.content.experimental.config.BlockSuffixConfig;
 import vazkii.quark.content.experimental.item.HammerItem;
 
 @LoadModule(category = ModuleCategory.EXPERIMENTAL, hasSubscriptions = true, enabledByDefault = false,
-		description = "Allows placing variant blocks automatically via a selector menu, can also disable all variant block recipes and items")
+		description = "Allows placing variant blocks automatically via a selector menu triggered from a keybind")
 public class VariantSelectorModule extends QuarkModule {
 
 	private static final String TAG_CURRENT_VARIANT = Quark.MOD_ID + ":CurrentSelectedVariant";
