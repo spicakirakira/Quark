@@ -1,21 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "SBS",
-    "BBB",
-    "SBS"
+    "MM"
   ],
   "key": {
-    "B": {
-      "item": "minecraft:bamboo"
-    },
-    "S": {
-      "item": "minecraft:stick"
+    "M": {
+      "item": "quark:bamboo_mat"
     }
   },
   "result": {
     "item": "quark:bamboo_mat_carpet",
-    "count": 4
+    "count": 3
   },
   "conditions": [
     {
