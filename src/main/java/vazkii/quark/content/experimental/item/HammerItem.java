@@ -41,15 +41,11 @@ public class HammerItem extends QuarkItem {
 		String variant = VariantSelectorModule.getSavedVariant(player);
 		Block variantBlock = VariantSelectorModule.getVariantOrOriginal(block, variant);
 		if(variantBlock != null) {
-			Vec3 vec = context.getClickLocation();
-			Direction dir = context.getClickedFace();
-			Direction opp = dir.getOpposite();
-			BlockHitResult newBhr = new BlockHitResult(new Vec3(vec.x() + opp.getStepX(), vec.y() + opp.getStepY(), vec.z() + opp.getStepZ()), dir, pos.relative(opp), false);
-			BlockPlaceContext bpc = new BlockPlaceContext(context.getLevel(), context.getPlayer(), context.getHand(), context.getItemInHand(), newBhr);
+			BlockPlaceContext bpc = new YungsBetterBlockPlaceContext(context);
 			BlockState place = variantBlock.getStateForPlacement(bpc);
 			place = LockRotationModule.fixBlockRotation(place, bpc);
 			
-			if(!place.equals(state)) {
+			if(!place.equals(state) && !level.isClientSide) {
 				level.removeBlock(pos, false);
 				level.setBlock(pos, place, 1 | 2);
 				player.swing(context.getHand());
@@ -61,6 +57,28 @@ public class HammerItem extends QuarkItem {
 		}
 		
 		return InteractionResult.PASS;
+	}
+	
+	private static class YungsBetterBlockPlaceContext extends BlockPlaceContext {
+
+		public YungsBetterBlockPlaceContext(UseOnContext ctx) {
+			super(ctx);
+		}
+		
+		// vanilla BlockPlaceContext offsets the original clicked pos if replaceClicked is false
+		// so that the block is placed on the edge, but in this case we want to place it in the
+		// same blockpos that was clicked so we do this nonsense
+		
+		@Override
+		public BlockPos getClickedPos() {
+			boolean oldRepl = replaceClicked;
+			replaceClicked = true;
+			BlockPos pos = super.getClickedPos();
+			
+			replaceClicked = oldRepl;
+			return pos;
+		}
+		
 	}
 
 }
