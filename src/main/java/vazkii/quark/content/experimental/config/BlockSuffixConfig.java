@@ -24,7 +24,8 @@ public class BlockSuffixConfig extends AbstractConfigType {
 
 	private static final VariantMap EMPTY_VARIANT_MAP = new VariantMap(new HashMap<>());
 	
-	@Config
+	@Config(description = "The list of all variant types available for players to use. Values are treated as suffixes to block IDs for scanning.\n"
+			+ "Prefix any variant type with ! to make it show up for Manual Variants but not be automatically scanned for. (e.g. '!polish')")
 	private List<String> variantTypes;
 	
 	@Config(description = "By default, only a mod's namespace is scanned for variants for its items (e.g. if coolmod adds coolmod:fun_block, it'll search only for coolmod:fun_block_stairs).\n"
@@ -40,14 +41,18 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	@Config(description = "Ends of block IDs to try and remove when looking for variants. (e.g. minecraft:oak_planks goes into minecraft:oak_stairs, so we have to include '_planks' in this list for it to find them or else it'll only look for minecraft:oak_planks_stairs)")
 	private List<String> stripCandidates = Arrays.asList("_planks", "_wool", "s");
 	
+	@Config(description = "Add manual variant overrides here, the format is 'type,block,output' (e.g. polish,minecraft:stone_bricks,minecraft:chiseled_stone_bricks). The type must be listed in Variant Types")
+	private List<String> manualVariants = new ArrayList<>();
+	
 	@Config
 	private List<String> blacklist = new ArrayList<>();
 	
 	private Map<Block, VariantMap> blockVariants = new HashMap<>();
 	private Map<Block, Block> originals = new HashMap<>();
 	private Multimap<String, String> aliasMap = HashMultimap.create();
+	private Multimap<Block, ManualVariant> manualVariantMap = HashMultimap.create();
 	
-	private List<String> visibleVariants;
+	private List<String> visibleVariants = new ArrayList<>();
 	private List<String> sortedSuffixes;
 	
 	public BlockSuffixConfig(List<String> variantTypes, List<String> testedMods, List<String> aliases) {
@@ -59,14 +64,16 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	@Override
 	public void onReload(QuarkModule module, ConfigFlagManager flagManager) {
 		blockVariants.clear();
+		visibleVariants.clear();
 		originals.clear();
 		aliasMap.clear();
+		manualVariantMap.clear();
 		
 		if(module != null && !module.enabled)
 			return;
 		
-		visibleVariants = new ArrayList<>(variantTypes);
-		// TODO support for manual variants
+		for(String s : variantTypes)
+			visibleVariants.add(s.replaceAll("!", ""));
 		
 		sortedSuffixes = new ArrayList<>(visibleVariants);
 		sortedSuffixes.sort((s1, s2) -> { // sort by amount of _
@@ -79,6 +86,14 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		for(String s : aliases) {
 			String[] toks = s.split("=");
 			aliasMap.put(toks[1], toks[0]);
+		}
+		
+		for(String s : manualVariants) {
+			String[] toks = s.split(",");
+			
+			Block block = Registry.BLOCK.get(new ResourceLocation(toks[1]));
+			Block out = Registry.BLOCK.get(new ResourceLocation(toks[2]));
+			manualVariantMap.put(block, new ManualVariant(toks[0], out));
 		}
 		
 		// Map all variants
@@ -137,13 +152,21 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		
 		if(!isBlacklisted(block))
 			for(String s : sortedSuffixes) {
+				if(!variantTypes.contains(s))
+					continue; // this means its marked with ! so it won't be searched
+				
 				Block suffixed = getSuffixedBlock(block, s);
 				if(suffixed != null && !isBlacklisted(block)) {
 					newVariants.put(s, suffixed);
 					originals.put(suffixed, block);
 				}
 			}
-
+		
+		if(manualVariantMap.containsKey(block))
+			for(ManualVariant mv : manualVariantMap.get(block)) {
+				newVariants.put(mv.type, mv.out);
+				originals.put(mv.out, block);
+			}
 		
 		if(newVariants.isEmpty())
 			blockVariants.put(block, EMPTY_VARIANT_MAP);
@@ -214,7 +237,9 @@ public class BlockSuffixConfig extends AbstractConfigType {
 			Quark.LOG.info("{} is variant of {}", entry.getKey(), entry.getValue());
 	}
 	
-	private record VariantMap(Map<String, Block> variants) {
+	private static record ManualVariant(String type, Block out) {} 
+	
+	private static record VariantMap(Map<String, Block> variants) {
 		
 		private boolean isEmpty() {
 			return variants.isEmpty();
