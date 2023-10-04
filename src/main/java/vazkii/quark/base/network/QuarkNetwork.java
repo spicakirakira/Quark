@@ -62,11 +62,11 @@ public final class QuarkNetwork {
 		// Flag Syncing
 		network.register(S2CUpdateFlag.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(C2SUpdateFlag.class, NetworkDirection.PLAY_TO_SERVER);
-		loginIndexedBuilder(S2CLoginFlag.class, 96, NetworkDirection.LOGIN_TO_CLIENT)
+		loginIndexedBuilder(S2CLoginFlag.class, 98, NetworkDirection.LOGIN_TO_CLIENT)
 			.decoder(S2CLoginFlag::new)
 			.buildLoginPacketList(S2CLoginFlag::generateRegistryPackets)
 			.add();
-		loginIndexedBuilder(C2SLoginFlag.class, 97, NetworkDirection.LOGIN_TO_SERVER)
+		loginIndexedBuilder(C2SLoginFlag.class, 99, NetworkDirection.LOGIN_TO_SERVER)
 			.decoder(C2SLoginFlag::new)
 			.noResponse()
 			.add();
