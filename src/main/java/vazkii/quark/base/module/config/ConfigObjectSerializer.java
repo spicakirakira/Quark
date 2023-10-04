@@ -1,5 +1,12 @@
 package vazkii.quark.base.module.config;
 
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.text.WordUtils;
+import org.jetbrains.annotations.Nullable;
+import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.type.IConfigType;
+import vazkii.quark.base.module.hint.HintManager;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -12,20 +19,12 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.text.WordUtils;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraftforge.common.ForgeConfigSpec;
-import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.base.module.config.type.IConfigType;
-import vazkii.quark.base.module.hint.HintManager;
-
 public final class ConfigObjectSerializer {
 
 	public static void serialize(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object) throws ReflectiveOperationException {
 		serialize(builder, flagManager, callbacks, object, object);
 	}
-	
+
 	public static void serialize(IConfigBuilder builder, ConfigFlagManager flagManager, List<Runnable> callbacks, Object object, Object root) throws ReflectiveOperationException {
 		List<Field> fields = recursivelyGetFields(object.getClass());
 		for(Field f : fields) {
