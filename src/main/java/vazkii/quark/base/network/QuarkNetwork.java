@@ -1,8 +1,5 @@
 package vazkii.quark.base.network;
 
-import java.time.Instant;
-import java.util.BitSet;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.chat.MessageSignature;
@@ -11,33 +8,25 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.HandshakeHandler;
 import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.simple.SimpleChannel;
 import vazkii.arl.network.IMessage;
 import vazkii.arl.network.MessageSerializer;
 import vazkii.arl.network.NetworkHandler;
 import vazkii.quark.base.Quark;
-import vazkii.quark.base.network.message.ChangeHotbarMessage;
-import vazkii.quark.base.network.message.DoEmoteMessage;
-import vazkii.quark.base.network.message.DoubleDoorMessage;
-import vazkii.quark.base.network.message.EditSignMessage;
-import vazkii.quark.base.network.message.HarvestMessage;
-import vazkii.quark.base.network.message.InventoryTransferMessage;
-import vazkii.quark.base.network.message.RequestEmoteMessage;
-import vazkii.quark.base.network.message.ScrollOnBundleMessage;
-import vazkii.quark.base.network.message.SetLockProfileMessage;
-import vazkii.quark.base.network.message.ShareItemMessage;
-import vazkii.quark.base.network.message.SortInventoryMessage;
-import vazkii.quark.base.network.message.UpdateTridentMessage;
+import vazkii.quark.base.network.message.*;
 import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.base.network.message.oddities.HandleBackpackMessage;
 import vazkii.quark.base.network.message.oddities.MatrixEnchanterOperationMessage;
 import vazkii.quark.base.network.message.oddities.ScrollCrateMessage;
-import vazkii.quark.base.network.message.structural.C2SLoginFlag;
-import vazkii.quark.base.network.message.structural.C2SUpdateFlag;
-import vazkii.quark.base.network.message.structural.HandshakeMessage;
-import vazkii.quark.base.network.message.structural.S2CLoginFlag;
-import vazkii.quark.base.network.message.structural.S2CUpdateFlag;
+import vazkii.quark.base.network.message.structural.*;
+
+import java.time.Instant;
+import java.util.BitSet;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public final class QuarkNetwork {
 
@@ -82,10 +71,12 @@ public final class QuarkNetwork {
 		network.register(C2SUpdateFlag.class, NetworkDirection.PLAY_TO_SERVER);
 		loginIndexedBuilder(S2CLoginFlag.class, 98, NetworkDirection.LOGIN_TO_CLIENT)
 			.decoder(S2CLoginFlag::new)
+			.consumerNetworkThread(loginPacketHandler())
 			.buildLoginPacketList(S2CLoginFlag::generateRegistryPackets)
 			.add();
 		loginIndexedBuilder(C2SLoginFlag.class, 99, NetworkDirection.LOGIN_TO_SERVER)
 			.decoder(C2SLoginFlag::new)
+			.consumerNetworkThread(loginIndexFirst(loginPacketHandler()))
 			.noResponse()
 			.add();
 	}
@@ -93,16 +84,24 @@ public final class QuarkNetwork {
 	private static <MSG extends HandshakeMessage> SimpleChannel.MessageBuilder<MSG> loginIndexedBuilder(Class<MSG> clazz, int id, NetworkDirection direction) {
 		return network.channel.messageBuilder(clazz, id, direction)
 			.loginIndex(HandshakeMessage::getLoginIndex, HandshakeMessage::setLoginIndex)
-			.encoder(HandshakeMessage::encode)
-			.consumerNetworkThread((msg, context) -> {
-				return msg.consume(context.get(), network.channel::reply);
-			});
+			.encoder(HandshakeMessage::encode);
+	}
+
+	private static <MSG extends HandshakeMessage> BiConsumer<MSG, Supplier<NetworkEvent.Context>> loginPacketHandler() {
+		return (msg, contextSupplier) -> {
+			NetworkEvent.Context context = contextSupplier.get();
+			context.setPacketHandled(msg.consume(context, network.channel::reply));
+		};
+	}
+
+	private static <MSG extends HandshakeMessage> BiConsumer<MSG, Supplier<NetworkEvent.Context>> loginIndexFirst(BiConsumer<MSG, Supplier<NetworkEvent.Context>> toWrap) {
+		return HandshakeHandler.indexFirst((handler, msg, context) -> toWrap.accept(msg, context));
 	}
 
 	public static void sendToPlayer(IMessage msg, ServerPlayer player) {
 		if(network == null)
 			return;
-		
+
 		network.sendToPlayer(msg, player);
 	}
 
@@ -110,14 +109,14 @@ public final class QuarkNetwork {
 	public static void sendToServer(IMessage msg) {
 		if(network == null || Minecraft.getInstance().getConnection() == null)
 			return;
-		
+
 		network.sendToServer(msg);
 	}
 
 	public static void sendToPlayers(IMessage msg, Iterable<ServerPlayer> players) {
 		if(network == null)
 			return;
-		
+
 		for(ServerPlayer player : players)
 			network.sendToPlayer(msg, player);
 	}
@@ -125,7 +124,7 @@ public final class QuarkNetwork {
 	public static void sendToAllPlayers(IMessage msg, MinecraftServer server) {
 		if(network == null)
 			return;
-		
+
 		sendToPlayers(msg, server.getPlayerList().getPlayers());
 	}
 
