@@ -1,1 +1,1 @@
-- Fixed the startup crash with large modpacks for once now, I think
+- Fixed disconnect upon login to a server with quark
