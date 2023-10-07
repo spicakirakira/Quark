@@ -1,37 +1,29 @@
 package vazkii.quark.base.network;
 
-import java.time.Instant;
-
 import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.simple.SimpleChannel;
 import vazkii.arl.network.IMessage;
 import vazkii.arl.network.MessageSerializer;
 import vazkii.arl.network.NetworkHandler;
 import vazkii.quark.base.Quark;
-import vazkii.quark.base.network.message.ChangeHotbarMessage;
-import vazkii.quark.base.network.message.DoEmoteMessage;
-import vazkii.quark.base.network.message.DoubleDoorMessage;
-import vazkii.quark.base.network.message.EditSignMessage;
-import vazkii.quark.base.network.message.HarvestMessage;
-import vazkii.quark.base.network.message.InventoryTransferMessage;
-import vazkii.quark.base.network.message.RequestEmoteMessage;
-import vazkii.quark.base.network.message.ScrollOnBundleMessage;
-import vazkii.quark.base.network.message.SetLockProfileMessage;
-import vazkii.quark.base.network.message.ShareItemMessage;
-import vazkii.quark.base.network.message.SortInventoryMessage;
-import vazkii.quark.base.network.message.UpdateTridentMessage;
+import vazkii.quark.base.network.message.*;
 import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.base.network.message.oddities.HandleBackpackMessage;
 import vazkii.quark.base.network.message.oddities.MatrixEnchanterOperationMessage;
 import vazkii.quark.base.network.message.oddities.ScrollCrateMessage;
+import vazkii.quark.base.network.message.structural.*;
+
+import java.time.Instant;
+import java.util.BitSet;
 
 public final class QuarkNetwork {
 
-	private static final int PROTOCOL_VERSION = 1;
+	private static final int PROTOCOL_VERSION = 2;
 
 	private static NetworkHandler network;
 
@@ -39,6 +31,7 @@ public final class QuarkNetwork {
 		MessageSerializer.mapHandlers(Instant.class, (buf, field) -> buf.readInstant(), (buf, field, instant) -> buf.writeInstant(instant));
 		MessageSerializer.mapHandlers(MessageSignature.class, (buf, field) -> new MessageSignature(buf), (buf, field, signature) -> signature.write(buf));
 		MessageSerializer.mapHandlers(LastSeenMessages.Update.class, (buf, field) -> new LastSeenMessages.Update(buf), (buf, field, update) -> update.write(buf));
+		MessageSerializer.mapHandlers(BitSet.class, (buf, field) -> BitSet.valueOf(buf.readLongArray()), (buf, field, bitSet) -> buf.writeLongArray(bitSet.toLongArray()));
 
 		network = new NetworkHandler(Quark.MOD_ID, PROTOCOL_VERSION);
 
@@ -60,12 +53,32 @@ public final class QuarkNetwork {
 
 		// Experimental
 		network.register(PlaceVariantUpdateMessage.class, NetworkDirection.PLAY_TO_SERVER);
-		
+
 		// Clientbound
 		network.register(DoEmoteMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(EditSignMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 		network.register(UpdateTridentMessage.class, NetworkDirection.PLAY_TO_CLIENT);
 
+		// Flag Syncing
+		network.register(S2CUpdateFlag.class, NetworkDirection.PLAY_TO_CLIENT);
+		network.register(C2SUpdateFlag.class, NetworkDirection.PLAY_TO_SERVER);
+		loginIndexedBuilder(S2CLoginFlag.class, 98, NetworkDirection.LOGIN_TO_CLIENT)
+			.decoder(S2CLoginFlag::new)
+			.buildLoginPacketList(S2CLoginFlag::generateRegistryPackets)
+			.add();
+		loginIndexedBuilder(C2SLoginFlag.class, 99, NetworkDirection.LOGIN_TO_SERVER)
+			.decoder(C2SLoginFlag::new)
+			.noResponse()
+			.add();
+	}
+
+	private static <MSG extends HandshakeMessage> SimpleChannel.MessageBuilder<MSG> loginIndexedBuilder(Class<MSG> clazz, int id, NetworkDirection direction) {
+		return network.channel.messageBuilder(clazz, id, direction)
+			.loginIndex(HandshakeMessage::getLoginIndex, HandshakeMessage::setLoginIndex)
+			.encoder(HandshakeMessage::encode)
+			.consumerNetworkThread((msg, context) -> {
+				return msg.consume(context.get(), network.channel::reply);
+			});
 	}
 
 	public static void sendToPlayer(IMessage msg, ServerPlayer player) {
