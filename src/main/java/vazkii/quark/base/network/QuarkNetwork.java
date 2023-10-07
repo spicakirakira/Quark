@@ -82,19 +82,31 @@ public final class QuarkNetwork {
 	}
 
 	public static void sendToPlayer(IMessage msg, ServerPlayer player) {
+		if(network == null)
+			return;
+		
 		network.sendToPlayer(msg, player);
 	}
 
 	public static void sendToServer(IMessage msg) {
+		if(network == null)
+			return;
+		
 		network.sendToServer(msg);
 	}
 
 	public static void sendToPlayers(IMessage msg, Iterable<ServerPlayer> players) {
+		if(network == null)
+			return;
+		
 		for(ServerPlayer player : players)
 			network.sendToPlayer(msg, player);
 	}
 
 	public static void sendToAllPlayers(IMessage msg, MinecraftServer server) {
+		if(network == null)
+			return;
+		
 		sendToPlayers(msg, server.getPlayerList().getPlayers());
 	}
 
