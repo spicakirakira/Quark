@@ -1,1 +1,1 @@
-- Added some safeguards to network code to prevent a potential crash
+- Fixed the startup crash with large modpacks for once now, I think
