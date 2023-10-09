@@ -105,6 +105,6 @@ $CURSEFORGE_GAME_VERSION]"
 	# TODO: Upload the asc as an 'Additional file'
 }
 
-release_github
-release_modrinth
+#release_github
+#release_modrinth
 release_curseforge
