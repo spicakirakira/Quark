@@ -95,7 +95,7 @@ $CURSEFORGE_FORGE_VERSION,\
 $CURSEFORGE_GAME_VERSION]"
 
 	CURSEFORGE_FORGE_SPEC=$(echo "$CURSEFORGE_FORGE_SPEC" | \
-								jq --arg changelog "$GH_RELEASE_PAGE" \
+								jq --arg changelog "test" \
 								   --argjson gamevers "$CURSEFORGE_FORGE_GAMEVERS" \
 								   '.gameVersions=$ARGS.named.gamevers | .changelog=$ARGS.named.changelog')
 	curl 'https://minecraft.curseforge.com/api/projects/243121/upload-file' \
