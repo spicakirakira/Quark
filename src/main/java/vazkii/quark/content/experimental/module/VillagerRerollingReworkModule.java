@@ -22,6 +22,7 @@ import vazkii.quark.mixin.accessor.AccessorMerchantOffer;
 public class VillagerRerollingReworkModule extends QuarkModule {
 
 	public static final String TAG_VILLAGER_SEED = "quark:MerchantInitialSeed";
+	public static final String TAG_ITEMS_REROLLED_TODAY = "quark:RerolledItemsToday";
 	public static final String TAG_TRADE_TIER = "quark:tier";
 
 	public static boolean staticEnabled;
@@ -41,6 +42,13 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 	@Config(description = "Set to 0 to disable the chance to reroll trades when restocking. Set to -1 to allow unlimited rerolling.\n" +
 		"Trades earlier in the list will restock first.")
 	public static int maximumRestocksPerDay = 3;
+
+	@Config(description = "If enabled, villagers will reroll when they restock, rather than when they begin work for the day.\n" +
+		"If disabled, players can prevent rerolling by ensuring the villager isn't out of stock on their last restock of the day.")
+	public static boolean rerollOnAnyRestock = false;
+
+	@Config(description = "If enabled, villagers will be able to reroll any trade that has been used AT ALL since the last restock.")
+	public static boolean rerollEvenIfNotOutOfStock = false;
 
 	@Override
 	public void configChanged() {
@@ -69,17 +77,23 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 		}
 	}
 
+	public static void clearRerolls(Villager villager) {
+		villager.getPersistentData().remove(TAG_ITEMS_REROLLED_TODAY);
+	}
+
 	public static void attemptToReroll(Villager villager) {
 		if (!staticEnabled || maximumRestocksPerDay == 0 || chanceToRerollWhenRestocking == 0)
 			return;
 
-		int restocks = 0;
+		int restocks = villager.getPersistentData().getInt(TAG_ITEMS_REROLLED_TODAY);
+		if (restocks >= maximumRestocksPerDay && maximumRestocksPerDay > 0)
+			return;
 
 		MerchantOffers offers = villager.getOffers();
 
 		for (int i = 0; i < offers.size(); i++) {
 			MerchantOffer offer = offers.get(i);
-			if (offer.isOutOfStock()) {
+			if ((rerollEvenIfNotOutOfStock && offer.getUses() > 0) || offer.isOutOfStock()) {
 				MerchantOffer rerolled = attemptToReroll(villager, offer);
 
 				if (rerolled != null) {
@@ -108,6 +122,9 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 				}
 			}
 		}
+
+		if (maximumRestocksPerDay > 0)
+			villager.getPersistentData().putInt(TAG_ITEMS_REROLLED_TODAY, restocks);
 	}
 
 	public static MerchantOffer attemptToReroll(Villager villager, MerchantOffer original) {

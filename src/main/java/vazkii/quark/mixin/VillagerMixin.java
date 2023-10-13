@@ -13,6 +13,15 @@ public class VillagerMixin {
 	@Inject(method = "resetNumberOfRestocks", at = @At("TAIL"))
 	public void resetRestocks(CallbackInfo ci) {
 		Villager villager = (Villager) (Object) this;
-		VillagerRerollingReworkModule.attemptToReroll(villager);
+		VillagerRerollingReworkModule.clearRerolls(villager);
+		if (!VillagerRerollingReworkModule.rerollOnAnyRestock)
+			VillagerRerollingReworkModule.attemptToReroll(villager);
+	}
+
+	@Inject(method = "restock", at = @At("TAIL"))
+	public void restock(CallbackInfo ci) {
+		Villager villager = (Villager) (Object) this;
+		if (VillagerRerollingReworkModule.rerollOnAnyRestock)
+			VillagerRerollingReworkModule.attemptToReroll(villager);
 	}
 }
