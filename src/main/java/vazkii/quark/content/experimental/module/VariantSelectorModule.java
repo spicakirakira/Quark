@@ -5,19 +5,24 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Either;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -44,6 +49,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.client.handler.ModKeybindHandler;
+import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -70,8 +76,11 @@ public class VariantSelectorModule extends QuarkModule {
 	@Config(flag = "hammer", description = "Enable the hammer, allowing variants to be swapped between eachother, including the original block. Do this ONLY under the same circumstances as Convert Variant Items.")
 	public static boolean enableHammer = false;
 	
-	@Config
-	public static boolean showTooltip = true;
+	@Config public static boolean showTooltip = true;
+	@Config public static boolean alignHudToHotbar = false;
+	@Config public static boolean showSimpleHud = false;
+	@Config public static boolean showHud = true;
+	@Config public static boolean enableGreenTint = true;
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
@@ -264,7 +273,7 @@ public class VariantSelectorModule extends QuarkModule {
 	@OnlyIn(Dist.CLIENT)
 	public void onRender(RenderGuiOverlayEvent.Pre event) {
 		Minecraft mc = Minecraft.getInstance();
-		if(event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type() || mc.screen instanceof VariantSelectorScreen)
+		if(event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type() || mc.screen instanceof VariantSelectorScreen || !showHud)
 			return;
 
 		Player player = mc.player;
@@ -298,13 +307,59 @@ public class VariantSelectorModule extends QuarkModule {
 				Window window = event.getWindow();
 				int x = window.getGuiScaledWidth() / 2;
 				int y = window.getGuiScaledHeight() / 2 + 12;
-				int pad = 8;
+				
+				
+				showSimpleHud = true;
+				alignHudToHotbar = true;
+				
+				if(alignHudToHotbar) {
+					HumanoidArm arm = mc.options.mainHand().get();
+					if(arm == HumanoidArm.RIGHT)
+						x += 125;
+					else x -= 93;
+					
+					y = window.getGuiScaledHeight() - 19;
+				}
+				
+				int offset = 8;
+				int width = 16;
 
 				displayLeft.setCount(1);
+				
+				int posX = x - offset - width;
+				int posY = y;
 
-				mc.font.draw(event.getPoseStack(), "->", x - 5, y + 5, 0xFFFFFF);
-				mc.getItemRenderer().renderAndDecorateItem(displayLeft, x - 16 - pad, y);
-				mc.getItemRenderer().renderAndDecorateItem(displayRight, x + pad, y);
+				if(!showSimpleHud) {
+					mc.getItemRenderer().renderAndDecorateItem(displayLeft, posX, posY);
+					
+					RenderSystem.enableBlend();
+					RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+					RenderSystem.setShader(GameRenderer::getPositionTexShader);
+					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.75F);
+					RenderSystem.setShaderTexture(0, MiscUtil.GENERAL_ICONS);
+					
+					Screen.blit(event.getPoseStack(), posX + 8, posY, 0, 141, 22, 15, 256, 256);
+					
+					posX += width * 2;
+				} 
+				else {
+					final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
+					
+					if(alignHudToHotbar) {
+						RenderSystem.enableBlend();
+						RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+						RenderSystem.setShader(GameRenderer::getPositionTexShader);
+						if(enableGreenTint)
+							RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
+						else
+							RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+						RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
+						Screen.blit(event.getPoseStack(), posX -3, posY -3, 24, 23, 22, 22, 256, 256);
+					} else
+						posX += width;
+				}	
+				
+				mc.getItemRenderer().renderAndDecorateItem(displayRight, posX , posY);
 			}
 		}
 	}
