@@ -15,6 +15,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -81,6 +82,7 @@ public class VariantSelectorModule extends QuarkModule {
 	@Config public static boolean showSimpleHud = false;
 	@Config public static boolean showHud = true;
 	@Config public static boolean enableGreenTint = true;
+	@Config public static boolean overrideHeldItemRender = true;
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
@@ -267,6 +269,24 @@ public class VariantSelectorModule extends QuarkModule {
 		}
 
 		return state;
+	}
+	
+	@OnlyIn(Dist.CLIENT)
+	public static ItemStack modifyHeldItemStack(AbstractClientPlayer player, ItemStack stack) {
+		if(!staticEnabled || !overrideHeldItemRender)
+			return stack;
+		
+		Minecraft mc = Minecraft.getInstance();
+		if(player == mc.player && stack.getItem() instanceof BlockItem bi) {
+			Block block = bi.getBlock();
+			if(clientVariant != null && !clientVariant.isEmpty()) {
+				Block variant = variants.getBlockForVariant(block, clientVariant);
+				if(variant != null && variant != block)
+					return new ItemStack(variant);
+			}
+		}
+			
+		return stack;
 	}
 
 	@SubscribeEvent

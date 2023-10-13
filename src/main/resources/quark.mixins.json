@@ -100,6 +100,7 @@
     "client.RenderBuffersMixin",
     "client.ScreenMixin",
     "client.ThrownTridentRendererMixin",
+    "client.ItemInHandRendererMixin",
     "client.accessor.AccessorBlockColors",
     "client.accessor.AccessorItemColors",
     "client.accessor.AccessorLocalPlayer",
