@@ -43,12 +43,14 @@ public class AbstractVillagerMixin {
 
 	@ModifyExpressionValue(method = "addOffersFromItemListings", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/npc/VillagerTrades$ItemListing;getOffer(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/util/RandomSource;)Lnet/minecraft/world/item/trading/MerchantOffer;"))
 	public MerchantOffer setTierForOffer(MerchantOffer newOffer) {
-		AbstractVillager villager = (AbstractVillager) (Object) this;
-		if (VillagerRerollingReworkModule.canUseSeededRandom(villager)) {
-			VillagerData villagerData = ((VillagerDataHolder) villager).getVillagerData();
-			((PseudoAccessorMerchantOffer) newOffer).quark$setTier(villagerData.getLevel());
-		} else {
-			((PseudoAccessorMerchantOffer) newOffer).quark$setTier(-1);
+		if (newOffer != null) {
+			AbstractVillager villager = (AbstractVillager) (Object) this;
+			if (VillagerRerollingReworkModule.canUseSeededRandom(villager)) {
+				VillagerData villagerData = ((VillagerDataHolder) villager).getVillagerData();
+				((PseudoAccessorMerchantOffer) newOffer).quark$setTier(villagerData.getLevel());
+			} else {
+				((PseudoAccessorMerchantOffer) newOffer).quark$setTier(-1);
+			}
 		}
 
 		return newOffer;
