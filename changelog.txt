@@ -1,1 +1,4 @@
-- test build
+- Added option to disable Unmending for Mending II if you have a way to get it
+- Added Villager Rerolling Rework to Experimental (Villagers won't reroll trades when their profession is cycled, and instead have a change to reroll trades instead of just restocking)
+- Fixed incorrect Reacharound Placing render
+- Variant Selector can now show tooltips on blocks to indicate available variants
