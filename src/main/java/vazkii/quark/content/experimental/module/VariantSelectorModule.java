@@ -86,9 +86,9 @@ public class VariantSelectorModule extends QuarkModule {
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
-			Arrays.asList("slab", "stairs", "fence", "fence_gate", "vertical_slab"),
+			Arrays.asList("slab", "stairs", "wall", "fence", "fence_gate", "vertical_slab"),
 			Arrays.asList("quark"),
-			Arrays.asList("wall=fence", "carpet=slab")
+			Arrays.asList("carpet=slab")
 			);
 
 	public static Item hammer;
