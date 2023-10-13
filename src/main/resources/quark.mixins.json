@@ -27,6 +27,7 @@
     "EnchantmentMixin",
     "EnchantRandomlyFunctionMixin",
     "EntityMixin",
+    "ExperienceOrbMixin",
     "FallingBlockEntityMixin",
     "HalfTransparentBlockMixin",
     "HarvestFarmlandMixin",
