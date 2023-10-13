@@ -1,18 +1,25 @@
 package vazkii.quark.content.experimental.module;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.datafixers.util.Either;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -25,8 +32,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent.Key;
+import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
@@ -41,6 +50,7 @@ import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.content.experimental.client.screen.VariantSelectorScreen;
+import vazkii.quark.content.experimental.client.tooltip.VariantsComponent;
 import vazkii.quark.content.experimental.config.BlockSuffixConfig;
 import vazkii.quark.content.experimental.item.HammerItem;
 
@@ -58,6 +68,9 @@ public class VariantSelectorModule extends QuarkModule {
 
 	@Config(flag = "hammer", description = "Enable the hammer, allowing variants to be swapped between eachother, including the original block. Do this ONLY under the same circumstances as Convert Variant Items.")
 	public static boolean enableHammer = false;
+	
+	@Config
+	public static boolean showTooltip = true;
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
@@ -162,6 +175,33 @@ public class VariantSelectorModule extends QuarkModule {
 				return;
 			}
 		}
+	}
+	
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
+		event.register(VariantsComponent.class, Function.identity());
+	}
+	
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void gatherComponents(RenderTooltipEvent.GatherComponents event) {
+		ItemStack stack = event.getItemStack();
+		if(hasTooltip(stack)) {
+			List<Either<FormattedText, TooltipComponent>> elements = event.getTooltipElements();
+			int index = 1;
+			
+			if(Screen.hasShiftDown()) {
+				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_header", "TEST")));
+				elements.add(index + 1, Either.right(new VariantsComponent(stack)));
+			}
+			else 
+				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_hold_shift")));
+		}
+	}
+	
+	private boolean hasTooltip(ItemStack stack) {
+		return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.getAllVariants(bi.getBlock()).isEmpty();
 	}
 	
 	@SubscribeEvent

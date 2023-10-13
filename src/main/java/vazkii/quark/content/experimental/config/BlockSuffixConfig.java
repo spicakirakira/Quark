@@ -2,10 +2,13 @@ package vazkii.quark.content.experimental.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.compress.utils.Lists;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -134,6 +137,10 @@ public class BlockSuffixConfig extends AbstractConfigType {
 			return ret;
 		
 		return block;
+	}
+	
+	public Collection<Block> getAllVariants(Block block) {
+		return blockVariants.containsKey(block) ? blockVariants.get(block).variants.values() : Lists.newArrayList();
 	}
 	
 	public Block getOriginalBlock(Block block) {
