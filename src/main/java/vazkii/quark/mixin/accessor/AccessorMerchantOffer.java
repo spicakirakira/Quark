@@ -9,7 +9,4 @@ public interface AccessorMerchantOffer {
 
 	@Accessor("rewardExp")
 	void quark$setRewardExp(boolean rewardExp);
-
-	@Accessor("demand")
-	void quark$setDemand(int demand);
 }

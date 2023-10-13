@@ -84,16 +84,12 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 
 				if (rerolled != null) {
 					boolean foundEquivalent = false; // We avoid duplicate trades...
-					boolean rerollingInPlace = false; // But it's okay to reroll a trade into a different variation of itself.
 					for (MerchantOffer otherOffer : offers) {
 
 						if (ItemStack.isSameItemSameTags(otherOffer.getBaseCostA(), rerolled.getBaseCostA()) &&
 							ItemStack.isSameItemSameTags(otherOffer.getCostB(), rerolled.getCostB()) &&
 							ItemStack.isSameItemSameTags(otherOffer.getResult(), rerolled.getResult())) {
-							if (otherOffer == offer)
-								rerollingInPlace = true;
-							else
-								foundEquivalent = true;
+							foundEquivalent = true;
 							break;
 						}
 					}
@@ -102,12 +98,7 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 						rerolled.addToSpecialPriceDiff(offer.getSpecialPriceDiff());
 						((AccessorMerchantOffer) rerolled).quark$setRewardExp(rerolled.shouldRewardExp() && offer.shouldRewardExp());
 
-						if (rerollingInPlace) {
-							for (int use = 0; use < offer.getUses(); use++)
-								rerolled.increaseUses();
-							((AccessorMerchantOffer) rerolled).quark$setDemand(offer.getDemand());
-						} else
-							restocks++;
+						restocks++;
 
 						offers.set(i, rerolled);
 
