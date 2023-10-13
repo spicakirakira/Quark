@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.compress.utils.Lists;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -140,7 +138,17 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	}
 	
 	public Collection<Block> getAllVariants(Block block) {
-		return blockVariants.containsKey(block) ? blockVariants.get(block).variants.values() : Lists.newArrayList();
+		Map<String, Block> map =  getVariants(block).variants;
+		List<Block> blocks = new ArrayList<>();
+		for(String s : variantTypes) {
+			if(s.startsWith("!"))
+				s = s.substring(1);
+			
+			if(map.containsKey(s))
+				blocks.add(map.get(s));
+		}
+		
+		return blocks;
 	}
 	
 	public Block getOriginalBlock(Block block) {

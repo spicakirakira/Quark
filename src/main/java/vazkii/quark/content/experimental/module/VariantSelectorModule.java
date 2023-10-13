@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.datafixers.util.Either;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -186,17 +187,21 @@ public class VariantSelectorModule extends QuarkModule {
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void gatherComponents(RenderTooltipEvent.GatherComponents event) {
-		ItemStack stack = event.getItemStack();
+		if(!showTooltip)
+			return;
+		
+		ItemStack stack = event.getItemStack();			
+
 		if(hasTooltip(stack)) {
 			List<Either<FormattedText, TooltipComponent>> elements = event.getTooltipElements();
 			int index = 1;
 			
 			if(Screen.hasShiftDown()) {
-				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_header", "TEST")));
+				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_header").withStyle(ChatFormatting.GRAY)));
 				elements.add(index + 1, Either.right(new VariantsComponent(stack)));
 			}
 			else 
-				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_hold_shift")));
+				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_hold_shift").withStyle(ChatFormatting.GRAY)));
 		}
 	}
 	

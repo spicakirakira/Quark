@@ -51,7 +51,7 @@ public class VariantsComponent implements ClientTooltipComponent, TooltipCompone
 		
 		int size = variants.size();
 		height = (size == 0 ? 0 : 20);
-		width = size * 18;
+		width = size * 18 - 2;
 		
 		return variants;
 	}
