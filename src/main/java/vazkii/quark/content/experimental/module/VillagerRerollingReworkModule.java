@@ -87,9 +87,9 @@ public class VillagerRerollingReworkModule extends QuarkModule {
 					boolean rerollingInPlace = false; // But it's okay to reroll a trade into a different variation of itself.
 					for (MerchantOffer otherOffer : offers) {
 
-						if (ItemStack.isSame(otherOffer.getBaseCostA(), rerolled.getBaseCostA()) &&
-							ItemStack.isSame(otherOffer.getCostB(), rerolled.getCostB()) &&
-							ItemStack.isSame(otherOffer.getResult(), rerolled.getResult())) {
+						if (ItemStack.isSameItemSameTags(otherOffer.getBaseCostA(), rerolled.getBaseCostA()) &&
+							ItemStack.isSameItemSameTags(otherOffer.getCostB(), rerolled.getCostB()) &&
+							ItemStack.isSameItemSameTags(otherOffer.getResult(), rerolled.getResult())) {
 							if (otherOffer == offer)
 								rerollingInPlace = true;
 							else
