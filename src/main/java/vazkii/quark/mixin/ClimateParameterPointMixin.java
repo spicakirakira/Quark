@@ -57,16 +57,41 @@ public class ClimateParameterPointMixin {
 			List<Climate.Parameter> newParameterSpace = new ArrayList<>(original.size());
 
 			for (Climate.Parameter parameter : original) {
-				if (((parameter == temperature && ClimateControlRemoverModule.disableTemperature) ||
-					(parameter == humidity && ClimateControlRemoverModule.disableHumidity) ||
-					(parameter == continentalness && ClimateControlRemoverModule.disableContinentalness) ||
-					(parameter == erosion && ClimateControlRemoverModule.disableErosion) ||
-					(parameter == depth && ClimateControlRemoverModule.disableDepth) ||
-					(parameter == weirdness && ClimateControlRemoverModule.disableWeirdness)) ||
-					(parameter.min() == parameter.max() && parameter.min() == offset && ClimateControlRemoverModule.disableOffset))
+				if (parameter == humidity) {
+					if (ClimateControlRemoverModule.disableHumidity)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter == temperature) {
+					if (ClimateControlRemoverModule.disableTemperature)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter == continentalness) {
+					if (ClimateControlRemoverModule.disableContinentalness)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter == erosion) {
+					if (ClimateControlRemoverModule.disableErosion)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter == depth) {
+					if (ClimateControlRemoverModule.disableDepth)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter == weirdness) {
+					if (ClimateControlRemoverModule.disableWeirdness)
+						newParameterSpace.add(dummyParameter);
+					else
+						newParameterSpace.add(parameter);
+				} else if (parameter.min() == parameter.max() && parameter.min() == offset && ClimateControlRemoverModule.disableOffset) {
 					newParameterSpace.add(dummyParameter);
-				else
+				} else {
 					newParameterSpace.add(parameter);
+				}
 			}
 
 			return ImmutableList.copyOf(newParameterSpace);
