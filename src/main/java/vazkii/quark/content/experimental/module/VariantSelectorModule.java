@@ -1,16 +1,8 @@
 package vazkii.quark.content.experimental.module;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
-
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Either;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -48,6 +40,8 @@ import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.client.handler.ModKeybindHandler;
 import vazkii.quark.base.handler.MiscUtil;
@@ -61,6 +55,10 @@ import vazkii.quark.content.experimental.client.screen.VariantSelectorScreen;
 import vazkii.quark.content.experimental.client.tooltip.VariantsComponent;
 import vazkii.quark.content.experimental.config.BlockSuffixConfig;
 import vazkii.quark.content.experimental.item.HammerItem;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
 @LoadModule(category = ModuleCategory.EXPERIMENTAL, hasSubscriptions = true, enabledByDefault = false,
 		description = "Allows placing variant blocks automatically via a selector menu triggered from a keybind")
@@ -76,7 +74,7 @@ public class VariantSelectorModule extends QuarkModule {
 
 	@Config(flag = "hammer", description = "Enable the hammer, allowing variants to be swapped between eachother, including the original block. Do this ONLY under the same circumstances as Convert Variant Items.")
 	public static boolean enableHammer = false;
-	
+
 	@Config public static boolean showTooltip = true;
 	@Config public static boolean alignHudToHotbar = false;
 	@Config public static boolean showSimpleHud = false;
@@ -129,7 +127,7 @@ public class VariantSelectorModule extends QuarkModule {
 	@OnlyIn(Dist.CLIENT)
 	public static void setClientVariant(String variant, boolean sync) {
 		clientVariant = variant;
-		
+
 		if(sync) {
 			if(variant == null)
 				variant = "";
@@ -148,14 +146,13 @@ public class VariantSelectorModule extends QuarkModule {
 	}
 
 	public static Block getVariantForBlock(Block block, String variant) {
-		Block variantBlock = variants.getBlockForVariant(block, variant);
-		if(variantBlock != null)
-			return variantBlock;
-
-		return null;
+		return variants.getBlockForVariant(block, variant);
 	}
 
 	public static Block getVariantOrOriginal(Block block, String variant) {
+		if (!variants.isVariant(block) && !variants.isOriginal(block))
+			return null;
+
 		block = variants.getOriginalBlock(block);
 
 		if(variant == null || variant.isEmpty())
@@ -188,44 +185,44 @@ public class VariantSelectorModule extends QuarkModule {
 			}
 		}
 	}
-	
+
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
 		event.register(VariantsComponent.class, Function.identity());
 	}
-	
+
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void gatherComponents(RenderTooltipEvent.GatherComponents event) {
 		if(!showTooltip)
 			return;
-		
-		ItemStack stack = event.getItemStack();			
+
+		ItemStack stack = event.getItemStack();
 
 		if(hasTooltip(stack)) {
 			List<Either<FormattedText, TooltipComponent>> elements = event.getTooltipElements();
 			int index = 1;
-			
+
 			if(Screen.hasShiftDown()) {
 				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_header").withStyle(ChatFormatting.GRAY)));
 				elements.add(index + 1, Either.right(new VariantsComponent(stack)));
 			}
-			else 
+			else
 				elements.add(index, Either.left(Component.translatable("quark.misc.variant_tooltip_hold_shift").withStyle(ChatFormatting.GRAY)));
 		}
 	}
-	
+
 	private boolean hasTooltip(ItemStack stack) {
 		return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.getAllVariants(bi.getBlock()).isEmpty();
 	}
-	
+
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void clientTick(ClientTickEvent event) {
 		if(event.phase != Phase.END)
 			return;
-		
+
 		Minecraft mc = Minecraft.getInstance();
 		Level level = mc.level;
 		if(level == null)
@@ -270,12 +267,12 @@ public class VariantSelectorModule extends QuarkModule {
 
 		return state;
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public static ItemStack modifyHeldItemStack(AbstractClientPlayer player, ItemStack stack) {
 		if(!staticEnabled || !overrideHeldItemRender)
 			return stack;
-		
+
 		Minecraft mc = Minecraft.getInstance();
 		if(player == mc.player && stack.getItem() instanceof BlockItem bi) {
 			Block block = bi.getBlock();
@@ -285,7 +282,7 @@ public class VariantSelectorModule extends QuarkModule {
 					return new ItemStack(variant);
 			}
 		}
-			
+
 		return stack;
 	}
 
@@ -327,44 +324,44 @@ public class VariantSelectorModule extends QuarkModule {
 				Window window = event.getWindow();
 				int x = window.getGuiScaledWidth() / 2;
 				int y = window.getGuiScaledHeight() / 2 + 12;
-				
-				
+
+
 				showSimpleHud = true;
 				alignHudToHotbar = true;
-				
+
 				if(alignHudToHotbar) {
 					HumanoidArm arm = mc.options.mainHand().get();
 					if(arm == HumanoidArm.RIGHT)
 						x += 125;
 					else x -= 93;
-					
+
 					y = window.getGuiScaledHeight() - 19;
 				}
-				
+
 				int offset = 8;
 				int width = 16;
 
 				displayLeft.setCount(1);
-				
+
 				int posX = x - offset - width;
 				int posY = y;
 
 				if(!showSimpleHud) {
 					mc.getItemRenderer().renderAndDecorateItem(displayLeft, posX, posY);
-					
+
 					RenderSystem.enableBlend();
 					RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 					RenderSystem.setShader(GameRenderer::getPositionTexShader);
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.75F);
 					RenderSystem.setShaderTexture(0, MiscUtil.GENERAL_ICONS);
-					
+
 					Screen.blit(event.getPoseStack(), posX + 8, posY, 0, 141, 22, 15, 256, 256);
-					
+
 					posX += width * 2;
-				} 
+				}
 				else {
 					final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
-					
+
 					if(alignHudToHotbar) {
 						RenderSystem.enableBlend();
 						RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -377,8 +374,8 @@ public class VariantSelectorModule extends QuarkModule {
 						Screen.blit(event.getPoseStack(), posX -3, posY -3, 24, 23, 22, 22, 256, 256);
 					} else
 						posX += width;
-				}	
-				
+				}
+
 				mc.getItemRenderer().renderAndDecorateItem(displayRight, posX , posY);
 			}
 		}
