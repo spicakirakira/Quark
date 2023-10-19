@@ -325,10 +325,6 @@ public class VariantSelectorModule extends QuarkModule {
 				int x = window.getGuiScaledWidth() / 2;
 				int y = window.getGuiScaledHeight() / 2 + 12;
 
-
-				showSimpleHud = true;
-				alignHudToHotbar = true;
-
 				if(alignHudToHotbar) {
 					HumanoidArm arm = mc.options.mainHand().get();
 					if(arm == HumanoidArm.RIGHT)
@@ -380,5 +376,4 @@ public class VariantSelectorModule extends QuarkModule {
 			}
 		}
 	}
-
 }
