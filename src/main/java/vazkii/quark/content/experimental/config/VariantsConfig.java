@@ -15,32 +15,35 @@ import vazkii.quark.base.module.config.type.AbstractConfigType;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class BlockSuffixConfig extends AbstractConfigType {
+public class VariantsConfig extends AbstractConfigType {
 
 	private static final VariantMap EMPTY_VARIANT_MAP = new VariantMap(new HashMap<>());
 
 	@Config(description = "The list of all variant types available for players to use. Values are treated as suffixes to block IDs for scanning.\n"
 			+ "Prefix any variant type with ! to make it show up for Manual Variants but not be automatically scanned for. (e.g. '!polish')")
-	private List<String> variantTypes;
+	private List<String> variantTypes = Arrays.asList("slab", "stairs", "wall", "fence", "fence_gate", "vertical_slab");
 
 	@Config(description = "By default, only a mod's namespace is scanned for variants for its items (e.g. if coolmod adds coolmod:fun_block, it'll search only for coolmod:fun_block_stairs).\n"
 			+ " Mods in this list are also scanned for variants if none are found in itself (e.g. if quark is in the list and coolmod:fun_block_stairs doesn't exist, it'll try to look for quark:fun_block_stairs next)")
-	private List<String> testedMods;
+	private List<String> testedMods = Arrays.asList("quark");
 
 	@Config
 	private boolean printVariantMapToLog = false;
 
 	@Config(description = "Format is 'alias=original' in each value (e.g. 'wall=fence' means that a failed search for, minecraft:cobblestone_fence will try cobblestone_wall next)")
-	private List<String> aliases;
+	private List<String> aliases = Arrays.asList("carpet=slab", "pane=fence");
 
 	@Config(description = "Ends of block IDs to try and remove when looking for variants. (e.g. minecraft:oak_planks goes into minecraft:oak_stairs, so we have to include '_planks' in this list for it to find them or else it'll only look for minecraft:oak_planks_stairs)")
-	private List<String> stripCandidates = Arrays.asList("_planks", "_wool", "s");
+	private List<String> stripCandidates = Arrays.asList("_planks", "_wool", "_block", "s");
 
 	@Config(description = "Add manual variant overrides here, the format is 'type,block,output' (e.g. polish,minecraft:stone_bricks,minecraft:chiseled_stone_bricks). The type must be listed in Variant Types")
 	private List<String> manualVariants = new ArrayList<>();
 
-	@Config
-	private List<String> blacklist = new ArrayList<>();
+	@Config(description = " A list of block IDs and mappings to be excluded from variant selection.\n"
+			+ "To exclude a block from being turned into other blocks, just include the block ID (e.g. minecraft:cobblestone).\n"			
+			+ "To exclude a block from having other blocks turned into it, suffix it with = (e.g. =minecraft:cobblestone_stairs)\n"
+			+ "To exclude a specific block->variant combination, put = between the two (e.g. minecraft:cobblestone=minecraft:cobblestone_stairs)")
+	private List<String> blacklist = Arrays.asList("minecraft:snow", "minecraft:bamboo", "quark:bamboo_block");
 
 	private Map<Block, VariantMap> blockVariants = new HashMap<>();
 	private Map<Block, Block> originals = new HashMap<>();
@@ -50,11 +53,7 @@ public class BlockSuffixConfig extends AbstractConfigType {
 	private List<String> visibleVariants = new ArrayList<>();
 	private List<String> sortedSuffixes;
 
-	public BlockSuffixConfig(List<String> variantTypes, List<String> testedMods, List<String> aliases) {
-		this.variantTypes = variantTypes;
-		this.testedMods = testedMods;
-		this.aliases = aliases;
-	}
+	public VariantsConfig() { }
 
 	@Override
 	public void onReload(QuarkModule module, ConfigFlagManager flagManager) {
@@ -163,13 +162,13 @@ public class BlockSuffixConfig extends AbstractConfigType {
 
 		Map<String, Block> newVariants = new HashMap<>();
 
-		if(!isBlacklisted(block))
+		if(!isBlacklisted(block, null))
 			for(String s : sortedSuffixes) {
 				if(!variantTypes.contains(s))
 					continue; // this means its marked with ! so it won't be searched
 
 				Block suffixed = getSuffixedBlock(block, s);
-				if(suffixed != null && !isBlacklisted(block)) {
+				if(suffixed != null && !isBlacklisted(null, suffixed) && !isBlacklisted(block, suffixed)) {
 					newVariants.put(s, suffixed);
 					originals.put(suffixed, block);
 				}
@@ -233,8 +232,17 @@ public class BlockSuffixConfig extends AbstractConfigType {
 		return ret;
 	}
 
-	private boolean isBlacklisted(Block block) {
-		 return !blacklist.isEmpty() && blacklist.contains(Registry.BLOCK.getKey(block).toString());
+	private boolean isBlacklisted(Block block, Block result) {
+		if(blacklist.isEmpty())
+			return false;
+		
+		String search = "";
+		if(block != null)
+			search += Registry.BLOCK.getKey(block).toString();
+		if(result != null)
+			search += ("=" + Registry.BLOCK.getKey(result).toString());
+		
+		return !search.isEmpty() && blacklist.contains(search);
 	}
 
 	public boolean isKnownVariant(String variant) {

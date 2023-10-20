@@ -53,7 +53,7 @@ import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import vazkii.quark.content.experimental.client.screen.VariantSelectorScreen;
 import vazkii.quark.content.experimental.client.tooltip.VariantsComponent;
-import vazkii.quark.content.experimental.config.BlockSuffixConfig;
+import vazkii.quark.content.experimental.config.VariantsConfig;
 import vazkii.quark.content.experimental.item.HammerItem;
 
 import java.util.Arrays;
@@ -85,11 +85,7 @@ public class VariantSelectorModule extends QuarkModule {
 	@Config public static int hudOffsetY = 0;
 
 	@Config
-	public static BlockSuffixConfig variants = new BlockSuffixConfig(
-			Arrays.asList("slab", "stairs", "wall", "fence", "fence_gate", "vertical_slab"),
-			Arrays.asList("quark"),
-			Arrays.asList("carpet=slab", "pane=fence")
-			);
+	public static VariantsConfig variants = new VariantsConfig();
 
 	public static Item hammer;
 
