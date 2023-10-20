@@ -81,6 +81,8 @@ public class VariantSelectorModule extends QuarkModule {
 	@Config public static boolean showHud = true;
 	@Config public static boolean enableGreenTint = true;
 	@Config public static boolean overrideHeldItemRender = true;
+	@Config public static int hudOffsetX = 0;
+	@Config public static int hudOffsetY = 0;
 
 	@Config
 	public static BlockSuffixConfig variants = new BlockSuffixConfig(
@@ -339,8 +341,8 @@ public class VariantSelectorModule extends QuarkModule {
 
 				displayLeft.setCount(1);
 
-				int posX = x - offset - width;
-				int posY = y;
+				int posX = x - offset - width + hudOffsetX;
+				int posY = y + hudOffsetY;
 
 				if(!showSimpleHud) {
 					mc.getItemRenderer().renderAndDecorateItem(displayLeft, posX, posY);
