@@ -17,10 +17,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -35,8 +32,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import vazkii.arl.interf.IBlockItemProvider;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.handler.RenderLayerHandler;
@@ -120,7 +117,7 @@ public class RopeBlock extends QuarkBlock implements IBlockItemProvider, SimpleW
 					worldIn.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1F);
 					return InteractionResult.SUCCESS;
 				}
-			} else if (stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).isPresent()) {
+			} else if (stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()) {
 				return FluidUtil.interactWithFluidHandler(player, hand, worldIn, getBottomPos(worldIn, pos), Direction.UP) ? InteractionResult.SUCCESS : InteractionResult.PASS;
 			} else if (stack.getItem() == Items.GLASS_BOTTLE) {
 				BlockPos bottomPos = getBottomPos(worldIn, pos);
@@ -281,7 +278,7 @@ public class RopeBlock extends QuarkBlock implements IBlockItemProvider, SimpleW
 	@Override
 	public void neighborChanged(BlockState state, @Nonnull Level worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos, boolean isMoving) {
 		if(!state.canSurvive(worldIn, pos)) {
-			worldIn.levelEvent(2001, pos, Block.getId(worldIn.getBlockState(pos)));
+			worldIn.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(worldIn.getBlockState(pos)));
 			dropResources(state, worldIn, pos);
 			worldIn.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 		}

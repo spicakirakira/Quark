@@ -9,11 +9,13 @@ import net.minecraft.world.level.block.ComposterBlock;
 import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
+import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.util.VanillaWoods;
 import vazkii.quark.base.util.VanillaWoods.Wood;
 import vazkii.quark.content.building.block.LeafCarpetBlock;
 import vazkii.quark.content.world.block.BlossomLeavesBlock;
+import vazkii.quark.content.world.module.AncientWoodModule;
 import vazkii.quark.content.world.module.BlossomTreesModule;
 
 @LoadModule(category = ModuleCategory.BUILDING, antiOverlap = { "woodworks", "immersive_weathering" })
@@ -33,6 +35,8 @@ public class LeafCarpetModule extends QuarkModule {
 	@Override
 	public void postRegister() {
 		BlossomTreesModule.trees.keySet().stream().map(t -> (BlossomLeavesBlock) t.leaf.getBlock()).forEach(this::blossomCarpet);
+		
+		carpetBlock(AncientWoodModule.ancient_leaves).setCondition(() -> ModuleLoader.INSTANCE.isModuleEnabled(AncientWoodModule.class));
 	}
 
 	@Override

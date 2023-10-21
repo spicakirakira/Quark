@@ -38,7 +38,7 @@ public class ContributorRewardHandler {
 			"0d054077-a977-4b19-9df9-8a4d5bf20ec3", // wi0iv
 			"458391f5-6303-4649-b416-e4c0d18f837a", // yrsegal
 			"75c298f9-27c8-415b-9a16-329e3884054b", // minecraftvinnyq
-			"6c175d10-198a-49f9-8e2b-c74f1f0178f3"); // Hielke_K
+			"6c175d10-198a-49f9-8e2b-c74f1f0178f3"); // MilkBringer / Sully
 
 	private static final Set<String> done = Collections.newSetFromMap(new WeakHashMap<>());
 
@@ -124,7 +124,7 @@ public class ContributorRewardHandler {
 		@Override
 		public void run() {
 			try {
-				URL url = new URL("https://raw.githubusercontent.com/Vazkii/Quark/master/contributors.properties");
+				URL url = new URL("https://raw.githubusercontent.com/VazkiiMods/Quark/master/contributors.properties");
 				URLConnection conn = url.openConnection();
 				conn.setConnectTimeout(10*1000);
 				conn.setReadTimeout(10*1000);

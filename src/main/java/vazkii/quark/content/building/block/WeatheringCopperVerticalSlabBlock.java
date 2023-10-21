@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import vazkii.quark.base.block.CustomWeatheringCopper;
 import vazkii.quark.base.module.QuarkModule;
 
-public class WeatheringCopperVerticalSlabBlock extends VerticalSlabBlock implements CustomWeatheringCopper {
+public class WeatheringCopperVerticalSlabBlock extends QuarkVerticalSlabBlock implements CustomWeatheringCopper {
 	private final WeatheringCopper.WeatherState weatherState;
 	public WeatheringCopperVerticalSlabBlock first;
 	public WeatheringCopperVerticalSlabBlock prev;

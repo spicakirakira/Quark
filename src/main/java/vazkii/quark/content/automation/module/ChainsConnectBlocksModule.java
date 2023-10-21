@@ -6,6 +6,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChainBlock;
@@ -14,10 +16,13 @@ import vazkii.quark.api.IIndirectConnector;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.AUTOMATION)
 public class ChainsConnectBlocksModule extends QuarkModule {
 
+	@Hint Item chain = Items.CHAIN;
+	
 	public static boolean staticEnabled;
 	
 	@Override

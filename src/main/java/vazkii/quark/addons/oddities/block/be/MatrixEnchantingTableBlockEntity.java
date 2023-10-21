@@ -125,6 +125,10 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 			case OPER_MERGE -> apply(m -> m.merge(arg0, arg1));
 		}
 	}
+	
+	public boolean isMatrixInfluenced() {
+		return matrix.isInfluenced();
+	}
 
 	private void apply(Predicate<EnchantmentMatrix> oper) {
 		if(oper.test(matrix)) {
@@ -138,7 +142,7 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 			boolean creative = player.getAbilities().instabuild;
 			int cost = matrix.getNewPiecePrice();
 			if(charge > 0 || creative) {
-				if (matrix.generatePiece(influences, bookshelfPower, false)) {
+				if (matrix.generatePiece(influences, bookshelfPower, getItem(0).is(Items.BOOK), false)) {
 					if (!creative) {
 						player.giveExperienceLevels(-cost);
 						charge = Math.max(charge - 1, 0);
@@ -418,7 +422,7 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 		@Nullable
 		@Override
 		public ParticleOptions getExtraParticleOptions(BlockGetter world, BlockPos pos, BlockState state) {
-			if (inverted)
+			if (inverted && state.getValue(CandleBlock.LIT))
 				return ParticleTypes.SOUL;
 			return null;
 		}

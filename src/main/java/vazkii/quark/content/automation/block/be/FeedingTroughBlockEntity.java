@@ -15,6 +15,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
@@ -30,8 +31,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import vazkii.quark.base.handler.MiscUtil;
-import vazkii.quark.base.util.MovableFakePlayer;
 import vazkii.quark.content.automation.block.FeedingTroughBlock;
 import vazkii.quark.content.automation.module.FeedingTroughModule;
 
@@ -45,8 +46,6 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 
 	private NonNullList<ItemStack> stacks;
 
-	private FakePlayer foodHolder = null;
-
 	private int cooldown = 0;
 	private long internalRng = 0;
 
@@ -56,8 +55,9 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	public FakePlayer getFoodHolder(TemptGoal goal) {
-		if (foodHolder == null && level instanceof ServerLevel serverLevel)
-			foodHolder = new MovableFakePlayer(serverLevel, DUMMY_PROFILE);
+		FakePlayer foodHolder = null;
+		if (level instanceof ServerLevel serverLevel)
+			foodHolder = FakePlayerFactory.get(serverLevel, DUMMY_PROFILE);
 
 		Animal entity = (Animal) goal.mob;
 
@@ -100,7 +100,10 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 						for (int i = 0; i < be.getContainerSize(); i++) {
 							ItemStack stack = be.getItem(i);
 							if (creature.isFood(stack)) {
-								creature.playSound(creature.getEatingSound(stack), 0.5F + 0.5F * level.random.nextInt(2), (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
+								SoundEvent soundEvent = creature.getEatingSound(stack);
+								if(soundEvent != null)
+									creature.playSound(soundEvent, 0.5F + 0.5F * level.random.nextInt(2), (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
+								
 								be.addItemParticles(creature, stack, 16);
 
 								if(be.getSpecialRand().nextDouble() < FeedingTroughModule.loveChance) {

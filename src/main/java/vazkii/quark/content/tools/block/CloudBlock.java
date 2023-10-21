@@ -85,7 +85,7 @@ public class CloudBlock extends QuarkBlock implements EntityBlock {
 
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-		return ItemStack.EMPTY;
+		return new ItemStack(BottledCloudModule.bottled_cloud);
 	}
 
 	private void fillBottle(Player player, int startIndex) {

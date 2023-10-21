@@ -16,6 +16,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.block.CloudBlock;
 import vazkii.quark.content.tools.block.be.CloudBlockEntity;
 import vazkii.quark.content.tools.client.render.be.CloudRenderer;
@@ -26,7 +27,7 @@ public class BottledCloudModule extends QuarkModule {
 
 	public static BlockEntityType<CloudBlockEntity> blockEntityType;
 	public static Block cloud;
-	public static Item bottled_cloud;
+	@Hint public static Item bottled_cloud;
 	
 	@Config
 	public static int cloudLevelBottom = 191;

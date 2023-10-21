@@ -3,6 +3,7 @@ package vazkii.quark.content.building.block;
 import it.unimi.dsi.fastutil.floats.Float2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -35,6 +37,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.ForgeEventFactory;
+import vazkii.quark.api.ICrawlSpaceBlock;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.block.SimpleFluidloggedBlock;
 import vazkii.quark.base.handler.RenderLayerHandler;
@@ -44,7 +47,7 @@ import vazkii.quark.base.module.QuarkModule;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
+public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock, ICrawlSpaceBlock {
 	private static final VoxelShape TRUE_SHAPE = box(0, 15, 0, 16, 16, 16);
 	private static final Float2ObjectArrayMap<VoxelShape> WALK_BLOCK_CACHE = new Float2ObjectArrayMap<>();
 
@@ -69,6 +72,21 @@ public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
 	@Override
 	public boolean hasDynamicShape() {
 		return true;
+	}
+
+	@Override
+	public boolean canCrawl(Level level, BlockState state, BlockPos pos, Direction direction) {
+		return true;
+	}
+
+	@Override
+	public double crawlHeight(Level level, BlockState state, BlockPos pos, Direction direction) {
+		return 0;
+	}
+
+	@Override
+	public boolean isLog(ServerPlayer sp, BlockState state, BlockPos pos, Direction direction) {
+		return false;
 	}
 
 	@Nonnull
@@ -150,11 +168,6 @@ public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
 	}
 
 	@Override
-	public boolean useShapeForLightOcclusion(@Nonnull BlockState state) {
-		return true;
-	}
-
-	@Override
 	public void neighborChanged(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Block updatedBlock, @Nonnull BlockPos neighbor, boolean isMoving) {
 		super.neighborChanged(state, level, pos, updatedBlock, neighbor, isMoving);
 		if (!pos.below().equals(neighbor)) {
@@ -163,7 +176,7 @@ public class GrateBlock extends QuarkBlock implements SimpleFluidloggedBlock {
 					fluidContained(state).isSame(Fluids.LAVA)) {
 				level.destroyBlock(pos, true);
 				level.setBlock(pos, ForgeEventFactory.fireFluidPlaceBlockEvent(level, pos, neighbor, Blocks.OBSIDIAN.defaultBlockState()), 3);
-				level.levelEvent(1501, pos, 0); // lava fizz
+				level.levelEvent(LevelEvent.LAVA_FIZZ, pos, 0);
 			}
 		}
 	}

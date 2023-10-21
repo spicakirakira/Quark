@@ -19,7 +19,9 @@ public class AzaleaWoodModule extends QuarkModule {
 
 	@Override
 	public void register() {
-		woodSet = WoodSetHandler.addWoodSet(this, "azalea", MaterialColor.COLOR_LIGHT_GREEN, MaterialColor.COLOR_BROWN);
+		woodSet = WoodSetHandler.addWoodSet(this, "azalea", MaterialColor.COLOR_LIGHT_GREEN, MaterialColor.COLOR_BROWN, true);
+		//ugly I know but config is fired before this now
+		enabledStatusChanged(true, this.enabled, this.enabled);
 	}
 
 	@Override
@@ -30,11 +32,11 @@ public class AzaleaWoodModule extends QuarkModule {
 		} catch(IllegalStateException e) {
 			e.printStackTrace();
 		}
-		
+
 		if(configured != null) {
 			TreeConfiguration config = configured.config();
-	
-			if(newStatus)
+
+			if(newStatus && woodSet != null)
 				config.trunkProvider = BlockStateProvider.simple(woodSet.log);
 			else if(!firstLoad)
 				config.trunkProvider = BlockStateProvider.simple(Blocks.OAK_LOG);

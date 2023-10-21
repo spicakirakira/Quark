@@ -1,5 +1,7 @@
 package vazkii.quark.content.mobs.module;
 
+import com.google.common.collect.ImmutableSet;
+
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.Registry;
 import net.minecraft.world.entity.EntityType;
@@ -20,10 +22,13 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.handler.EntityAttributeHandler;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.mod.MonsterHunterModifier;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.world.EntitySpawnHandler;
 import vazkii.quark.content.mobs.client.render.entity.ForgottenRenderer;
 import vazkii.quark.content.mobs.entity.Forgotten;
@@ -34,9 +39,9 @@ public class ForgottenModule extends QuarkModule {
 
 	public static EntityType<Forgotten> forgottenType;
 
-	public static Item forgotten_hat;
+	@Hint public static Item forgotten_hat;
 
-	@Config(description = "1 in this many Skeletons that spawn under the threshold are replaced with Forgotten.")
+	@Config(description = "This is the probability of a Skeleton that spawns under the height threshold being replaced with a Forgotten.")
 	public double forgottenSpawnRate = 0.05;
 
 	@Config public int maxHeightForSpawn = 0;
@@ -55,6 +60,8 @@ public class ForgottenModule extends QuarkModule {
 		EntitySpawnHandler.addEgg(forgottenType, 0x969487, 0x3a3330, this, () -> true);
 
 		EntityAttributeHandler.put(forgottenType, Forgotten::registerAttributes);
+		
+		QuarkAdvancementHandler.addModifier(new MonsterHunterModifier(this, ImmutableSet.of(forgottenType)));
 	}
 
 	@Override

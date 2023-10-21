@@ -13,6 +13,7 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.building.block.SoulFurnaceBlock;
 import vazkii.quark.content.building.block.VariantFurnaceBlock;
 import vazkii.quark.content.building.block.be.VariantFurnaceBlockEntity;
@@ -22,8 +23,9 @@ public class VariantFurnacesModule extends QuarkModule {
 
 	public static BlockEntityType<VariantFurnaceBlockEntity> blockEntityType;
 
-	public static Block deepslateFurnace, blackstoneFurnace;
-	
+	public static Block deepslateFurnace;
+	@Hint public static Block blackstoneFurnace;
+
 	@Override
 	public void register() {
 		deepslateFurnace = new VariantFurnaceBlock("deepslate", this, Properties.copy(Blocks.DEEPSLATE).lightLevel(litBlockEmission(13)));

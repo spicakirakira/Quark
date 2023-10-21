@@ -8,7 +8,7 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.content.building.block.ThatchBlock;
 
-@LoadModule(category = ModuleCategory.BUILDING)
+@LoadModule(category = ModuleCategory.BUILDING, antiOverlap = {"goated", "environmental"})
 public class ThatchModule extends QuarkModule {
 
 	@Config.Min(0)

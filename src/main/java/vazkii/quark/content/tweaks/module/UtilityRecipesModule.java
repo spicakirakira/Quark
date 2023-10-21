@@ -32,6 +32,9 @@ public class UtilityRecipesModule extends QuarkModule {
 
 	@Config(description = "Can you craft a minecart around blocks which can be placed inside?", flag = "minecart_upgrade")
 	public static boolean enableMinecarts = true;
+	
+	@Config(description = "Can you craft a boat around a chest to directly make a chest boat?", flag = "direct_chest_boat")
+	public static boolean enableChestBoats = true;
 
 	@Config(description = "Can you craft four chests at once using logs?", flag = "wood_to_chest_recipes")
 	public static boolean logsToChests = true;

@@ -1,37 +1,18 @@
 package vazkii.quark.base.handler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.MinecartItem;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.PotionItem;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
@@ -41,43 +22,51 @@ import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
-import vazkii.quark.addons.oddities.inventory.SlotCachingItemHandler;
+import vazkii.quark.addons.oddities.inventory.slot.CachedItemHandlerSlot;
 import vazkii.quark.api.ICustomSorting;
 import vazkii.quark.api.ISortingLockedSlots;
 import vazkii.quark.api.QuarkCapabilities;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.content.management.module.InventorySortingModule;
 
+import java.util.*;
+import java.util.function.Predicate;
+
 public final class SortingHandler {
 
 	private static final Comparator<ItemStack> FALLBACK_COMPARATOR = jointComparator(Arrays.asList(
-			Comparator.comparingInt((ItemStack s) -> Item.getId(s.getItem())),
-			SortingHandler::damageCompare,
-			(ItemStack s1, ItemStack s2) -> s2.getCount() - s1.getCount(),
-			(ItemStack s1, ItemStack s2) -> s2.hashCode() - s1.hashCode()));
+		Comparator.comparingInt((ItemStack s) -> Item.getId(s.getItem())),
+		SortingHandler::damageCompare,
+		(ItemStack s1, ItemStack s2) -> s2.getCount() - s1.getCount(),
+		(ItemStack s1, ItemStack s2) -> s2.hashCode() - s1.hashCode(),
+		SortingHandler::fallbackNBTCompare));
 
 	private static final Comparator<ItemStack> FOOD_COMPARATOR = jointComparator(Arrays.asList(
-			SortingHandler::foodHealCompare,
-			SortingHandler::foodSaturationCompare));
+		SortingHandler::foodHealCompare,
+		SortingHandler::foodSaturationCompare));
 
 	private static final Comparator<ItemStack> TOOL_COMPARATOR = jointComparator(Arrays.asList(
-			SortingHandler::toolPowerCompare,
-			SortingHandler::enchantmentCompare,
-			SortingHandler::damageCompare));
+		SortingHandler::toolPowerCompare,
+		SortingHandler::enchantmentCompare,
+		SortingHandler::damageCompare));
 
 	private static final Comparator<ItemStack> SWORD_COMPARATOR = jointComparator(Arrays.asList(
-			SortingHandler::swordPowerCompare,
-			SortingHandler::enchantmentCompare,
-			SortingHandler::damageCompare));
+		SortingHandler::swordPowerCompare,
+		SortingHandler::enchantmentCompare,
+		SortingHandler::damageCompare));
 
 	private static final Comparator<ItemStack> ARMOR_COMPARATOR = jointComparator(Arrays.asList(
-			SortingHandler::armorSlotAndToughnessCompare,
-			SortingHandler::enchantmentCompare,
-			SortingHandler::damageCompare));
+		SortingHandler::armorSlotAndToughnessCompare,
+		SortingHandler::enchantmentCompare,
+		SortingHandler::damageCompare));
 
 	private static final Comparator<ItemStack> BOW_COMPARATOR = jointComparator(Arrays.asList(
-			SortingHandler::enchantmentCompare,
-			SortingHandler::damageCompare));
+		SortingHandler::enchantmentCompare,
+		SortingHandler::damageCompare));
+
+	private static final Comparator<ItemStack> POTION_COMPARATOR = jointComparator(Arrays.asList(
+		SortingHandler::potionComplexityCompare,
+		SortingHandler::potionTypeCompare));
 
 	public static void sortInventory(Player player, boolean forcePlayer) {
 		if (!ModuleLoader.INSTANCE.isModuleEnabled(InventorySortingModule.class))
@@ -94,8 +83,8 @@ public final class SortingHandler {
 		boolean playerContainer = c == player.inventoryMenu || backpack;
 		int[] lockedSlots = null;
 
-		if(sortingLocked) {
-			ISortingLockedSlots sls = (ISortingLockedSlots) ogc;	
+		if (sortingLocked) {
+			ISortingLockedSlots sls = (ISortingLockedSlots) ogc;
 			lockedSlots = sls.getSortingLockedSlots(playerContainer);
 		}
 
@@ -114,10 +103,10 @@ public final class SortingHandler {
 			}
 		}
 
-		if(backpack)
+		if (backpack)
 			for (Slot s : c.slots)
-				if (s instanceof SlotCachingItemHandler) {
-					sortInventory(((SlotCachingItemHandler) s).getItemHandler(), lockedSlots);
+				if (s instanceof CachedItemHandlerSlot) {
+					sortInventory(((CachedItemHandlerSlot) s).getItemHandler(), lockedSlots);
 					break;
 				}
 	}
@@ -138,25 +127,25 @@ public final class SortingHandler {
 			ItemStack stackAt = handler.getStackInSlot(i);
 
 			restore.add(stackAt.copy());
-			if(!isLocked(i, lockedSlots) && !stackAt.isEmpty())
+			if (!isLocked(i, lockedSlots) && !stackAt.isEmpty())
 				stacks.add(stackAt.copy());
 		}
 
 		mergeStacks(stacks);
 		sortStackList(stacks);
 
-		if(setInventory(handler, stacks, iStart, iEnd, lockedSlots) == InteractionResult.FAIL)
+		if (setInventory(handler, stacks, iStart, iEnd, lockedSlots) == InteractionResult.FAIL)
 			setInventory(handler, restore, iStart, iEnd, lockedSlots);
 	}
 
 	private static InteractionResult setInventory(IItemHandler inventory, List<ItemStack> stacks, int iStart, int iEnd, int[] lockedSlots) {
 		int skipped = 0;
 		for (int i = iStart; i < iEnd; i++) {
-			if(isLocked(i, lockedSlots)) {
+			if (isLocked(i, lockedSlots)) {
 				skipped++;
 				continue;
 			}
-			
+
 			int j = i - iStart - skipped;
 			ItemStack stack = j >= stacks.size() ? ItemStack.EMPTY : stacks.get(j);
 
@@ -172,19 +161,19 @@ public final class SortingHandler {
 		}
 
 		for (int i = iStart; i < iEnd; i++) {
-			if(isLocked(i, lockedSlots))
+			if (isLocked(i, lockedSlots))
 				continue;
-			
+
 			inventory.extractItem(i, inventory.getSlotLimit(i), false);
 		}
 
 		skipped = 0;
 		for (int i = iStart; i < iEnd; i++) {
-			if(isLocked(i, lockedSlots)) {
+			if (isLocked(i, lockedSlots)) {
 				skipped++;
 				continue;
 			}
-			
+
 			int j = i - iStart - skipped;
 			ItemStack stack = j >= stacks.size() ? ItemStack.EMPTY : stacks.get(j);
 
@@ -197,10 +186,10 @@ public final class SortingHandler {
 	}
 
 	private static boolean isLocked(int slot, int[] locked) {
-		if(locked == null)
+		if (locked == null)
 			return false;
-		for(int i : locked)
-			if(slot == i)
+		for (int i : locked)
+			if (slot == i)
 				return true;
 		return false;
 	}
@@ -253,7 +242,7 @@ public final class SortingHandler {
 		if (stack2.isEmpty())
 			return 1;
 
-		if(hasCustomSorting(stack1) && hasCustomSorting(stack2)) {
+		if (hasCustomSorting(stack1) && hasCustomSorting(stack2)) {
 			ICustomSorting sort1 = getCustomSorting(stack1);
 			ICustomSorting sort2 = getCustomSorting(stack2);
 			if (sort1.getSortingCategory().equals(sort2.getSortingCategory()))
@@ -428,6 +417,41 @@ public final class SortingHandler {
 		return stack1.getDamageValue() - stack2.getDamageValue();
 	}
 
+	public static int fallbackNBTCompare(ItemStack stack1, ItemStack stack2) {
+		boolean hasTag1 = stack1.hasTag();
+		boolean hasTag2 = stack2.hasTag();
+
+		if (hasTag2 && !hasTag1)
+			return -1;
+		else if (hasTag1 && !hasTag2)
+			return 1;
+		else if (!hasTag1)
+			return 0;
+
+		return stack2.getTag().toString().hashCode() - stack1.getTag().toString().hashCode();
+	}
+
+	public static int potionComplexityCompare(ItemStack stack1, ItemStack stack2) {
+		List<MobEffectInstance> effects1 = PotionUtils.getCustomEffects(stack1);
+		List<MobEffectInstance> effects2 = PotionUtils.getCustomEffects(stack2);
+
+		int totalPower1 = 0;
+		int totalPower2 = 0;
+		for (MobEffectInstance inst : effects1)
+			totalPower1 += inst.getAmplifier() * inst.getDuration();
+		for (MobEffectInstance inst : effects2)
+			totalPower2 += inst.getAmplifier() * inst.getDuration();
+
+		return totalPower2 - totalPower1;
+	}
+
+	public static int potionTypeCompare(ItemStack stack1, ItemStack stack2) {
+		Potion potion1 = PotionUtils.getPotion(stack1);
+		Potion potion2 = PotionUtils.getPotion(stack2);
+
+		return Registry.POTION.getId(potion2) - Registry.POTION.getId(potion1);
+	}
+
 	static boolean hasCustomSorting(ItemStack stack) {
 		return stack.getCapability(QuarkCapabilities.SORTING, null).isPresent();
 	}
@@ -450,7 +474,8 @@ public final class SortingHandler {
 		CROSSBOW(classPredicate(CrossbowItem.class), BOW_COMPARATOR),
 		TRIDENT(classPredicate(TridentItem.class), BOW_COMPARATOR),
 		ARROWS(classPredicate(ArrowItem.class)),
-		POTION(classPredicate(PotionItem.class)),
+		POTION(classPredicate(PotionItem.class), POTION_COMPARATOR),
+		TIPPED_ARROW(classPredicate(TippedArrowItem.class), POTION_COMPARATOR),
 		MINECART(classPredicate(MinecartItem.class)),
 		RAIL(list(Blocks.RAIL, Blocks.POWERED_RAIL, Blocks.DETECTOR_RAIL, Blocks.ACTIVATOR_RAIL)),
 		DYE(classPredicate(DyeItem.class)),

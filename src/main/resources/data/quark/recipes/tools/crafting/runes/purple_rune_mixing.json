@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "quark:blue_rune"
+    },
+    {
+      "item": "quark:magenta_rune"
+    }
+  ],
+  "result": {
+    "item": "quark:purple_rune",
+    "count": 2
+  },
+  "conditions": [
+    {
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "color_runes"
+        },
+        {
+          "type": "quark:flag",
+          "flag": "color_blending_runes"
+        }
+      ]
+    }
+  ]
+}

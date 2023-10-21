@@ -2,6 +2,8 @@ package vazkii.quark.content.world.module;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableSet;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
@@ -10,6 +12,7 @@ import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.features.OreFeatures;
 import net.minecraft.data.worldgen.placement.OrePlacements;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
@@ -37,10 +40,14 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.QuarkSounds;
 import vazkii.quark.base.handler.UndergroundBiomeHandler;
 import vazkii.quark.base.handler.VariantHandler;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.mod.AdventuringTimeModifier;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.mobs.module.StonelingsModule;
 import vazkii.quark.content.world.block.GlowLichenGrowthBlock;
 import vazkii.quark.content.world.block.GlowShroomBlock;
@@ -54,18 +61,30 @@ public class GlimmeringWealdModule extends QuarkModule {
 
 	private static final Climate.Parameter FULL_RANGE = Climate.Parameter.span(-1.0F, 1.0F);
 	public static final ResourceLocation BIOME_NAME = new ResourceLocation(Quark.MOD_ID, "glimmering_weald");
-
+	public static final ResourceKey<Biome> BIOME_KEY = ResourceKey.create(Registry.BIOME_REGISTRY, BIOME_NAME);
+	
 	public static final Holder<PlacedFeature> ORE_LAPIS_EXTRA = PlacementUtils.register("ore_lapis_glimmering_weald", OreFeatures.ORE_LAPIS, OrePlacements.commonOrePlacement(12, HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(0))));
 	public static Holder<PlacedFeature> placed_glow_shrooms;
 	public static Holder<PlacedFeature> placed_glow_extras;
 
-	public static Block glow_shroom;
-	public static Block glow_lichen_growth;
+	@Hint public static Block glow_shroom;
+	@Hint public static Block glow_lichen_growth;
 	public static Block glow_shroom_block;
 	public static Block glow_shroom_stem;
 	public static Block glow_shroom_ring;
 
 	public static TagKey<Item> glowShroomFeedablesTag;
+
+	@Config(name = "Min Depth Range",
+			description = "Experimental, dont change if you dont know what you are doing. Depth min value from which biome will spawn. Decreasing will make biome appear more often")
+	@Config.Min(-2)
+	@Config.Max(2)
+	public static double minDepthRange = 1.55F;
+	@Config(name = "Max Weirdness Range",
+			description = "Experimental, dont change if you dont know what you are doing. Depth max value until which biome will spawn. Increasing will make biome appear more often")
+	@Config.Min(-2)
+	@Config.Max(2)
+	public static double maxDepthRange = 2;
 
 	@Override
 	public void register() {
@@ -80,8 +99,23 @@ public class GlimmeringWealdModule extends QuarkModule {
 
 		makeFeatures();
 
+
+	}
+
+	@Override
+	public void postRegister() {
 		RegistryHelper.register(makeBiome(), Registry.BIOME_REGISTRY);
-		UndergroundBiomeHandler.addUndergroundBiome(this, Climate.parameters(FULL_RANGE, FULL_RANGE, FULL_RANGE, FULL_RANGE, Climate.Parameter.span(1.55F, 2F), FULL_RANGE, 0F), BIOME_NAME);
+		float wmin = (float) minDepthRange;
+		float wmax = (float) maxDepthRange;
+		if(wmin >= wmax){
+			Quark.LOG.warn("Incorrect value for Glimmering Weald biome parameters. Using default");
+			wmax = 2;
+			wmin = 1.55f;
+		}
+		UndergroundBiomeHandler.addUndergroundBiome(this, Climate.parameters(FULL_RANGE, FULL_RANGE, FULL_RANGE, FULL_RANGE,
+				Climate.Parameter.span(wmin, wmax), FULL_RANGE, 0F), BIOME_NAME);
+
+		QuarkAdvancementHandler.addModifier(new AdventuringTimeModifier(this, ImmutableSet.of(BIOME_KEY)));
 	}
 
 	@Override

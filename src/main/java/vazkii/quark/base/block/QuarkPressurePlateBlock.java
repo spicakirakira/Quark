@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 
 /**
@@ -26,8 +27,7 @@ public class QuarkPressurePlateBlock extends PressurePlateBlock implements IQuar
 		this.module = module;
 
 		RegistryHelper.registerBlock(this, regname);
-		if(creativeTab != null)
-			RegistryHelper.setCreativeTab(this, creativeTab);
+		CreativeTabHandler.addTab(this, creativeTab);
 	}
 
 	@Override

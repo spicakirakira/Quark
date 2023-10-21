@@ -31,6 +31,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -42,6 +43,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -208,7 +210,7 @@ public class Foxhound extends Wolf implements Enemy {
 
 		}
 
-		if(isTame()) {
+		if(isTame() && FoxhoundModule.foxhoundsSpeedUpFurnaces) {
 			BlockPos below = blockPosition().below();
 			BlockEntity tile = level.getBlockEntity(below);
 			if (tile instanceof AbstractFurnaceBlockEntity furnace) {
@@ -216,8 +218,13 @@ public class Foxhound extends Wolf implements Enemy {
 				if (cookTime > 0 && cookTime % 3 == 0) {
 					List<Foxhound> foxhounds = level.getEntitiesOfClass(Foxhound.class, new AABB(blockPosition()),
 							(fox) -> fox != null && fox.isTame());
-					if(!foxhounds.isEmpty() && foxhounds.get(0) == this)
+					if(!foxhounds.isEmpty() && foxhounds.get(0) == this) {
 						furnace.cookingProgress = furnace.cookingProgress == 3 ? 5 : Math.min(furnace.cookingTotalTime - 1, cookTime + 1);
+						
+						LivingEntity owner = getOwner();
+						if(owner != null && owner instanceof ServerPlayer sp)
+							FoxhoundModule.foxhoundFurnaceTrigger.trigger(sp);
+					}
 				}
 			}
 		}

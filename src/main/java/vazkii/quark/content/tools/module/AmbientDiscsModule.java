@@ -27,6 +27,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class AmbientDiscsModule extends QuarkModule {
@@ -34,6 +35,7 @@ public class AmbientDiscsModule extends QuarkModule {
 	@Config public static boolean dropOnSpiderKill = true;
 	@Config public static double volume = 3;
 
+	@Hint(key = "ambience_discs")
 	private final List<Item> discs = new ArrayList<>();
 
 	@Override

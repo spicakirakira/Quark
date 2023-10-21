@@ -1,5 +1,8 @@
 package vazkii.quark.content.tweaks.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
@@ -12,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -30,6 +34,7 @@ import vazkii.quark.base.handler.DyeHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tweaks.client.render.entity.DyedItemFrameRenderer;
 import vazkii.quark.content.tweaks.entity.DyedItemFrame;
 
@@ -37,6 +42,9 @@ import vazkii.quark.content.tweaks.entity.DyedItemFrame;
 public class DyeableItemFramesModule extends QuarkModule {
 
 	public static EntityType<DyedItemFrame> entityType;
+	
+	@Hint(key = "item_frame_dyeing") 
+	List<Item> itemFrames = Arrays.asList(Items.ITEM_FRAME, Items.GLOW_ITEM_FRAME);
 
 	@Override
 	public void register() {
@@ -92,7 +100,6 @@ public class DyeableItemFramesModule extends QuarkModule {
 	}
 
 	// Copy of the logic from HangingEntityItem from here on out
-
 	private InteractionResult useOn(UseOnContext context) {
 		BlockPos blockpos = context.getClickedPos();
 		Direction direction = context.getClickedFace();
@@ -126,8 +133,8 @@ public class DyeableItemFramesModule extends QuarkModule {
 		return InteractionResult.CONSUME;
 	}
 
-	protected boolean mayPlace(Player p_41326_, Direction p_41327_, ItemStack p_41328_, BlockPos p_41329_) {
-		return !p_41327_.getAxis().isVertical() && p_41326_.mayUseItemAt(p_41329_, p_41327_, p_41328_);
+	protected boolean mayPlace(Player player, Direction direction, ItemStack stack, BlockPos pos) {
+		return !player.level.isOutsideBuildHeight(pos) && player.mayUseItemAt(pos, direction, stack);
 	}
 
 }

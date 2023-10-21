@@ -1,12 +1,6 @@
 package vazkii.quark.base.module;
 
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +21,7 @@ public final class ModuleFinder {
 	private static final Type LOAD_MODULE_TYPE = Type.getType(LoadModule.class);
 	private static final Pattern MODULE_CLASS_PATTERN = Pattern.compile("vazkii\\.quark\\.(?:content|addons)\\.(\\w+)\\.module.\\w+Module");
 
-	private final Map<Class<? extends QuarkModule>, QuarkModule> foundModules = new HashMap<>();
+	private final Map<Class<? extends QuarkModule>, QuarkModule> foundModules = new LinkedHashMap<>();
 
 	public void findModules() {
 		ModFileScanData scanData = ModList.get().getModFileById(Quark.MOD_ID).getFile().getScanResult();

@@ -20,6 +20,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class EndermoshMusicDiscModule extends QuarkModule {
@@ -30,7 +31,7 @@ public class EndermoshMusicDiscModule extends QuarkModule {
 	@Config private int lootWeight = 5;
 	@Config private int lootQuality = 1;
 
-	public static QuarkMusicDiscItem endermosh;
+	@Hint public static QuarkMusicDiscItem endermosh;
 
 	@OnlyIn(Dist.CLIENT) private boolean isFightingDragon;
 	@OnlyIn(Dist.CLIENT) private int delay;

@@ -24,13 +24,11 @@
         {
           "type": "minecraft:item",
           "weight": 1,
-          "name": "minecraft:map",
+          "name": "quark:pathfinders_quill",
           "functions": [
             {
-              "function": "quark:pathfinder_map",
-              "destination": "quark:stoneling_pathfinding",
-              "color": "#317546",
-              "underground": true
+              "function": "minecraft:set_nbt",
+              "tag": "{\"targetBiome\":\"quark:glimmering_weald\",\"targetBiomeColor\":-13535930}"
             }
           ],
           "conditions": [
@@ -40,10 +38,21 @@
             },
             {
               "condition": "quark:flag",
+              "flag": "glimmering_weald"
+            },
+            {
+              "condition": "quark:flag",
               "flag": "stoneling_weald_pathfinder"
             },
             {
               "condition": "minecraft:killed_by_player"
+            },
+            {
+              "condition": "minecraft:entity_properties",
+              "entity": "this",
+              "predicate": {
+                "nbt": "{playerMade:0b}"
+              }
             },
             {
               "condition": "minecraft:random_chance_with_looting",
@@ -54,7 +63,7 @@
               "condition": "minecraft:inverted",
               "term": {
                 "condition": "quark:in_biome",
-                "target": "quark:stoneling_pathfinding"
+                "target": "quark:glimmering_weald"
               }
             }
           ]

@@ -1,9 +1,6 @@
 package vazkii.quark.content.management.module;
 
-import java.util.List;
-
 import com.mojang.datafixers.util.Either;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -13,6 +10,8 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -21,14 +20,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ElytraItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -38,37 +33,53 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.EmptyHandler;
 import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.Quark;
+import vazkii.quark.base.handler.GeneralConfig;
+import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
+import vazkii.quark.base.network.QuarkNetwork;
+import vazkii.quark.base.network.message.ScrollOnBundleMessage;
 import vazkii.quark.content.management.client.screen.HeldShulkerBoxScreen;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxContainer;
 import vazkii.quark.content.management.inventory.HeldShulkerBoxMenu;
 
-@LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
+import java.util.List;
+
+@LoadModule(category = ModuleCategory.MANAGEMENT, hasSubscriptions = true)
 public class ExpandedItemInteractionsModule extends QuarkModule {
 
 	@Config
 	public static boolean enableArmorInteraction = true;
-	@Config
+	@Config(flag = "shulker_box_interaction")
 	public static boolean enableShulkerBoxInteraction = true;
-	@Config
+	@Config(flag = "lava_interaction")
 	public static boolean enableLavaInteraction = true;
 	@Config
 	public static boolean allowOpeningShulkerBoxes = true;
+	@Config(flag = "allow_rotating_bundles")
+	public static boolean allowRotatingBundles = true;
+
+	@Hint("lava_interaction") Item lava_bucket = Items.LAVA_BUCKET;
+	@Hint(value = "allow_rotating_bundles", key = "rotating_bundles") Item bundle = Items.BUNDLE;
+	@Hint(value = "shulker_box_interaction", key = "shulker_box_right_click")
+	List<Item> shulkers;
 
 	private static boolean staticEnabled = false;
 
@@ -88,6 +99,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	@Override
 	public void configChanged() {
 		staticEnabled = configEnabled;
+
+		shulkers = MiscUtil.massRegistryGet(GeneralConfig.shulkerBoxes, ForgeRegistries.ITEMS);
 	}
 
 	public static boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction action, Player player) {
@@ -115,6 +128,93 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 			return true;
 
 		return enableShulkerBoxInteraction && shulkerOverride(stack, incoming, slot, action, player, true);
+	}
+
+	@SubscribeEvent
+	@OnlyIn(Dist.CLIENT)
+	public void onScroll(ScreenEvent.MouseScrolled.Pre event) {
+		if (!allowRotatingBundles)
+			return;
+
+		Minecraft mc = Minecraft.getInstance();
+		Screen gui = mc.screen;
+
+		double scrollDelta = event.getScrollDelta();
+
+		if (mc.player != null && gui instanceof AbstractContainerScreen<?> containerGui) {
+			Slot under = containerGui.getSlotUnderMouse();
+			if (under != null) {
+				ItemStack underStack = under.getItem();
+				if (underStack.is(Items.BUNDLE)) {
+					CompoundTag tag = underStack.getTag();
+					if (tag != null) {
+						ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
+						if (items.size() > 1) {
+							var menu = containerGui.getMenu();
+							event.setCanceled(true);
+							if (scrollDelta < -0.1 || scrollDelta > 0.1) {
+								rotateBundle(underStack, scrollDelta);
+								QuarkNetwork.sendToServer(new ScrollOnBundleMessage(menu.containerId, menu.getStateId(), under.index, scrollDelta));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public static void scrollOnBundle(ServerPlayer player, int containerId, int stateId, int slotNum, double scrollDelta) {
+		if (!staticEnabled || !allowRotatingBundles)
+			return;
+
+		if (-0.1 <= scrollDelta && scrollDelta <= 0.1) return;
+
+		player.resetLastActionTime();
+		if (player.containerMenu.containerId == containerId) {
+			if (player.isSpectator()) {
+				player.containerMenu.sendAllDataToRemote();
+			} else if (!player.containerMenu.stillValid(player)) {
+				Quark.LOG.debug("Player {} interacted with invalid menu {}", player, player.containerMenu);
+			} else {
+				boolean flag = stateId != player.containerMenu.getStateId();
+				player.containerMenu.suppressRemoteUpdates();
+
+				Slot under = player.containerMenu.getSlot(slotNum);
+				if (under != null) {
+					ItemStack underStack = under.getItem();
+					rotateBundle(underStack, scrollDelta);
+				}
+
+				player.containerMenu.resumeRemoteUpdates();
+				if (flag) {
+					player.containerMenu.broadcastFullState();
+				} else {
+					player.containerMenu.broadcastChanges();
+				}
+			}
+		}
+	}
+
+	private static void rotateBundle(ItemStack stack, double scrollDelta) {
+		if (stack.is(Items.BUNDLE)) {
+			CompoundTag tag = stack.getTag();
+			if (tag != null) {
+				ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
+				if (items.size() > 1) {
+					ListTag rotatedItems = new ListTag();
+					if (scrollDelta < 0) {
+						rotatedItems.add(items.get(items.size() - 1));
+						for (int i = 0; i < items.size() - 1; i++)
+							rotatedItems.add(items.get(i));
+					} else {
+						for (int i = 1; i < items.size(); i++)
+							rotatedItems.add(items.get(i));
+						rotatedItems.add(items.get(0));
+					}
+					tag.put("Items", rotatedItems);
+				}
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -166,7 +266,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 				if (event.getItemStack() == underStack)
 					if(enableArmorInteraction && armorOverride(underStack, ItemStack.EMPTY, under, ClickAction.SECONDARY, mc.player, true))
 						event.getTooltipElements().add(Either.left(Component.translatable("quark.misc.equip_armor").withStyle(ChatFormatting.YELLOW)));
-				
+
 					else if(enableShulkerBoxInteraction && canOpenShulkerBox(underStack, ItemStack.EMPTY, under, mc.player))
 						event.getTooltipElements().add(Either.left(Component.translatable("quark.misc.open_shulker").withStyle(ChatFormatting.YELLOW)));
 			}
@@ -176,6 +276,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 
 	private static boolean armorOverride(ItemStack stack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean simulate) {
 		if (incoming.isEmpty()) {
+			//disallow stacks with more than one since it would prevent from de stacking
+			if (stack.getCount() >1) return false;
 			EquipmentSlot equipSlot = null;
 
 			if (stack.getItem() instanceof ArmorItem armor) {
@@ -229,29 +331,33 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 	}
 
 	public static boolean canOpenShulkerBox(ItemStack stack, ItemStack incoming, Slot slot, Player player) {
-		return incoming.isEmpty() && 
-				allowOpeningShulkerBoxes && 
-				!player.hasContainerOpen() &&
+		return incoming.isEmpty() &&
+				allowOpeningShulkerBoxes &&
+				(!player.hasContainerOpen() || player.containerMenu instanceof InventoryMenu) &&
 				slot.container == player.getInventory() &&
 				SimilarBlockTypeHandler.isShulkerBox(stack) &&
 				slot.mayPickup(player);
 	}
 
-	private static boolean shulkerOverride(ItemStack stack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean isStackedOnMe) {
-		if(isStackedOnMe && canOpenShulkerBox(stack, incoming, slot, player)) {
+	private static boolean shulkerOverride(ItemStack shulkerStack, ItemStack incoming, Slot slot, ClickAction action, Player player, boolean isStackedOnMe) {
+		//sanity check since some mods like to ignore max shulkerStack size...
+		if (shulkerStack.getCount() != 1) return false;
+
+		if (isStackedOnMe && canOpenShulkerBox(shulkerStack, incoming, slot, player)) {
 			int lockedSlot = slot.getSlotIndex();
 			if(player instanceof ServerPlayer splayer) {
 				HeldShulkerBoxContainer container = new HeldShulkerBoxContainer(splayer, lockedSlot);
 
 				NetworkHooks.openScreen(splayer, container, buf -> buf.writeInt(lockedSlot));
 			}
+			else
+				player.playSound(SoundEvents.SHULKER_BOX_OPEN, 1F, 1F);
 
-			player.playSound(SoundEvents.SHULKER_BOX_OPEN, 1F, 1F);
 			return true;
 		}
 
-		if (!incoming.isEmpty() && tryAddToShulkerBox(player, stack, incoming, slot, true, true, isStackedOnMe) != null) {
-			ItemStack finished = tryAddToShulkerBox(player, stack, incoming, slot, false, isStackedOnMe, isStackedOnMe);
+		if (!incoming.isEmpty() && tryAddToShulkerBox(player, shulkerStack, incoming, slot, true, true, isStackedOnMe) != null) {
+			ItemStack finished = tryAddToShulkerBox(player, shulkerStack, incoming, slot, false, isStackedOnMe, isStackedOnMe);
 
 			if (finished != null) {
 				if (isStackedOnMe) {
@@ -293,13 +399,13 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 		BlockEntity tile = getShulkerBoxEntity(shulkerBox);
 
 		if (tile != null) {
-			LazyOptional<IItemHandler> handlerHolder = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			LazyOptional<IItemHandler> handlerHolder = tile.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 			if (handlerHolder.isPresent()) {
 				IItemHandler handler = handlerHolder.orElseGet(EmptyHandler::new);
 				if (SimilarBlockTypeHandler.isShulkerBox(stack) && allowDump) {
 					BlockEntity otherShulker = getShulkerBoxEntity(stack);
 					if (otherShulker != null) {
-						LazyOptional<IItemHandler> otherHolder = otherShulker.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+						LazyOptional<IItemHandler> otherHolder = otherShulker.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 						if (otherHolder.isPresent()) {
 							IItemHandler otherHandler = otherHolder.orElseGet(EmptyHandler::new);
 							boolean any = false;
@@ -322,8 +428,8 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 							if (any) {
 								ItemStack workStack = useCopy ? shulkerBox.copy() : shulkerBox;
 
-								ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithFullMetadata());
-								ItemNBTHelper.setCompound(stack, "BlockEntityTag", otherShulker.saveWithFullMetadata());
+								ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithId());
+								ItemNBTHelper.setCompound(stack, "BlockEntityTag", otherShulker.saveWithId());
 
 								if (slot.mayPlace(workStack))
 									return workStack;
@@ -339,7 +445,7 @@ public class ExpandedItemInteractionsModule extends QuarkModule {
 					if (!simulate)
 						stack.setCount(result.getCount());
 
-					ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithFullMetadata());
+					ItemNBTHelper.setCompound(workStack, "BlockEntityTag", tile.saveWithId());
 
 					if (slot.mayPlace(workStack))
 						return workStack;

@@ -16,6 +16,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.Tags;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.handler.EntityAttributeHandler;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
@@ -40,8 +42,11 @@ public class ToretoiseModule extends QuarkModule {
 	@Config(description="The items that can be fed to toretoises to make them regrow ores.")
 	public static List<String> foods = Lists.newArrayList("minecraft:glow_berries");
 
+	@Config(flag = "toretoise_regrow")
+	public static boolean allowToretoiseToRegrow = true;
+	
 	@Config(description="Feeding a toretoise after cooldown will regrow them with a one-in-this-number chance. "
-			+ "Set to 1 to always regrow, or 0 to disable.")
+			+ "Set to 1 to always regrow, higher = lower chance.")
 	public static int regrowChance = 3;
 
 	@Config
@@ -50,6 +55,9 @@ public class ToretoiseModule extends QuarkModule {
 	@Config
 	public static EntitySpawnConfig spawnConfig = new EntitySpawnConfig(120, 2, 4, CompoundBiomeConfig.fromBiomeTags(true, Tags.Biomes.IS_VOID, BiomeTags.IS_NETHER, BiomeTags.IS_END));
 
+	public static QuarkGenericTrigger mineToretoiseTrigger;
+	public static QuarkGenericTrigger mineFedToretoiseTrigger;
+	
 	@Override
 	public void register() {
 		toretoiseType = EntityType.Builder.of(Toretoise::new, MobCategory.CREATURE)
@@ -61,10 +69,13 @@ public class ToretoiseModule extends QuarkModule {
 
 		RegistryHelper.register(toretoiseType, "toretoise", Registry.ENTITY_TYPE_REGISTRY);
 
-		EntitySpawnHandler.registerSpawn(this, toretoiseType, MobCategory.MONSTER, Type.ON_GROUND, Types.MOTION_BLOCKING_NO_LEAVES, Toretoise::spawnPredicate, spawnConfig);
-		EntitySpawnHandler.addEgg(toretoiseType, 0x55413b, 0x383237, spawnConfig);
+		EntitySpawnHandler.registerSpawn(toretoiseType, MobCategory.MONSTER, Type.ON_GROUND, Types.MOTION_BLOCKING_NO_LEAVES, Toretoise::spawnPredicate, spawnConfig);
+		EntitySpawnHandler.addEgg(this, toretoiseType, 0x55413b, 0x383237, spawnConfig);
 
 		EntityAttributeHandler.put(toretoiseType, Toretoise::prepareAttributes);
+		
+		mineToretoiseTrigger = QuarkAdvancementHandler.registerGenericTrigger("mine_toretoise");
+		mineFedToretoiseTrigger = QuarkAdvancementHandler.registerGenericTrigger("mine_fed_toretoise");
 	}
 
 	@Override

@@ -22,17 +22,21 @@ import vazkii.quark.addons.oddities.block.TinyPotatoBlock;
 import vazkii.quark.addons.oddities.block.be.TinyPotatoBlockEntity;
 import vazkii.quark.addons.oddities.client.model.TinyPotatoModel;
 import vazkii.quark.addons.oddities.client.render.be.TinyPotatoRenderer;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.ODDITIES, antiOverlap = "botania", hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class TinyPotatoModule extends QuarkModule {
 
 	public static BlockEntityType<TinyPotatoBlockEntity> blockEntityType;
+	public static QuarkGenericTrigger patPotatoTrigger;
 
-	public static Block tiny_potato;
+	@Hint public static Block tiny_potato;
 
 	@Config(description = "Set this to true to use the recipe without the Heart of Diamond, even if the Heart of Diamond is enabled.", flag = "tiny_potato_never_uses_heart")
 	public static boolean neverUseHeartOfDiamond = false;
@@ -43,6 +47,8 @@ public class TinyPotatoModule extends QuarkModule {
 
 		blockEntityType = BlockEntityType.Builder.of(TinyPotatoBlockEntity::new, tiny_potato).build(null);
 		RegistryHelper.register(blockEntityType, "tiny_potato", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
+		
+		patPotatoTrigger = QuarkAdvancementHandler.registerGenericTrigger("pat_potato");
 	}
 
 	@Override
@@ -53,7 +59,6 @@ public class TinyPotatoModule extends QuarkModule {
 		BakedModel originalPotato = map.get(tinyPotato);
 		map.put(tinyPotato, new TinyPotatoModel(originalPotato));
 	}
-
 	
 	@Override
 	@OnlyIn(Dist.CLIENT)

@@ -8,6 +8,10 @@
         "quark:blossom_log",
         "quark:stripped_blossom_log",
         "quark:blossom_wood",
-        "quark:stripped_blossom_wood"
+        "quark:stripped_blossom_wood",
+        "quark:ancient_log",
+        "quark:stripped_ancient_log",
+        "quark:ancient_wood",
+        "quark:stripped_ancient_wood"
     ]
 }

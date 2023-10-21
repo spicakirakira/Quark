@@ -15,7 +15,7 @@ import vazkii.quark.content.automation.client.render.QuarkPistonBlockEntityRende
 @Mixin(PistonHeadRenderer.class)
 public class PistonTileEntityRendererMixin {
 
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "render*", at = @At("HEAD"), cancellable = true)
 	private void renderPistonBlock(PistonMovingBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, CallbackInfo callbackInfo) {
 		if(QuarkPistonBlockEntityRenderer.renderPistonBlock(tileEntityIn, partialTicks, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn))
 			callbackInfo.cancel();

@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -35,8 +36,7 @@ public class QuarkVineBlock extends VineBlock implements IQuarkBlock {
 		RegistryHelper.registerBlock(this, name);
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 
-		if(creative)
-			RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		if (creative) CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 	}
 
 	@Override

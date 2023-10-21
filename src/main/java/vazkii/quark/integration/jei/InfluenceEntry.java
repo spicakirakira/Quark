@@ -1,7 +1,5 @@
 package vazkii.quark.integration.jei;
 
-import java.util.List;
-
 import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
@@ -13,9 +11,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.block.Block;
+import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.addons.oddities.util.Influence;
+import vazkii.quark.content.client.tooltip.EnchantedBookTooltips;
 import vazkii.quark.content.experimental.module.EnchantmentsBegoneModule;
 import vazkii.quark.content.tools.module.ColorRunesModule;
+
+import java.util.List;
 
 public class InfluenceEntry implements IRecipeCategoryExtension {
 
@@ -52,9 +54,11 @@ public class InfluenceEntry implements IRecipeCategoryExtension {
 
 		for (Enchantment enchantment : enchantments) {
 			if (!EnchantmentsBegoneModule.shouldBegone(enchantment)) {
-				if (stack.isEmpty())
+				if (stack.isEmpty()) {
 					stack = ColorRunesModule.withRune(new ItemStack(Items.ENCHANTED_BOOK), runeColor)
-						 .setHoverName(Component.translatable(locKey).withStyle(chatColor));
+						.setHoverName(Component.translatable(locKey).withStyle(chatColor));
+					ItemNBTHelper.setBoolean(stack, EnchantedBookTooltips.TABLE_ONLY_DISPLAY, true);
+				}
 				EnchantedBookItem.addEnchantment(stack, new EnchantmentInstance(enchantment, enchantment.getMaxLevel()));
 			}
 		}
@@ -66,13 +70,13 @@ public class InfluenceEntry implements IRecipeCategoryExtension {
 		NonNullList<ItemStack> books = NonNullList.create();
 		for (Enchantment enchantment : influence.boost()) {
 			for (int i = 0; i < enchantment.getMaxLevel(); i++) {
-				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i)));
+				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i + 1)));
 			}
 		}
 
 		for (Enchantment enchantment : influence.dampen()) {
 			for (int i = 0; i < enchantment.getMaxLevel(); i++) {
-				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i)));
+				books.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, i + 1)));
 			}
 		}
 

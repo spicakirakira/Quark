@@ -1,10 +1,5 @@
 package vazkii.quark.content.mobs.entity;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -13,27 +8,19 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.FollowParentGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +29,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RodBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,12 +43,18 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.registries.ForgeRegistries;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.QuarkSounds;
-import vazkii.quark.content.automation.module.IronRodModule;
 import vazkii.quark.content.mobs.module.ToretoiseModule;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Objects;
+
 public class Toretoise extends Animal {
+
+	private static final TagKey<Block> BREAKS_TORETOISE_ORE = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "breaks_toretoise_ore"));
 
 	public static final int ORE_TYPES = 5;
 	public static final int ANGERY_TIME = 20;
@@ -103,7 +98,7 @@ public class Toretoise extends Animal {
 	}
 
 	private Ingredient getGoodFood() {
-		if(goodFood == null)
+		if (goodFood == null)
 			computeGoodFood();
 
 		return goodFood;
@@ -149,49 +144,52 @@ public class Toretoise extends Animal {
 	}
 
 	@Override
+	protected AABB makeBoundingBox() {
+		AABB aabb = super.makeBoundingBox();
+
+		double rheight = getOreType() == 0 ? 0 : 0.4;
+		return new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY + rheight, aabb.maxZ);
+	}
+
+	@Override
 	public void tick() {
 		super.tick();
 
-		AABB aabb = getBoundingBox();
-		double rheight = getOreType() == 0 ? 1 : 1.4;
-		aabb = new AABB(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.minY + rheight, aabb.maxZ);
-		setBoundingBox(aabb);
-
 		Entity riding = getVehicle();
-		if(riding != null)
+		if (riding != null)
 			rideTime++;
 		else rideTime = 0;
 
-		if(eatCooldown > 0)
+		if (eatCooldown > 0)
 			eatCooldown--;
 
-		if(angeryTicks > 0 && isAlive()) {
+		if (angeryTicks > 0 && isAlive()) {
 			angeryTicks--;
 
-			if(isOnGround()) {
+			if (isOnGround()) {
 				int dangerRange = 3;
 				double x = getX() + getBbWidth() / 2;
 				double y = getY();
 				double z = getZ() + getBbWidth() / 2;
 
-				if(level instanceof ServerLevel serverLevel) {
-					if(angeryTicks == 3)
+				if (level instanceof ServerLevel serverLevel) {
+					if (angeryTicks == 3)
 						playSound(QuarkSounds.ENTITY_TORETOISE_ANGRY, 1F, 0.2F);
-					else if(angeryTicks == 0) {
+					else if (angeryTicks == 0) {
 						serverLevel.sendParticles(ParticleTypes.CLOUD, x, y, z, 200, dangerRange, 0.5, dangerRange, 0);
 						gameEvent(GameEvent.ENTITY_ROAR);
 					}
 				}
 
-				if(angeryTicks == 0) {
+				if (angeryTicks == 0) {
 					AABB hurtAabb = new AABB(x - dangerRange, y - 1, z - dangerRange, x + dangerRange, y + 1, z + dangerRange);
 					List<LivingEntity> hurtMeDaddy = level.getEntitiesOfClass(LivingEntity.class, hurtAabb, e -> !(e instanceof Toretoise));
 
 					LivingEntity aggressor = lastAggressor == null ? this : lastAggressor;
 					DamageSource damageSource = DamageSource.mobAttack(aggressor);
-					for(LivingEntity e : hurtMeDaddy) {
+					for (LivingEntity e : hurtMeDaddy) {
 						DamageSource useSource = damageSource;
-						if(e == aggressor)
+						if (e == aggressor)
 							useSource = DamageSource.mobAttack(this);
 
 						e.hurt(useSource, 4 + level.getDifficulty().ordinal());
@@ -214,12 +212,14 @@ public class Toretoise extends Animal {
 							BlockState state = level.getBlockState(test);
 							if (state.getBlock() == Blocks.MOVING_PISTON) {
 								BlockEntity tile = level.getBlockEntity(test);
-								if (tile instanceof PistonMovingBlockEntity piston) {
+								if (tile instanceof PistonMovingBlockEntity piston && piston.isExtending()) {
 									BlockState pistonState = piston.getMovedState();
-									if (pistonState.getBlock() == IronRodModule.iron_rod) {
-										dropOre(ore, new LootContext.Builder(serverLevel)
-												.withParameter(LootContextParams.TOOL, new ItemStack(Items.IRON_PICKAXE)));
-										break breakOre;
+									if (pistonState.is(BREAKS_TORETOISE_ORE)) {
+										if (!pistonState.hasProperty(RodBlock.FACING) || pistonState.getValue(RodBlock.FACING) == piston.getMovementDirection()) {
+											dropOre(ore, new LootContext.Builder(serverLevel)
+													.withParameter(LootContextParams.TOOL, new ItemStack(Items.IRON_PICKAXE)));
+											break breakOre;
+										}
 									}
 								}
 							}
@@ -233,12 +233,12 @@ public class Toretoise extends Animal {
 		Entity e = source.getDirectEntity();
 		int ore = getOreType();
 
-		if(e instanceof LivingEntity living) {
+		if (e instanceof LivingEntity living) {
 			ItemStack held = living.getMainHandItem();
 
-			if(ore != 0 && held.getItem().canPerformAction(held, ToolActions.PICKAXE_DIG)) {
-				if(level instanceof ServerLevel serverLevel) {
-					if(held.isDamageableItem() && e instanceof Player)
+			if (ore != 0 && held.getItem().canPerformAction(held, ToolActions.PICKAXE_DIG)) {
+				if (level instanceof ServerLevel serverLevel) {
+					if (held.isDamageableItem() && e instanceof Player)
 						MiscUtil.damageStack((Player) e, InteractionHand.MAIN_HAND, held, 1);
 
 					LootContext.Builder lootBuilder = new LootContext.Builder(serverLevel)
@@ -246,12 +246,18 @@ public class Toretoise extends Animal {
 					if (living instanceof Player player)
 						lootBuilder.withLuck(player.getLuck());
 					dropOre(ore, lootBuilder);
+
+					if(living instanceof ServerPlayer sp) {
+						ToretoiseModule.mineToretoiseTrigger.trigger(sp);
+						if(isTamed)
+							ToretoiseModule.mineFedToretoiseTrigger.trigger(sp);
+					}
 				}
 
 				return false;
 			}
 
-			if(angeryTicks == 0) {
+			if (angeryTicks == 0) {
 				angeryTicks = ANGERY_TIME;
 				lastAggressor = living;
 			}
@@ -272,7 +278,7 @@ public class Toretoise extends Animal {
 			case 5 -> dropState = Blocks.DEEPSLATE_COPPER_ORE.defaultBlockState();
 		}
 
-		if(dropState != null) {
+		if (dropState != null) {
 			playSound(QuarkSounds.ENTITY_TORETOISE_HARVEST, 1F, 0.6F);
 			gameEvent(GameEvent.ENTITY_INTERACT);
 
@@ -281,6 +287,7 @@ public class Toretoise extends Animal {
 		}
 
 		entityData.set(ORE_TYPE, 0);
+		this.setBoundingBox(this.makeBoundingBox());
 	}
 
 	@Override
@@ -290,16 +297,16 @@ public class Toretoise extends Animal {
 
 	@Override
 	public void setInLoveTime(int ticks) {
-		if(level.isClientSide)
+		if (level.isClientSide)
 			return;
 
 		playSound(eatCooldown == 0 ? QuarkSounds.ENTITY_TORETOISE_EAT : QuarkSounds.ENTITY_TORETOISE_EAT_SATIATED, 0.5F + 0.5F * level.random.nextInt(2), (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
 		heal(8);
 
-		if(!isTamed) {
+		if (!isTamed) {
 			isTamed = true;
 
-			if(level instanceof ServerLevel serverLevel)
+			if (level instanceof ServerLevel serverLevel)
 				serverLevel.sendParticles(ParticleTypes.HEART, getX(), getY(), getZ(), 20, 0.5, 0.5, 0.5, 0);
 		} else if (eatCooldown == 0) {
 			popOre(false);
@@ -309,14 +316,15 @@ public class Toretoise extends Animal {
 	private void popOre(boolean natural) {
 		if (!natural && ToretoiseModule.regrowChance == 0)
 			return;
-		if(getOreType() == 0 && (natural || level.random.nextInt(ToretoiseModule.regrowChance) == 0)) {
+		if (getOreType() == 0 && (natural || level.random.nextInt(ToretoiseModule.regrowChance) == 0)) {
 			int ore = random.nextInt(ORE_TYPES) + 1;
 			entityData.set(ORE_TYPE, ore);
+			this.setBoundingBox(this.makeBoundingBox());
 
-			if(!natural) {
+			if (!natural) {
 				eatCooldown = ToretoiseModule.cooldownTicks;
 
-				if(level instanceof ServerLevel serverLevel) {
+				if (level instanceof ServerLevel serverLevel) {
 					serverLevel.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 0.5, getZ(), 100, 0.6, 0.6, 0.6, 0);
 					playSound(QuarkSounds.ENTITY_TORETOISE_REGROW, 10F, 0.7F);
 				}

@@ -31,21 +31,29 @@ public class SlabToBlockRecipe extends CustomRecipe {
 		
 		Item target = null;
 		
+		boolean checked = false;
+		boolean result = false;
+		
 		for(int i = 0; i < container.getContainerSize(); i++) {
 			ItemStack stack = container.getItem(i);
 			if(!stack.isEmpty()) {
 				Item item = stack.getItem();
 				
-				if(target != null)
-					return item == target && checkForOtherRecipes(container, level);
-				
-				if(SlabsToBlocksModule.recipes.containsKey(item)) {
-					target = item;
-				} else return false;
+				if(target != null) {
+					if(checked)
+						return false;
+					
+					result = item == target && checkForOtherRecipes(container, level);
+					checked = true;
+				} else {
+					if(SlabsToBlocksModule.recipes.containsKey(item)) {
+						target = item;
+					} else return false;
+				}
 			}
 		}
 		
-		return false;
+		return result;
 	}
 	
 	// very much doubt multiple threads would ever touch this but JUST IN CASE

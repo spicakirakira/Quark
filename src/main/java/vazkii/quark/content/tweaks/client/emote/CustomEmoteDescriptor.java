@@ -18,7 +18,7 @@ public class CustomEmoteDescriptor extends EmoteDescriptor {
 		if(EmotesModule.resourcePack.hasResource(PackType.CLIENT_RESOURCES, customRes))
 			return customRes;
 		
-		return new ResourceLocation("quark", "textures/emotes/custom.png");
+		return new ResourceLocation("quark", "textures/emote/custom.png");
 	}
 	
 	@Override

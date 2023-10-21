@@ -26,7 +26,7 @@ public record FlagLootCondition(ConfigFlagManager manager,
 	@Nonnull
 	@Override
 	public LootItemConditionType getType() {
-		return ConfigFlagManager.flagConditionType;
+		return ConfigFlagManager.flagLootConditionType;
 	}
 
 

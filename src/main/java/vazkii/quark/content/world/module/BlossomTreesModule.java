@@ -1,11 +1,9 @@
 package vazkii.quark.content.world.module;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.base.Functions;
-
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.material.MaterialColor;
@@ -18,6 +16,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.HintManager;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.content.world.block.BlossomLeavesBlock;
@@ -25,6 +24,10 @@ import vazkii.quark.content.world.block.BlossomSaplingBlock;
 import vazkii.quark.content.world.block.BlossomSaplingBlock.BlossomTree;
 import vazkii.quark.content.world.config.BlossomTreeConfig;
 import vazkii.quark.content.world.gen.BlossomTreeGenerator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 @LoadModule(category = ModuleCategory.WORLD)
 public class BlossomTreesModule extends QuarkModule {
@@ -44,7 +47,7 @@ public class BlossomTreesModule extends QuarkModule {
 
 	@Override
 	public void register() {
-		woodSet = WoodSetHandler.addWoodSet(this, "blossom", MaterialColor.COLOR_RED, MaterialColor.COLOR_BROWN);
+		woodSet = WoodSetHandler.addWoodSet(this, "blossom", MaterialColor.COLOR_RED, MaterialColor.COLOR_BROWN, true);
 
 		add("blue", MaterialColor.COLOR_LIGHT_BLUE, blue);
 		add("lavender", MaterialColor.COLOR_PINK, lavender);
@@ -69,10 +72,16 @@ public class BlossomTreesModule extends QuarkModule {
 		});
 	}
 
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		for(BlossomTree tree : trees.keySet())
+			HintManager.hintItem(consumer, tree.sapling.asItem());
+	}
+
 	private void add(String colorName, MaterialColor color, BlossomTreeConfig config) {
 		BlossomLeavesBlock leaves = new BlossomLeavesBlock(colorName, this, color);
 		BlossomTree tree = new BlossomTree(leaves);
-		BlossomSaplingBlock sapling = new BlossomSaplingBlock(colorName, this, tree, leaves);
+		BlossomSaplingBlock sapling = new BlossomSaplingBlock(colorName, this, tree);
 		VariantHandler.addFlowerPot(sapling, RegistryHelper.getInternalName(sapling).getPath(), Functions.identity());
 
 		trees.put(tree, config);

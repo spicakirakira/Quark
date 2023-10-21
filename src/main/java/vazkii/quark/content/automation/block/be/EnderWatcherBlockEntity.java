@@ -4,10 +4,12 @@ import com.mojang.math.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext.Block;
 import net.minecraft.world.level.ClipContext.Fluid;
 import net.minecraft.world.level.Level;
@@ -37,10 +39,14 @@ public class EnderWatcherBlockEntity extends ARLBlockEntity {
 		int newWatch = 0;
 		List<Player> players = level.getEntitiesOfClass(Player.class, new AABB(be.worldPosition.offset(-range, -range, -range), be.worldPosition.offset(range, range, range)));
 
+		EnderMan fakeEnderman = new EnderMan(EntityType.ENDERMAN, level);
+		fakeEnderman.setPos(pos.getX() + 0.5, pos.getY() + 0.5 - fakeEnderman.getEyeHeight(), pos.getZ() + 0.5);
+
 		boolean looking = false;
 		for(Player player : players) {
 			ItemStack helm = player.getItemBySlot(EquipmentSlot.HEAD);
-			if(!helm.isEmpty() && helm.getItem() == Items.PUMPKIN)
+			fakeEnderman.lookAt(player, 180, 180);
+			if(!helm.isEmpty() && helm.isEnderMask(player, fakeEnderman))
 				continue;
 
 			HitResult result = RayTraceHandler.rayTrace(player, level, player, Block.OUTLINE, Fluid.NONE, 64);
@@ -55,7 +61,12 @@ public class EnderWatcherBlockEntity extends ARLBlockEntity {
 
 				// 0.7071067811865476 being the hypotenuse of an isosceles triangle with cathetus of length 0.5
 				double fract = 1 - (Math.sqrt(x*x + y*y + z*z) / 0.7071067811865476);
-				newWatch = Math.max(newWatch, (int) Math.ceil(fract * 15));
+				int playerWatch = (int) Math.ceil(fract * 15);
+
+				if(playerWatch == 15 && player instanceof ServerPlayer sp)
+					EnderWatcherModule.watcherCenterTrigger.trigger(sp);
+
+				newWatch = Math.max(newWatch, playerWatch);
 			}
 		}
 

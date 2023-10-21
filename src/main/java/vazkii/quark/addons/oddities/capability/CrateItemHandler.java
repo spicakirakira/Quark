@@ -16,6 +16,8 @@ import vazkii.quark.base.handler.SortingHandler;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author WireSegal
  * Created at 8:53 AM on 4/8/22.
@@ -29,15 +31,33 @@ public class CrateItemHandler extends ItemStackHandler {
 	public int displayTotal = 0;
 	public int displaySlots = 0;
 
+	private int cachedTotal = -1;
+
 	public CrateItemHandler() {
 		super(CrateModule.maxItems);
 		maxItems = CrateModule.maxItems;
 	}
 
 	private int getTotal() {
+		if(cachedTotal != -1)
+			return cachedTotal;
+
 		int items = 0;
-		for (ItemStack stack : stacks) items += stack.getCount();
+		for (ItemStack stack : stacks) 
+			items += stack.getCount();
+
+		cachedTotal = items;
 		return items;
+	}
+
+	private void changeTotal(ItemStack oldStack, ItemStack newStack) {
+		int diff = newStack.getCount() - oldStack.getCount();
+		if(diff != 0)
+			changeTotal(diff);
+	}
+
+	private void changeTotal(int change) {
+		cachedTotal = getTotal() + change;
 	}
 
 	public void recalculate() {
@@ -59,6 +79,7 @@ public class CrateItemHandler extends ItemStackHandler {
 			}
 		}
 		stacks = newStacks;
+		cachedTotal = -1;
 	}
 
 	public void clear() {
@@ -89,6 +110,40 @@ public class CrateItemHandler extends ItemStackHandler {
 		ItemStack stackInSlot = getStackInSlot(slot);
 		int total = getTotal();
 		return Mth.clamp(stackInSlot.getCount() + maxItems - total, 0, 64);
+	}
+
+	@Override
+	public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+		ItemStack oldStack = stacks.get(slot).copy();
+
+		super.setStackInSlot(slot, stack);
+
+		ItemStack newStack = stacks.get(slot).copy();
+		changeTotal(oldStack, newStack);
+	}
+
+	@Override
+	public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+		ItemStack oldStack = stacks.get(slot).copy();
+		ItemStack retStack = super.insertItem(slot, stack, simulate);
+		ItemStack newStack = stacks.get(slot).copy();
+
+		if(!simulate)
+			changeTotal(oldStack, newStack);
+
+		return retStack;
+	}
+
+	@Override
+	public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+		ItemStack oldStack = stacks.get(slot).copy();
+		ItemStack retStack = super.extractItem(slot, amount, simulate);
+		ItemStack newStack = stacks.get(slot).copy();
+	
+		if(!simulate)
+			changeTotal(oldStack, newStack);
+
+		return retStack;
 	}
 
 	@Override
@@ -123,4 +178,5 @@ public class CrateItemHandler extends ItemStackHandler {
 			stacks.set(i, ItemStack.of(items.getCompound(i)));
 		onLoad();
 	}
+
 }

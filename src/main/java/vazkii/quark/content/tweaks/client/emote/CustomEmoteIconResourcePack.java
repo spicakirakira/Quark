@@ -108,6 +108,8 @@ public class CustomEmoteIconResourcePack extends AbstractPackResources {
 
 	private File getFile(String name) {
 		String filename = name.substring(name.indexOf(":") + 1) + ".png";
+		filename = filename.replaceAll("(.+/)+", "");
+		
 		return new File(EmotesModule.emotesDir, filename);
 	}
 

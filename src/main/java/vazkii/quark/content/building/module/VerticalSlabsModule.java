@@ -2,25 +2,46 @@ package vazkii.quark.content.building.module;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.ImmutableSet;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.ToolActions;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.ToolInteractionHandler;
 import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
-import vazkii.quark.content.building.block.VerticalSlabBlock;
+import vazkii.quark.base.module.config.Config;
+import vazkii.quark.content.building.block.QuarkVerticalSlabBlock;
 import vazkii.quark.content.building.block.WeatheringCopperVerticalSlabBlock;
 
 @LoadModule(category = ModuleCategory.BUILDING)
 public class VerticalSlabsModule extends QuarkModule {
-
+	
+	@Config(description = "Should Walls and Panes attempt to connect to the side of Vertical Slabs?")
+	public static boolean allowSideConnections = true;
+	
+	public static boolean staticEnabled;
+	
+	public static TagKey<Block> verticalSlabTag;
+	
 	@Override
 	public void postRegister() { 
 		ImmutableSet.of(
@@ -42,7 +63,7 @@ public class VerticalSlabsModule extends QuarkModule {
 				// 1.19
 				Blocks.MANGROVE_SLAB, Blocks.MUD_BRICK_SLAB
 				)
-		.forEach(b -> new VerticalSlabBlock(b, this));
+		.forEach(b -> new QuarkVerticalSlabBlock(b, this));
 
 		List<WeatheringCopperVerticalSlabBlock> copperVerticalSlabs = new ArrayList<>();
 		ImmutableSet.of(
@@ -52,10 +73,10 @@ public class VerticalSlabsModule extends QuarkModule {
 				Pair.of(Blocks.OXIDIZED_CUT_COPPER_SLAB, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB))
 		.forEach(p -> {
 			WeatheringCopperVerticalSlabBlock cleanSlab = new WeatheringCopperVerticalSlabBlock(p.getLeft(), this);
-			VerticalSlabBlock waxedSlab = new VerticalSlabBlock(p.getRight(), this);
+			QuarkVerticalSlabBlock waxedSlab = new QuarkVerticalSlabBlock(p.getRight(), this);
 
 			copperVerticalSlabs.add(cleanSlab);
-			ToolInteractionHandler.registerWaxedBlock(cleanSlab, waxedSlab);
+			ToolInteractionHandler.registerWaxedBlock(this, cleanSlab, waxedSlab);
 		});
 
 		WeatheringCopperVerticalSlabBlock first = copperVerticalSlabs.get(0);
@@ -77,12 +98,69 @@ public class VerticalSlabsModule extends QuarkModule {
 		VariantHandler.SLABS.forEach(b -> {
 			if(b instanceof IVerticalSlabProvider provider)
 				provider.getVerticalSlab(b, this);
-			else new VerticalSlabBlock(b, this);
+			else new QuarkVerticalSlabBlock(b, this);
 		});
 	}
+	
+	@Override
+	public void setup() {
+		verticalSlabTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "vertical_slabs"));
+	}
+	
+	@Override
+	public void configChanged() {
+		staticEnabled = enabled;
+	}
+	
+	public static BlockState messWithPaneState(LevelAccessor level, BlockPos ourPos, BlockState state) {
+		if(!staticEnabled || !allowSideConnections)
+			return state;
+		
+		for(Direction dir : PipeBlock.PROPERTY_BY_DIRECTION.keySet()) {
+			if(dir.getAxis().isHorizontal()) {
+				BooleanProperty prop = PipeBlock.PROPERTY_BY_DIRECTION.get(dir);
+				boolean val = state.getValue(prop);
+				if(!val) {
+					BlockState adjState = level.getBlockState(ourPos.relative(dir));
+					boolean should = shouldWallConnect(adjState, dir, false);
+					
+					if(should)
+						state = state.setValue(prop, true);
+				}
+			}
+		}
+		
+		return state;
+	}
 
+	public static boolean shouldWallConnect(BlockState state, Direction dir, boolean prev) {
+		if(prev || !staticEnabled || !allowSideConnections)
+			return prev;
+		
+		if(state.is(verticalSlabTag)) {
+			// We use this absolute nonsene instead of a sane check to support mods that copy the VerticalSlabBlock
+			// class. If we just checked against VerticalSlabBlock.TYPE, it would type error when another mod
+			// has a copy paste enum in there
+			
+			Optional<Property<?>> opt = state.getProperties().stream().filter(p -> p.getName() == "type").findFirst();
+			if(opt.isPresent()) {
+				Property<?> prop = opt.get();
+				
+				if(prop instanceof EnumProperty<?> ep) {
+					Enum<?> val = (Enum<?>) state.getValue(prop);
+					
+					String name = val.name().toLowerCase();
+					Direction vsDir = Direction.byName(name);
+					return vsDir != null && vsDir.getAxis() != dir.getAxis();
+				}
+			}
+		}
+		
+		return false;
+	}
+	
 	public interface IVerticalSlabProvider {
-		VerticalSlabBlock getVerticalSlab(Block block, QuarkModule module);
+		QuarkVerticalSlabBlock getVerticalSlab(Block block, QuarkModule module);
 
 	}
 

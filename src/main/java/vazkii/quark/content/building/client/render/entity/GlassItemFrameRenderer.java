@@ -145,12 +145,10 @@ public class GlassItemFrameRenderer extends EntityRenderer<GlassItemFrame> {
 			MapItemSavedData mapdata = MapItem.getSavedData(stack, itemFrame.level);
 
 			sign: if(itemFrame.isOnSign()) {
-				BlockPos back = itemFrame.getBehindPos();
-				BlockState state = itemFrame.level.getBlockState(back);
 
 				Direction ourDirection = itemFrame.getDirection().getOpposite();
 
-				int signRotation = state.getValue(StandingSignBlock.ROTATION);
+				int signRotation = itemFrame.getOnSignRotation();
 				Direction signDirection = SIGN_DIRECTIONS.get(signRotation / 4);
 				if(signRotation % 4 == 0 ? (signDirection != ourDirection) : (signDirection.getOpposite() == ourDirection))
 					break sign;

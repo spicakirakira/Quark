@@ -21,6 +21,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.interf.IBlockColorProvider;
 import vazkii.arl.interf.IItemColorProvider;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.QuarkModule;
@@ -35,7 +36,8 @@ public class QuarkStairsBlock extends StairBlock implements IQuarkBlock, IBlockC
 
 		this.parent = parent;
 		RegistryHelper.registerBlock(this, IQuarkBlock.inheritQuark(parent, "%s_stairs"));
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_BUILDING_BLOCKS);
+
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_BUILDING_BLOCKS);
 
 		RenderLayerHandler.setInherited(this, parent.getBlock());
 	}

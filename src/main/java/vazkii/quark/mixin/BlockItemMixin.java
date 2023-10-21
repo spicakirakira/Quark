@@ -1,27 +1,23 @@
 package vazkii.quark.mixin;
 
-import javax.annotation.Nullable;
-
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.state.BlockState;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+
+import vazkii.quark.content.experimental.module.VariantSelectorModule;
 import vazkii.quark.content.tweaks.module.LockRotationModule;
 
 @Mixin(BlockItem.class)
 public class BlockItemMixin {
 
-	@Shadow
-	@Nullable
-	protected native BlockState getPlacementState(BlockPlaceContext context);
-
-	@Redirect(method = "place", at = @At(value = "INVOKE", 
+	@ModifyExpressionValue(method = "place", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/world/item/BlockItem;getPlacementState(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/level/block/state/BlockState;"))
-	private BlockState alterPlacementState(BlockItem self, BlockPlaceContext context) {
-		return LockRotationModule.fixBlockRotation(getPlacementState(context), context);
+	private BlockState alterPlacementState(BlockState state, @Local(ordinal = 1) BlockPlaceContext context) {
+		state = VariantSelectorModule.modifyBlockPlacementState(state, context);
+		return LockRotationModule.fixBlockRotation(state, context);
 	}
 }

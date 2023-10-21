@@ -1,11 +1,14 @@
 package vazkii.quark.addons.oddities.module;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,6 +28,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.ODDITIES, hasSubscriptions = true)
 public class MagnetsModule extends QuarkModule {
@@ -41,6 +45,7 @@ public class MagnetsModule extends QuarkModule {
 	@Config(flag = "magnet_pre_end")  
 	public static boolean usePreEndRecipe = false;
 	
+	@Hint
 	public static Block magnet;
 	public static Block magnetized_block;
 
@@ -61,7 +66,7 @@ public class MagnetsModule extends QuarkModule {
 	public void clientSetup() {
 		BlockEntityRenderers.register(magnetizedBlockType, MagnetizedBlockRenderer::new);
 	}
-	
+
 	@SubscribeEvent
 	public void tick(LevelTickEvent event) {
 		MagnetSystem.tick(event.phase == Phase.START, event.level);

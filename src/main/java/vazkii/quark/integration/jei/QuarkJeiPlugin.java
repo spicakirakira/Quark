@@ -1,44 +1,28 @@
 package vazkii.quark.integration.jei;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
+import com.google.common.collect.Sets;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe;
 import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
-import mezz.jei.api.registration.IGuiHandlerRegistration;
-import mezz.jei.api.registration.IRecipeCatalystRegistration;
-import mezz.jei.api.registration.IRecipeCategoryRegistration;
-import mezz.jei.api.registration.IRecipeRegistration;
-import mezz.jei.api.registration.ISubtypeRegistration;
-import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
+import mezz.jei.api.registration.*;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -55,6 +39,8 @@ import vazkii.quark.addons.oddities.util.Influence;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
 import vazkii.quark.base.client.handler.RequiredModTooltipHandler;
+import vazkii.quark.base.handler.BrewingHandler;
+import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.item.IQuarkItem;
 import vazkii.quark.base.item.QuarkItem;
@@ -66,14 +52,21 @@ import vazkii.quark.content.tools.item.AncientTomeItem;
 import vazkii.quark.content.tools.module.AncientTomesModule;
 import vazkii.quark.content.tools.module.ColorRunesModule;
 import vazkii.quark.content.tools.module.PickarangModule;
+import vazkii.quark.content.tweaks.module.DiamondRepairModule;
 import vazkii.quark.content.tweaks.recipe.ElytraDuplicationRecipe;
+import vazkii.quark.content.tweaks.recipe.SlabToBlockRecipe;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @JeiPlugin
 public class QuarkJeiPlugin implements IModPlugin {
 	private static final ResourceLocation UID = new ResourceLocation(Quark.MOD_ID, Quark.MOD_ID);
 
 	public static final RecipeType<InfluenceEntry> INFLUENCING =
-		 RecipeType.create(Quark.MOD_ID, "influence", InfluenceEntry.class);
+			RecipeType.create(Quark.MOD_ID, "influence", InfluenceEntry.class);
 
 	@Nonnull
 	@Override
@@ -87,20 +80,42 @@ public class QuarkJeiPlugin implements IModPlugin {
 	}
 
 	@Override
-	public void onRuntimeAvailable(@Nonnull IJeiRuntime jeiRuntime) {
+	public void onRuntimeAvailable(@Nonnull final IJeiRuntime jeiRuntime) {
 		List<ItemStack> disabledItems = RequiredModTooltipHandler.disabledItems();
 		if (!disabledItems.isEmpty())
 			jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, disabledItems);
 
 		ModuleLoader.INSTANCE.initJEICompat(() -> {
+			if(ModuleLoader.INSTANCE.isModuleEnabled(DiamondRepairModule.class))
+				Minecraft.getInstance().submitAsync(() -> hideAnvilRepairRecipes(jeiRuntime.getRecipeManager()));
+
+			if(!GeneralConfig.hideDisabledContent)
+				return;
+
+			Set<Potion> hidePotions = Sets.newHashSet();
+			for (Potion potion : ForgeRegistries.POTIONS.getValues()) {
+				ResourceLocation loc = ForgeRegistries.POTIONS.getKey(potion);
+				if (loc != null && loc.getNamespace().equals("quark")) {
+					if (!BrewingHandler.isEnabled(potion)) {
+						hidePotions.add(potion);
+					}
+				}
+			}
+
 			NonNullList<ItemStack> stacks = NonNullList.create();
 			for (Item item : ForgeRegistries.ITEMS.getValues()) {
-				ResourceLocation loc = Registry.ITEM.getKey(item);
+				ResourceLocation loc = ForgeRegistries.ITEMS.getKey(item);
 				if (loc != null && loc.getNamespace().equals("quark")) {
 					if ((item instanceof IQuarkItem quarkItem && !quarkItem.isEnabled()) ||
 							(item instanceof BlockItem blockItem && blockItem.getBlock() instanceof IQuarkBlock quarkBlock && !quarkBlock.isEnabled())) {
 						item.fillItemCategory(CreativeModeTab.TAB_SEARCH, stacks);
 					}
+				}
+
+				if (item instanceof PotionItem || item instanceof TippedArrowItem) {
+					NonNullList<ItemStack> potionStacks = NonNullList.create();
+					item.fillItemCategory(CreativeModeTab.TAB_SEARCH, potionStacks);
+					potionStacks.stream().filter(it -> hidePotions.contains(PotionUtils.getPotion(it))).forEach(stacks::add);
 				}
 			}
 
@@ -112,6 +127,7 @@ public class QuarkJeiPlugin implements IModPlugin {
 	@Override
 	public void registerVanillaCategoryExtensions(@Nonnull IVanillaCategoryExtensionRegistration registration) {
 		registration.getCraftingCategory().addCategoryExtension(ElytraDuplicationRecipe.class, ElytraDuplicationExtension::new);
+		registration.getCraftingCategory().addCategoryExtension(SlabToBlockRecipe.class, SlabToBlockExtension::new);
 	}
 
 	private boolean matrix() {
@@ -142,6 +158,27 @@ public class QuarkJeiPlugin implements IModPlugin {
 		if (matrix())
 			registerInfluenceRecipes(registration);
 
+		if(ModuleLoader.INSTANCE.isModuleEnabled(DiamondRepairModule.class))
+			registerCustomAnvilRecipes(registration, factory);
+
+		if(GeneralConfig.enableJeiItemInfo) {
+			MutableComponent hint = Component.translatable("quark.jei.hint_preamble");
+			hint.setStyle(hint.getStyle().withColor(0x0b5d4b));
+
+			List<Item> blacklist = MiscUtil.massRegistryGet(GeneralConfig.suppressedInfo, ForgeRegistries.ITEMS);
+
+			ModuleLoader.INSTANCE.addStackInfo((i, c) -> {
+				if(blacklist.contains(i))
+					return;
+
+				MutableComponent compound = Component.literal("");
+				if(!ForgeRegistries.ITEMS.getKey(i).getNamespace().equals(Quark.MOD_ID))
+					compound = compound.append(hint);
+				compound = compound.append(c);
+
+				registration.addItemStackInfo(new ItemStack(i), compound);
+			});
+		}
 	}
 
 	@Override
@@ -165,11 +202,10 @@ public class QuarkJeiPlugin implements IModPlugin {
 		registration.addRecipeClickArea(BackpackInventoryScreen.class, 137, 29, 10, 13, RecipeTypes.CRAFTING);
 	}
 
-	// Waiting on new JEI api exposes
-//	@Override
-//	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-//		registration.addRecipeTransferHandler(new BackpackRecipeTransferHandler(stackHelper, transferHelper), RecipeTypes.CRAFTING);
-//	}
+	@Override
+	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+		registration.addRecipeTransferHandler(new BackpackRecipeTransferHandler(registration.getTransferHelper()), RecipeTypes.CRAFTING);
+	}
 
 	private void registerAncientTomeAnvilRecipes(@Nonnull IRecipeRegistration registration, @Nonnull IVanillaRecipeFactory factory) {
 		List<IJeiAnvilRecipe> recipes = new ArrayList<>();
@@ -244,20 +280,64 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 	private void registerInfluenceRecipes(@Nonnull IRecipeRegistration registration) {
 		registration.addRecipes(INFLUENCING,
-			 Arrays.stream(DyeColor.values()).map(color -> {
-				 Block candle = MatrixEnchantingTableBlockEntity.CANDLES.get(color.getId());
-				 Influence influence = MatrixEnchantingModule.candleInfluences.get(color);
+				Arrays.stream(DyeColor.values()).map(color -> {
+					Block candle = MatrixEnchantingTableBlockEntity.CANDLES.get(color.getId());
+					Influence influence = MatrixEnchantingModule.candleInfluences.get(color);
 
-				 return new InfluenceEntry(candle, influence);
-			 }).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+					return new InfluenceEntry(candle, influence);
+				}).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
 
 		registration.addRecipes(INFLUENCING,
-			 MatrixEnchantingModule.customInfluences.entrySet().stream().map(entry -> {
-				 Block block = entry.getKey().getBlock();
-				 Influence influence = entry.getValue().influence();
+				MatrixEnchantingModule.customInfluences.entrySet().stream().map(entry -> {
+					Block block = entry.getKey().getBlock();
+					Influence influence = entry.getValue().influence();
 
-				 return new InfluenceEntry(block, influence);
-			 }).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+					return new InfluenceEntry(block, influence);
+				}).filter(InfluenceEntry::hasAny).collect(Collectors.toList()));
+	}
+
+	private void hideAnvilRepairRecipes(@Nonnull IRecipeManager manager) {
+		Stream<IJeiAnvilRecipe> anvilRecipe = manager.createRecipeLookup(RecipeTypes.ANVIL).get();
+		List<IJeiAnvilRecipe> hidden =
+				anvilRecipe.filter(r -> {
+					ItemStack left = r.getLeftInputs().stream()
+							.filter(st -> {
+								Item i = st.getItem();
+								return DiamondRepairModule.repairChanges.containsKey(i) || DiamondRepairModule.unrepairableItems.contains(i);
+							})
+							.findFirst()
+							.orElse(null);
+
+					if(left != null) {
+						for(ItemStack right: r.getRightInputs()) {
+							Item item = left.getItem();
+							if(item.isValidRepairItem(left, right))
+								return true;
+						}
+					}
+
+					return false;
+				}).collect(Collectors.toList());
+
+		manager.hideRecipes(RecipeTypes.ANVIL, hidden);
+	}
+
+	private void registerCustomAnvilRecipes(@Nonnull IRecipeRegistration registration, @Nonnull IVanillaRecipeFactory factory) {
+		for(Item item : DiamondRepairModule.repairChanges.keySet()) {
+			ItemStack left = new ItemStack(item);
+			ItemStack out = left.copy();
+
+			int max = item.getMaxDamage(left);
+
+			left.setDamageValue(max - 1);
+			out.setDamageValue(max - max / 4);
+
+			for(Item repair : DiamondRepairModule.repairChanges.get(item)) {
+				IJeiAnvilRecipe toolRepair = factory.createAnvilRecipe(left, Collections.singletonList(new ItemStack(repair)), Collections.singletonList(out));
+
+				registration.addRecipes(RecipeTypes.ANVIL, Arrays.asList(toolRepair));
+			}
+		}
 	}
 
 	private static class CrateGuiHandler implements IGuiContainerHandler<CrateScreen> {

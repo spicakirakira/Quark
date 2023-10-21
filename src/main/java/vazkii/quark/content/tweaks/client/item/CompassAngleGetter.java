@@ -93,24 +93,27 @@ public class CompassAngleGetter {
 			BlockPos target = new BlockPos(0, 0, 0);
 
 			ResourceLocation dimension = worldIn.dimension().location();
-			BlockPos lodestonePos = CompassItem.isLodestoneCompass(stack) ? this.getLodestonePosition(worldIn, stack.getOrCreateTag()) : null;
+			boolean isLodestone = CompassItem.isLodestoneCompass(stack);
+			BlockPos lodestonePos = isLodestone ? this.getLodestonePosition(worldIn, stack.getOrCreateTag()) : null;
 
 			if(lodestonePos != null) {
 				calculate = true;
 				target = lodestonePos;
-			} else if(dimension.equals(LevelStem.END.location()) && CompassesWorkEverywhereModule.enableEnd)
-				calculate = true;
-			else if(dimension.equals(LevelStem.NETHER.location()) && isCalculated(stack) && CompassesWorkEverywhereModule.enableNether) {
-				boolean set = ItemNBTHelper.getBoolean(stack, TAG_POSITION_SET, false);
-				if(set) {
-					int x = ItemNBTHelper.getInt(stack, TAG_NETHER_TARGET_X, 0);
-					int z = ItemNBTHelper.getInt(stack, TAG_NETHER_TARGET_Z, 0);
+			} else if (!isLodestone) {
+				if (dimension.equals(LevelStem.END.location()) && CompassesWorkEverywhereModule.enableEnd)
 					calculate = true;
-					target = new BlockPos(x, 0, z);
+				else if (dimension.equals(LevelStem.NETHER.location()) && isCalculated(stack) && CompassesWorkEverywhereModule.enableNether) {
+					boolean set = ItemNBTHelper.getBoolean(stack, TAG_POSITION_SET, false);
+					if (set) {
+						int x = ItemNBTHelper.getInt(stack, TAG_NETHER_TARGET_X, 0);
+						int z = ItemNBTHelper.getInt(stack, TAG_NETHER_TARGET_Z, 0);
+						calculate = true;
+						target = new BlockPos(x, 0, z);
+					}
+				} else if (worldIn.dimensionType().natural()) {
+					calculate = true;
+					target = getWorldSpawn(worldIn);
 				}
-			} else if(worldIn.dimensionType().natural()) {
-				calculate = true;
-				target = getWorldSpawn(worldIn);
 			}
 
 			long gameTime = worldIn.getGameTime();
@@ -128,7 +131,7 @@ public class CompassAngleGetter {
 				if(unknownAngle.needsUpdate(gameTime))
 					unknownAngle.wobble(gameTime, Math.random());
 
-				angle = unknownAngle.rotation + ((double) worldIn.hashCode() / Math.PI);
+				angle = unknownAngle.rotation + shift(id);
 			}
 
 			return Mth.positiveModulo((float) angle, 1.0F);
@@ -142,6 +145,11 @@ public class CompassAngleGetter {
 		private double getAngleToPosition(Entity entity, BlockPos blockpos) {
 			Vec3 pos = entity.position();
 			return Math.atan2(blockpos.getZ() - pos.z, blockpos.getX() - pos.x);
+		}
+
+		// Magic number cribbed from vanilla
+		private float shift(int id) {
+			return (id * 1327217883) / (float) Integer.MAX_VALUE;
 		}
 
 		// vanilla copy from here on out

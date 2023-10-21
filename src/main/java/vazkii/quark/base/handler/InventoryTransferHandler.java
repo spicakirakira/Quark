@@ -53,7 +53,7 @@ public class InventoryTransferHandler {
 	//		boolean accept = isValidChest(player, te);
 	//		if(accept) {
 	//			Supplier<IItemHandler> supplier = () -> {
-	//				IItemHandler innerRet = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElse(null);
+	//				IItemHandler innerRet = te.getCapability(ForgeCapabilities.ITEM_HANDLER, null).orElse(null);
 	//				if(innerRet == null && te instanceof IInventory)
 	//					innerRet = new InvWrapper((IInventory) te);
 	//

@@ -8,6 +8,7 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
@@ -34,6 +35,7 @@ public class AutoWalkKeybindModule extends QuarkModule {
 
 	private boolean autorunning;
 	private boolean hadAutoJump;
+	private boolean shouldAccept;
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
@@ -77,6 +79,7 @@ public class AutoWalkKeybindModule extends QuarkModule {
 		}
 	}
 
+	@OnlyIn(Dist.CLIENT)
 	private void acceptInput() {
 		Minecraft mc = Minecraft.getInstance();
 
@@ -88,13 +91,23 @@ public class AutoWalkKeybindModule extends QuarkModule {
 			autorunning = false;
 		}
 
-		else if(keybind.isDown()) {
-			autorunning = !autorunning;
+		else {
+			if(keybind.isDown()) {
+				if(shouldAccept) {
+					shouldAccept = false;
+					Player player = mc.player;
+					float height = player.getStepHeight();
 
-			if(autorunning) {
-				hadAutoJump = opt.get();
-				opt.set(true);
-			} else opt.set(hadAutoJump);
+					autorunning = !autorunning;
+
+					if(autorunning) {
+						hadAutoJump = opt.get();
+
+						if(height < 1)
+							opt.set(true);
+					} else opt.set(hadAutoJump);	
+				}
+			} else shouldAccept = true;
 		}
 	}
 

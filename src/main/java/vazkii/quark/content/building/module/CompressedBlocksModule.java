@@ -22,11 +22,12 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.BUILDING)
 public class CompressedBlocksModule extends QuarkModule {
 
-	@Config(name = "Charcoal Block and Blaze Lantern Stay On Fire Forever")
+	@Config(name = "Charcoal Block and Blaze Lantern Stay On Fire Forever", flag = "compressed_blocks_burn_forever")
 	public static boolean burnsForever = true;
 
 	@Config(name = "Charcoal Block Fuel Time")
@@ -56,6 +57,7 @@ public class CompressedBlocksModule extends QuarkModule {
 	@Config(flag = "golden_apple_crate") public static boolean enableGoldenAppleCrate = true;
 	@Config(flag = "potato_crate") public static boolean enablePotatoCrate = true;
 	@Config(flag = "carrot_crate") public static boolean enableCarrotCrate = true;
+	@Config(flag = "golden_carrot_crate") public static boolean enableGoldenCarrotCrate = true;
 	@Config(flag = "beetroot_crate") public static boolean enableBeetrootCrate = true;
 
 	@Config(flag = "cocoa_beans_sack") public static boolean enableCocoaBeanSack = true;
@@ -68,7 +70,12 @@ public class CompressedBlocksModule extends QuarkModule {
 	@Config(flag = "bonded_leather") public static boolean enableBondedLeather = true;
 	@Config(flag = "bonded_rabbit_hide") public static boolean enableBondedRabbitHide = true;
 
-	public static Block charcoal_block, stick_block, blaze_lantern, bamboo_bundle;
+	@Hint("compressed_blocks_burn_forever") public static Block charcoal_block;
+	@Hint("compressed_blocks_burn_forever") public static Block blaze_lantern;
+	@Hint("golden_apple_crate")	public static Block golden_apple_crate;
+	
+	public static Block stick_block;
+	public static Block bamboo_bundle;
 
 	private final List<Block> compostable = Lists.newArrayList();
 
@@ -88,10 +95,11 @@ public class CompressedBlocksModule extends QuarkModule {
 		pillar("chorus_fruit", MaterialColor.COLOR_PURPLE, false, () -> enableChorusFruitBlock, 10);
 		stick_block = pillar("stick", MaterialColor.WOOD, false, () -> enableStickBlock, 300);
 
-		crate("golden_apple", MaterialColor.GOLD, true, () -> enableGoldenAppleCrate);
+		golden_apple_crate = crate("golden_apple", MaterialColor.GOLD, false, () -> enableGoldenAppleCrate);
 		crate("apple", MaterialColor.COLOR_RED, true, () -> enableAppleCrate);
 		crate("potato", MaterialColor.COLOR_ORANGE, true, () -> enablePotatoCrate);
 		crate("carrot", MaterialColor.TERRACOTTA_ORANGE, true, () -> enableCarrotCrate);
+		crate("golden_carrot", MaterialColor.GOLD, false, () -> enableGoldenCarrotCrate);
 		crate("beetroot", MaterialColor.COLOR_RED, true, () -> enableBeetrootCrate);
 
 		sack("cocoa_beans", MaterialColor.COLOR_BROWN, true, () -> enableCocoaBeanSack);

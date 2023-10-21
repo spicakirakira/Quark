@@ -1,13 +1,21 @@
 package vazkii.quark.content.world.module;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
@@ -16,19 +24,22 @@ import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.block.QuarkBlock;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
+import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.config.Config.Max;
+import vazkii.quark.base.module.config.Config.Min;
 import vazkii.quark.base.module.config.type.CompoundBiomeConfig;
 import vazkii.quark.base.module.config.type.DimensionConfig;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.content.world.block.MyaliteCrystalBlock;
 import vazkii.quark.content.world.gen.SpiralSpireGenerator;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class SpiralSpiresModule extends QuarkModule {
@@ -42,14 +53,22 @@ public class SpiralSpiresModule extends QuarkModule {
 	@Config public static int rarity = 200;
 	@Config public static int radius = 15;
 
-	@Config(description = "Set to 0 to turn off Myalite Conduits")
+	@Config(flag = "myalite_viaduct")
+	public static boolean enableMyaliteViaducts = true;
+	
+	@Config
+	@Min(2)
+	@Max(1024)
 	public static int myaliteConduitDistance = 24;
 
 	@Config public static boolean renewableMyalite = true;
 
+	@Hint
 	public static Block dusky_myalite;
 	public static Block myalite_crystal;
 
+	public static QuarkGenericTrigger useViaductTrigger;
+	
 	@Override
 	public void register() {
 		Block.Properties props = Block.Properties.of(Material.STONE, MaterialColor.TERRACOTTA_PURPLE)
@@ -58,16 +77,30 @@ public class SpiralSpiresModule extends QuarkModule {
 		dusky_myalite = new QuarkBlock("dusky_myalite", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props);
 
 		myalite_crystal = new MyaliteCrystalBlock(this);
+		
+		useViaductTrigger = QuarkAdvancementHandler.registerGenericTrigger("use_viaduct");
 	}
 
 	@Override
 	public void setup() {
 		WorldGenHandler.addGenerator(this, new SpiralSpireGenerator(dimensions), Decoration.SURFACE_STRUCTURES, WorldGenWeights.SPIRAL_SPIRES);
 	}
+	
+	@Override
+	public void addAdditionalHints(BiConsumer<Item, Component> consumer) {
+		MutableComponent comp = Component.translatable("quark.jei.hint.myalite_crystal_get");
+		
+		if(enableMyaliteViaducts)
+			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.myalite_crystal_viaduct")); 
+		if(renewableMyalite && ModuleLoader.INSTANCE.isModuleEnabled(CorundumModule.class))
+			comp = comp.append(" ").append(Component.translatable("quark.jei.hint.myalite_crystal_grow"));
+		
+		consumer.accept(myalite_crystal.asItem(), comp);
+	}
 
 	@SubscribeEvent
 	public void onTeleport(EntityTeleportEvent event) {
-		if(myaliteConduitDistance <= 0)
+		if(!enableMyaliteViaducts)
 			return;
 
 		Entity entity = event.getEntity();
@@ -118,6 +151,9 @@ public class SpiralSpiresModule extends QuarkModule {
 			event.setTargetX(test.getX() + 0.5);
 			event.setTargetY(test.getY() + 0.5);
 			event.setTargetZ(test.getZ() + 0.5);
+			
+			if(event.getEntity() instanceof ServerPlayer sp)
+				useViaductTrigger.trigger(sp);
 
 			if (world instanceof ServerLevel sworld) {
 				for (BlockPos f : found)

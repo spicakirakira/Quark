@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:story/enchant_item",
+  "criteria": {
+    "apply_color_rune": {
+      "trigger": "quark:apply_rune"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.quark.apply_color_rune.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "quark:blank_rune"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.quark.apply_color_rune.title"
+    }
+  },
+  "requirements": [
+    [
+      "apply_color_rune"
+    ]
+  ],
+  "conditions": [
+    {
+      "type": "quark:advancement_flag",
+      "flag": "color_runes"
+    }
+  ]
+
+}

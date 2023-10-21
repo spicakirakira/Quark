@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.Registry;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -34,12 +36,14 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.addons.oddities.client.screen.BackpackInventoryScreen;
 import vazkii.quark.addons.oddities.inventory.BackpackMenu;
 import vazkii.quark.addons.oddities.item.BackpackItem;
+import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.QuarkBlock;
 import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.oddities.HandleBackpackMessage;
 
@@ -58,11 +62,13 @@ public class BackpackModule extends QuarkModule {
 	@Config public static int baseRavagerHideDrop = 1;
 	@Config public static double extraChancePerLooting = 0.5;
 
-	public static Item backpack;
-	public static Item ravager_hide;
+	@Hint public static Item backpack;
+	@Hint("ravager_hide") public static Item ravager_hide;
 
 	public static Block bonded_ravager_hide;
 
+	public static TagKey<Item> backpackBlockedTag;
+	
 	public static MenuType<BackpackMenu> menyType;
 	private static ItemStack heldStack = null;
 
@@ -83,6 +89,11 @@ public class BackpackModule extends QuarkModule {
 		.setCondition(() -> enableRavagerHide);
 		
 		CauldronInteraction.WATER.put(backpack, CauldronInteraction.DYED_ITEM);
+	}
+	
+	@Override
+	public void setup() {
+		backpackBlockedTag = ItemTags.create(new ResourceLocation(Quark.MOD_ID, "backpack_blocked"));
 	}
 
 	@Override
@@ -139,7 +150,7 @@ public class BackpackModule extends QuarkModule {
 		}
 	}
 
-	private void requestBackpack() {
+	public static void requestBackpack() {
 		heldStack = Minecraft.getInstance().player.inventoryMenu.getCarried();
 		QuarkNetwork.sendToServer(new HandleBackpackMessage(true));
 	}

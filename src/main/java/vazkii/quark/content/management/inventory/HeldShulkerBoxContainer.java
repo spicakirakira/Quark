@@ -85,7 +85,7 @@ public class HeldShulkerBoxContainer implements Container, MenuProvider {
 	public void setChanged() {
 		be.setChanged();
 		
-		ItemNBTHelper.setCompound(stack, "BlockEntityTag", be.saveWithFullMetadata());
+		ItemNBTHelper.setCompound(stack, "BlockEntityTag", be.saveWithId());
 	}
 
 	@Override

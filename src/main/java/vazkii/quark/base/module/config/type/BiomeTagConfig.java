@@ -1,16 +1,17 @@
 package vazkii.quark.base.module.config.type;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
+import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.ConfigFlagManager;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class BiomeTagConfig extends AbstractConfigType implements IBiomeConfig {
 
@@ -33,11 +34,15 @@ public class BiomeTagConfig extends AbstractConfigType implements IBiomeConfig {
 			biomeTagStrings.add(t.location().toString());
 	}
 
-	protected BiomeTagConfig(boolean isBlacklist, String... types) {
+	private BiomeTagConfig(boolean isBlacklist, String... types) {
 		this.isBlacklist = isBlacklist;
 
 		biomeTagStrings = new LinkedList<>();
 		biomeTagStrings.addAll(Arrays.asList(types));
+	}
+
+	protected static BiomeTagConfig fromStrings(boolean isBlacklist, String... types) {
+		return new BiomeTagConfig(isBlacklist, types);
 	}
 
 	@Override
@@ -59,7 +64,7 @@ public class BiomeTagConfig extends AbstractConfigType implements IBiomeConfig {
 	}
 
 	@Override
-	public void onReload(ConfigFlagManager flagManager) {
+	public void onReload(QuarkModule module, ConfigFlagManager flagManager) {
 		synchronized (mutex) {
 			updateTypes();
 		}

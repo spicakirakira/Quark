@@ -1,5 +1,6 @@
 package vazkii.quark.content.tweaks.module;
 
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -11,11 +12,14 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class RenewableSporeBlossomsModule extends QuarkModule {
 	
 	@Config public double boneMealChance = 0.2;
+	
+	@Hint Item spore_blossom = Items.SPORE_BLOSSOM;
 	
 	@SubscribeEvent
 	public void onBoneMealed(BonemealEvent event) {

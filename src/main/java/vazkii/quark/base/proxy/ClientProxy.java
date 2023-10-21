@@ -1,12 +1,5 @@
 package vazkii.quark.base.proxy;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.Month;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,13 +13,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.event.ModelEvent.BakingCompleted;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -40,6 +28,16 @@ import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.WoodSetHandler;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.config.IConfigCallback;
+import vazkii.quark.base.network.QuarkNetwork;
+import vazkii.quark.base.network.message.structural.C2SUpdateFlag;
+import vazkii.quark.mixin.client.accessor.AccessorMultiPlayerGameMode;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.Month;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy extends CommonProxy {
@@ -76,6 +74,8 @@ public class ClientProxy extends CommonProxy {
 		bus.addListener(this::registerKeybinds);
 		bus.addListener(this::registerAdditionalModels);
 		bus.addListener(this::registerClientTooltipComponentFactories);
+		bus.addListener(this::registerItemColors);
+		bus.addListener(this::registerBlockColors);
 	}
 
 	public void clientSetup(FMLClientSetupEvent event) {
@@ -105,11 +105,11 @@ public class ClientProxy extends CommonProxy {
 	public void postTextureStitch(TextureStitchEvent.Post event) {
 		ModuleLoader.INSTANCE.postTextureStitch(event);
 	}
-	
+
 	public void registerKeybinds(RegisterKeyMappingsEvent event) {
 		ModuleLoader.INSTANCE.registerKeybinds(event);
 	}
-	
+
 	public void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
 		ModuleLoader.INSTANCE.registerAdditionalModels(event);
 	}
@@ -118,12 +118,24 @@ public class ClientProxy extends CommonProxy {
 	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
 		ModuleLoader.INSTANCE.registerClientTooltipComponentFactories(event);
 	}
-	
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
+		ModuleLoader.INSTANCE.registerItemColors(event);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+		ModuleLoader.INSTANCE.registerBlockColors(event);
+	}
+
 	@Override
 	public void handleQuarkConfigChange() {
 		super.handleQuarkConfigChange();
 
 		ModuleLoader.INSTANCE.configChangedClient();
+		if (Minecraft.getInstance().getConnection() != null)
+			QuarkNetwork.sendToServer(C2SUpdateFlag.createPacket());
 		IngameConfigHandler.INSTANCE.refresh();
 
 		Minecraft mc = Minecraft.getInstance();
@@ -138,8 +150,13 @@ public class ClientProxy extends CommonProxy {
 	public InteractionResult clientUseItem(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
 		if (player instanceof LocalPlayer lPlayer) {
 			var mc = Minecraft.getInstance();
-			if (mc.gameMode != null && mc.level != null)
-				return mc.gameMode.useItemOn(lPlayer, hand, hit);
+			if (mc.gameMode != null && mc.level != null) {
+				if (!mc.level.getWorldBorder().isWithinBounds(hit.getBlockPos())) {
+					return InteractionResult.FAIL;
+				} else {
+					return ((AccessorMultiPlayerGameMode) mc.gameMode).quark$performUseItemOn(lPlayer, hand, hit);
+				}
+			}
 		}
 		return InteractionResult.PASS;
 	}

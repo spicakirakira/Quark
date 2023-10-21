@@ -1,15 +1,10 @@
 package vazkii.quark.content.tools.item;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,11 +29,16 @@ import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.config.PickarangType;
 import vazkii.quark.content.tools.entity.rang.AbstractPickarang;
+import vazkii.quark.content.tools.module.PickarangModule;
+
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class PickarangItem extends QuarkItem {
 
 	public final PickarangType<?> type;
-	
+
 	public PickarangItem(String regname, QuarkModule module, Properties properties, PickarangType<?> type) {
 		super(regname, module, properties);
 		this.type = type;
@@ -55,20 +54,25 @@ public class PickarangItem extends QuarkItem {
 	public boolean isCorrectToolForDrops(@Nonnull BlockState blockIn) {
 		return switch (type.harvestLevel) {
 			case 0 -> Items.WOODEN_PICKAXE.isCorrectToolForDrops(blockIn) ||
-					Items.WOODEN_AXE.isCorrectToolForDrops(blockIn) ||
-					Items.WOODEN_SHOVEL.isCorrectToolForDrops(blockIn);
+				(type.canActAsAxe && Items.WOODEN_AXE.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsShovel && Items.WOODEN_SHOVEL.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsHoe && Items.WOODEN_HOE.isCorrectToolForDrops(blockIn));
 			case 1 -> Items.STONE_PICKAXE.isCorrectToolForDrops(blockIn) ||
-					Items.STONE_AXE.isCorrectToolForDrops(blockIn) ||
-					Items.STONE_SHOVEL.isCorrectToolForDrops(blockIn);
+				(type.canActAsAxe && Items.STONE_AXE.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsShovel && Items.STONE_SHOVEL.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsHoe && Items.STONE_HOE.isCorrectToolForDrops(blockIn));
 			case 2 -> Items.IRON_PICKAXE.isCorrectToolForDrops(blockIn) ||
-					Items.IRON_AXE.isCorrectToolForDrops(blockIn) ||
-					Items.IRON_SHOVEL.isCorrectToolForDrops(blockIn);
+				(type.canActAsAxe && Items.IRON_AXE.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsShovel && Items.IRON_SHOVEL.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsHoe && Items.IRON_HOE.isCorrectToolForDrops(blockIn));
 			case 3 -> Items.DIAMOND_PICKAXE.isCorrectToolForDrops(blockIn) ||
-					Items.DIAMOND_AXE.isCorrectToolForDrops(blockIn) ||
-					Items.DIAMOND_SHOVEL.isCorrectToolForDrops(blockIn);
+				(type.canActAsAxe && Items.DIAMOND_AXE.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsShovel && Items.DIAMOND_SHOVEL.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsHoe && Items.DIAMOND_HOE.isCorrectToolForDrops(blockIn));
 			default -> Items.NETHERITE_PICKAXE.isCorrectToolForDrops(blockIn) ||
-					Items.NETHERITE_AXE.isCorrectToolForDrops(blockIn) ||
-					Items.NETHERITE_SHOVEL.isCorrectToolForDrops(blockIn);
+				(type.canActAsAxe && Items.NETHERITE_AXE.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsShovel && Items.NETHERITE_SHOVEL.isCorrectToolForDrops(blockIn)) ||
+				(type.canActAsHoe && Items.NETHERITE_HOE.isCorrectToolForDrops(blockIn));
 		};
 	}
 
@@ -89,7 +93,7 @@ public class PickarangItem extends QuarkItem {
 	public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, @Nonnull InteractionHand handIn) {
 		ItemStack itemstack = playerIn.getItemInHand(handIn);
 		playerIn.setItemInHand(handIn, ItemStack.EMPTY);
-		int eff = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, itemstack);
+		int eff = itemstack.getEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY);
 		Vec3 pos = playerIn.position();
 		worldIn.playSound(null, pos.x, pos.y, pos.z, QuarkSounds.ENTITY_PICKARANG_THROW, SoundSource.NEUTRAL, 0.5F + eff * 0.14F, 0.4F / (worldIn.random.nextFloat() * 0.4F + 0.8F));
 
@@ -100,8 +104,11 @@ public class PickarangItem extends QuarkItem {
 			entity.setThrowData(slot, itemstack);
 			entity.shoot(playerIn, playerIn.getXRot(), playerIn.getYRot(), 0.0F, 1.5F + eff * 0.325F, 0F);
 			entity.setOwner(playerIn);
-			
+
 			worldIn.addFreshEntity(entity);
+
+			if(playerIn instanceof ServerPlayer sp)
+				PickarangModule.throwPickarangTrigger.trigger(sp);
 		}
 
 		if(!playerIn.getAbilities().instabuild && type.cooldown > 0) {
@@ -140,6 +147,11 @@ public class PickarangItem extends QuarkItem {
 	@Override
 	public boolean isValidRepairItem(@Nonnull ItemStack toRepair, ItemStack repair) {
 		return type.repairMaterial != null && repair.getItem() == type.repairMaterial;
+	}
+
+	@Override
+	public int getEnchantmentValue(ItemStack stack) {
+		return type.pickaxeEquivalent != null ? type.pickaxeEquivalent.getEnchantmentValue(stack) : 0;
 	}
 
 	@Override

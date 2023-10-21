@@ -22,10 +22,12 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
+import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.ai.RunAwayFromPikesGoal;
 import vazkii.quark.content.tools.client.render.entity.SkullPikeRenderer;
 import vazkii.quark.content.tools.entity.SkullPike;
@@ -35,6 +37,7 @@ public class SkullPikesModule extends QuarkModule {
 
 	public static EntityType<SkullPike> skullPikeType;
 
+	@Hint(key = "skull_pikes")
 	public static TagKey<Block> pikeTrophiesTag;
 
 	@Config public static double pikeRange = 5;
@@ -90,7 +93,7 @@ public class SkullPikesModule extends QuarkModule {
 			boolean alreadySetUp = monster.goalSelector.getAvailableGoals().stream().anyMatch((goal) -> goal.getGoal() instanceof RunAwayFromPikesGoal);
 
 			if (!alreadySetUp)
-				monster.goalSelector.addGoal(3, new RunAwayFromPikesGoal(monster, (float) pikeRange, 1.0D, 1.2D));
+				MiscUtil.addGoalJustAfterLatestWithPriority(monster.goalSelector, 3, new RunAwayFromPikesGoal(monster, (float) pikeRange, 1.0D, 1.2D));
 		}
 	}
 }

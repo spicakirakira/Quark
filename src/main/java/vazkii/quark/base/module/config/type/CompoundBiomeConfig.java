@@ -3,6 +3,7 @@ package vazkii.quark.base.module.config.type;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
+import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.ConfigFlagManager;
 
@@ -25,7 +26,7 @@ public class CompoundBiomeConfig extends AbstractConfigType implements IBiomeCon
 	}
 
 	public static CompoundBiomeConfig fromBiomeTagStrings(boolean isBlacklist, String... typesIn) {
-		return new CompoundBiomeConfig(new BiomeTagConfig(isBlacklist, typesIn), noSBC());
+		return new CompoundBiomeConfig(BiomeTagConfig.fromStrings(isBlacklist, typesIn), noSBC());
 	}
 
 	public static CompoundBiomeConfig fromBiomeReslocs(boolean isBlacklist, String... typesIn) {
@@ -36,20 +37,19 @@ public class CompoundBiomeConfig extends AbstractConfigType implements IBiomeCon
 		return new CompoundBiomeConfig(noBTC(), noSBC());
 	}
 
-	@SuppressWarnings("unchecked")
 	private static BiomeTagConfig noBTC() {
-		return new BiomeTagConfig(true, new TagKey[0]);
+		return new BiomeTagConfig(true);
 	}
 
 
 	private static StrictBiomeConfig noSBC() {
-		return new StrictBiomeConfig(true, new String[0]);
+		return new StrictBiomeConfig(true);
 	}
 
 	@Override
-	public void onReload(ConfigFlagManager flagManager) {
-		tags.onReload(flagManager);
-		biomes.onReload(flagManager);
+	public void onReload(QuarkModule module, ConfigFlagManager flagManager) {
+		tags.onReload(module, flagManager);
+		biomes.onReload(module, flagManager);
 	}
 
 	@Override

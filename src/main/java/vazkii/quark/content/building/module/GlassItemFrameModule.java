@@ -15,6 +15,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.building.client.render.entity.GlassItemFrameRenderer;
 import vazkii.quark.content.building.entity.GlassItemFrame;
 import vazkii.quark.content.building.item.QuarkItemFrameItem;
@@ -27,9 +28,11 @@ import vazkii.quark.content.building.item.QuarkItemFrameItem;
 public class GlassItemFrameModule extends QuarkModule {
 
 	@Config public static boolean glassItemFramesUpdateMaps = true;
-	
-	public static Item glassFrame;
-	public static Item glowingGlassFrame;
+	@Config(description = "Set to true for faster map updates. Default is every 3s")
+	public static boolean glassItemFramesUpdateMapsEveryTick = false;
+
+	@Hint public static Item glassFrame;
+	@Hint public static Item glowingGlassFrame;
 
 	public static EntityType<GlassItemFrame> glassFrameEntity;
 	

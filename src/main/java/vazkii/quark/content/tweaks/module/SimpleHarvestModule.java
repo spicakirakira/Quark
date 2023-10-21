@@ -10,22 +10,20 @@
  */
 package vazkii.quark.content.tweaks.module;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,20 +33,20 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.BushBlock;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.GrowingPlantBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import vazkii.quark.api.event.SimpleHarvestEvent;
+import vazkii.quark.api.event.SimpleHarvestEvent.ActionType;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.module.LoadModule;
@@ -57,215 +55,276 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.network.QuarkNetwork;
 import vazkii.quark.base.network.message.HarvestMessage;
+import vazkii.quark.integration.claim.IClaimIntegration;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class SimpleHarvestModule extends QuarkModule {
 
-	@Config(description = "Can players harvest crops with empty hand clicks?")
-	public static boolean emptyHandHarvest = true;
-	@Config(description = "Does harvesting crops with a hoe cost durability?")
-	public static boolean harvestingCostsDurability = false;
-	@Config(description = "Should Quark look for (nonvanilla) crops, and handle them?")
-	public static boolean doHarvestingSearch = true;
+    @Config(description = "Can players harvest crops with empty hand clicks?")
+    public static boolean emptyHandHarvest = true;
+    @Config(description = "Does harvesting crops with a hoe cost durability?")
+    public static boolean harvestingCostsDurability = false;
+    @Config(description = "Should Quark look for (nonvanilla) crops, and handle them?")
+    public static boolean doHarvestingSearch = true;
+    @Config(description = "Should villagers use simple harvest instead of breaking crops?")
+    public static boolean villagersUseSimpleHarvest = true;
 
-	@Config(description = "Which crops can be harvested?\n" +
-			"Format is: \"harvestState[,afterHarvest]\", i.e. \"minecraft:wheat[age=7]\" or \"minecraft:cocoa[age=2,facing=north],minecraft:cocoa[age=0,facing=north]\"")
-	public static List<String> harvestableBlocks = Lists.newArrayList(
-			"minecraft:wheat[age=7]",
-			"minecraft:carrots[age=7]",
-			"minecraft:potatoes[age=7]",
-			"minecraft:beetroots[age=3]",
-			"minecraft:nether_wart[age=3]",
-			"minecraft:cocoa[age=2,facing=north],minecraft:cocoa[age=0,facing=north]",
-			"minecraft:cocoa[age=2,facing=south],minecraft:cocoa[age=0,facing=south]",
-			"minecraft:cocoa[age=2,facing=east],minecraft:cocoa[age=0,facing=east]",
-			"minecraft:cocoa[age=2,facing=west],minecraft:cocoa[age=0,facing=west]");
+    @Config(description = "Which crops can be harvested?\n" +
+            "Format is: \"harvestState[,afterHarvest]\", i.e. \"minecraft:wheat[age=7]\" or \"minecraft:cocoa[age=2,facing=north],minecraft:cocoa[age=0,facing=north]\"")
+    public static List<String> harvestableBlocks = Lists.newArrayList(
+            "minecraft:wheat[age=7]",
+            "minecraft:carrots[age=7]",
+            "minecraft:potatoes[age=7]",
+            "minecraft:beetroots[age=3]",
+            "minecraft:nether_wart[age=3]",
+            "minecraft:cocoa[age=2,facing=north],minecraft:cocoa[age=0,facing=north]",
+            "minecraft:cocoa[age=2,facing=south],minecraft:cocoa[age=0,facing=south]",
+            "minecraft:cocoa[age=2,facing=east],minecraft:cocoa[age=0,facing=east]",
+            "minecraft:cocoa[age=2,facing=west],minecraft:cocoa[age=0,facing=west]");
 
-	@Config(description = "Which blocks should right click harvesting simulate a click on instead of breaking?\n" +
-			"This is for blocks like sweet berry bushes, which have right click harvesting built in.")
-	public static List<String> rightClickableBlocks = Lists.newArrayList(
-			"minecraft:sweet_berry_bush",
-			"minecraft:cave_vines");
+    @Config(description = "Which blocks should right click harvesting simulate a click on instead of breaking?\n" +
+            "This is for blocks like sweet berry bushes, which have right click harvesting built in.")
+    public static List<String> rightClickableBlocks = Lists.newArrayList(
+            "minecraft:sweet_berry_bush",
+            "minecraft:cave_vines");
 
-	public static final Map<BlockState, BlockState> crops = Maps.newHashMap();
-	public static final Set<Block> rightClickCrops = Sets.newHashSet();
+    public static final Map<BlockState, BlockState> crops = Maps.newHashMap();
+    private static final Set<Block> cropBlocks = Sets.newHashSet(); //used for the event
+    public static final Set<Block> rightClickCrops = Sets.newHashSet();
 
+    public static TagKey<Block> simpleHarvestBlacklistedTag;
 
-	@Override
-	public void configChanged() {
-		crops.clear();
-		rightClickCrops.clear();
+    public static boolean staticEnabled;
 
-		if (doHarvestingSearch) {
-			ForgeRegistries.BLOCKS.getValues().stream()
-					.filter(b -> !isVanilla(b) && b instanceof CropBlock)
-					.map(b -> (CropBlock) b)
-					.forEach(b -> crops.put(b.defaultBlockState().setValue(b.getAgeProperty(), last(b.getAgeProperty().getPossibleValues())), b.defaultBlockState()));
+    @Override
+    public void setup() {
+        simpleHarvestBlacklistedTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "simple_harvest_blacklisted"));
+    }
 
-			ForgeRegistries.BLOCKS.getValues().stream()
-					.filter(b -> !isVanilla(b) && (b instanceof BushBlock || b instanceof GrowingPlantBlock) && b instanceof BonemealableBlock && !(b instanceof CropBlock))
-					.forEach(rightClickCrops::add);
-		}
+    @Override
+    public void configChanged() {
+        crops.clear();
+        cropBlocks.clear();
+        rightClickCrops.clear();
+        staticEnabled = enabled;
 
-		for (String harvestKey : harvestableBlocks) {
-			BlockState initial, result;
-			String[] split = tokenize(harvestKey);
-			initial = MiscUtil.fromString(split[0]);
-			if (split.length > 1)
-				result = MiscUtil.fromString(split[1]);
-			else
-				result = initial.getBlock().defaultBlockState();
+        if (doHarvestingSearch) {
+            ForgeRegistries.BLOCKS.getValues().stream()
+                    .filter(b -> !isVanilla(b) && b instanceof CropBlock)
+                    .map(b -> (CropBlock) b)
+                    //only grabbing blocks whose max age is acceptable
+                    .filter(b -> b.isMaxAge(b.defaultBlockState().setValue(b.getAgeProperty(), last(b.getAgeProperty().getPossibleValues()))))
+                    .forEach(b -> crops.put(b.defaultBlockState().setValue(b.getAgeProperty(), last(b.getAgeProperty().getPossibleValues())), b.defaultBlockState()));
 
-			if (initial.getBlock() != Blocks.AIR)
-				crops.put(initial, result);
-		}
+            ForgeRegistries.BLOCKS.getValues().stream()
+                    .filter(b -> !isVanilla(b) && (b instanceof BushBlock || b instanceof GrowingPlantBlock) && b instanceof BonemealableBlock && !(b instanceof CropBlock))
+                    .forEach(rightClickCrops::add);
+        }
 
-		for (String blockName : rightClickableBlocks) {
-			Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
-			if (block != null)
-				rightClickCrops.add(block);
-		}
-	}
+        for (String harvestKey : harvestableBlocks) {
+            BlockState initial, result;
+            String[] split = tokenize(harvestKey);
+            initial = MiscUtil.fromString(split[0]);
+            if (split.length > 1)
+                result = MiscUtil.fromString(split[1]);
+            else
+                result = initial.getBlock().defaultBlockState();
 
-	private int last(Collection<Integer> vals) {
-		return vals.stream().max(Integer::compare).orElse(0);
-	}
+            if (initial.getBlock() != Blocks.AIR)
+                crops.put(initial, result);
+        }
 
-	private String[] tokenize(String harvestKey) {
-		boolean inBracket = false;
-		for (int i = 0; i < harvestKey.length(); i++) {
-			char charAt = harvestKey.charAt(i);
-			if (charAt == '[')
-				inBracket = true;
-			else if (charAt == ']')
-				inBracket = false;
-			else if (charAt == ',' && !inBracket)
-				return new String[] { harvestKey.substring(0, i), harvestKey.substring(i + 1) };
-		}
-		return new String[] { harvestKey };
-	}
+        for (String blockName : rightClickableBlocks) {
+            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
+            if (block != null)
+                rightClickCrops.add(block);
+        }
 
-	private boolean isVanilla(Block entry) {
-		ResourceLocation loc = Registry.BLOCK.getKey(entry);
-		if (loc == null)
-			return true; // Just in case
+        crops.values().forEach(bl -> cropBlocks.add(bl.getBlock()));
+    }
 
-		return loc.getNamespace().equals("minecraft");
-	}
+    private int last(Collection<Integer> vals) {
+        return vals.stream().max(Integer::compare).orElse(0);
+    }
 
-	private static void harvestAndReplant(Level world, BlockPos pos, BlockState inWorld, Player player) {
-		if (!(world instanceof ServerLevel serverLevel))
-			return;
+    private String[] tokenize(String harvestKey) {
+        boolean inBracket = false;
+        for (int i = 0; i < harvestKey.length(); i++) {
+            char charAt = harvestKey.charAt(i);
+            if (charAt == '[')
+                inBracket = true;
+            else if (charAt == ']')
+                inBracket = false;
+            else if (charAt == ',' && !inBracket)
+                return new String[]{harvestKey.substring(0, i), harvestKey.substring(i + 1)};
+        }
+        return new String[]{harvestKey};
+    }
 
-		ItemStack mainHand = player.getMainHandItem();
+    private boolean isVanilla(Block entry) {
+        ResourceLocation loc = Registry.BLOCK.getKey(entry);
+        if (loc == null)
+            return true; // Just in case
 
-		int fortune = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, mainHand);
+        return loc.getNamespace().equals("minecraft");
+    }
 
-		ItemStack copy = mainHand.copy();
-		if (copy.isEmpty())
-			copy = new ItemStack(Items.STICK);
+    public static void harvestAndReplant(Level world, BlockPos pos, BlockState inWorld, Entity entity, ItemStack heldItem) {
+        if (!(world instanceof ServerLevel serverLevel) || entity.isSpectator())
+            return;
 
-		Map<Enchantment, Integer> enchMap = EnchantmentHelper.getEnchantments(copy);
-		enchMap.put(Enchantments.BLOCK_FORTUNE, fortune);
-		EnchantmentHelper.setEnchantments(enchMap, copy);
+        int fortune = heldItem.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
 
-		Item blockItem = inWorld.getBlock().asItem();
-		Block.getDrops(inWorld, serverLevel, pos, world.getBlockEntity(pos), player, copy)
-			.forEach((stack) -> {
-				if(stack.getItem() == blockItem)
-					stack.shrink(1);
+        ItemStack copy = heldItem.copy();
+        if (copy.isEmpty())
+            copy = new ItemStack(Items.STICK);
 
-				if(!stack.isEmpty())
-					Block.popResource(world, pos, stack);
-			});	
-		inWorld.spawnAfterBreak(serverLevel, pos, copy, true); // true = is player
+        Map<Enchantment, Integer> enchMap = EnchantmentHelper.getEnchantments(copy);
+        enchMap.put(Enchantments.BLOCK_FORTUNE, fortune);
+        EnchantmentHelper.setEnchantments(enchMap, copy);
 
-		// ServerLevel sets this to `false` in the constructor, do we really need this check?
-		if (!world.isClientSide) {
-			BlockState newBlock = crops.get(inWorld);
-			world.levelEvent(2001, pos, Block.getId(newBlock));
-			world.setBlockAndUpdate(pos, newBlock);
-		}
-	}
+        MutableBoolean hasTaken = new MutableBoolean(false);
+        Item blockItem = inWorld.getBlock().asItem();
+        Block.getDrops(inWorld, serverLevel, pos, world.getBlockEntity(pos), entity, copy)
+                .forEach((stack) -> {
+                    if (stack.getItem() == blockItem && !hasTaken.getValue()) {
+                        stack.shrink(1);
+                        hasTaken.setValue(true);
+                    }
 
-	private boolean isHarvesting = false;
+                    if (!stack.isEmpty())
+                        Block.popResource(world, pos, stack);
+                });
+        inWorld.spawnAfterBreak(serverLevel, pos, copy, true); // true = is player
 
-	@SubscribeEvent
-	public void onClick(PlayerInteractEvent.RightClickBlock event) {
-		if (isHarvesting)
-			return;
-		isHarvesting = true;
-		if (click(event.getEntity(), event.getHand(), event.getPos(), event.getHitVec())) {
-			event.setCanceled(true);
-			event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
-		}
-		isHarvesting = false;
-	}
+        // ServerLevel sets this to `false` in the constructor, do we really need this check?
+        if (!world.isClientSide && !inWorld.is(simpleHarvestBlacklistedTag)) {
+            BlockState newBlock = crops.get(inWorld);
+            world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(newBlock));
+            world.setBlockAndUpdate(pos, newBlock);
+            world.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(entity, inWorld));
+        }
+    }
 
-	private static boolean handle(Player player, InteractionHand hand, BlockPos pos, boolean doRightClick) {
-		if (!player.level.mayInteract(player, pos))
-			return false;
+    private boolean isHarvesting = false;
 
-		BlockState worldBlock = player.level.getBlockState(pos);
-		if (crops.containsKey(worldBlock)) {
-			harvestAndReplant(player.level, pos, worldBlock, player);
-			return true;
-		} else if (doRightClick && rightClickCrops.contains(worldBlock.getBlock())) {
-			if (!player.level.isClientSide)
-				return true;
-			return Quark.proxy.clientUseItem(player, player.level, hand,
-					new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, true)).consumesAction();
-		}
+    @SubscribeEvent
+    public void onClick(PlayerInteractEvent.RightClickBlock event) {
+        if (isHarvesting)
+            return;
+        isHarvesting = true;
+        if (click(event.getEntity(), event.getHand(), event.getPos(), event.getHitVec())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+        }
+        isHarvesting = false;
+    }
 
-		return false;
-	}
+    private static boolean handle(Player player, InteractionHand hand, BlockPos pos, boolean doRightClick, boolean isHoe) {
+        if (!player.level.mayInteract(player, pos) || player == null || player.isSpectator())
+            return false;
 
-	public static boolean click(Player player, InteractionHand hand, BlockPos pos, BlockHitResult pick) {
-		if (player == null || hand == null)
-			return false;
+        BlockState worldBlock = player.level.getBlockState(pos);
+        if (!worldBlock.is(simpleHarvestBlacklistedTag)) {
+            //prevents firing event for non crop blocks
+            if (cropBlocks.contains(worldBlock.getBlock()) || (doRightClick && rightClickCrops.contains(worldBlock.getBlock()))) {
+                //event stuff
+                ActionType action = getAction(worldBlock, doRightClick);
+                SimpleHarvestEvent event = new SimpleHarvestEvent(worldBlock, pos, hand, player, isHoe, action);
+                MinecraftForge.EVENT_BUS.post(event);
+                if (event.isCanceled()) return false;
 
-		if(pick.getType() != HitResult.Type.BLOCK || !pick.getBlockPos().equals(pos))
-			return false;
+                BlockPos newPos = event.getTargetPos();
+                if (newPos != pos) worldBlock = player.level.getBlockState(newPos);
+                action = event.getAction();
 
-		BlockState stateAt = player.level.getBlockState(pos);
-		if (stateAt.getToolModifiedState(new UseOnContext(player, hand, pick), ToolActions.HOE_TILL, true) != null)
-			return false;
+                if (action == ActionType.HARVEST) {
+                    harvestAndReplant(player.level, pos, worldBlock, player, player.getMainHandItem());
+                    return true;
+                } else if (action == ActionType.CLICK) {
+                    var hitResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, true);
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        return serverPlayer.gameMode.useItemOn(serverPlayer, serverPlayer.level, player.getMainHandItem(), hand,
+                            hitResult).consumesAction();
+                    } else {
+                        return Quark.proxy.clientUseItem(player, player.level, hand, hitResult).consumesAction();
+                    }
+                }
+            }
+        }
 
-		ItemStack inHand = player.getItemInHand(hand);
-		boolean isHoe = HoeHarvestingModule.isHoe(inHand);
+        return false;
+    }
 
-		if (!emptyHandHarvest && !isHoe)
-			return false;
+    private static ActionType getAction(BlockState state, boolean doRightClick) {
+        if (doRightClick && rightClickCrops.contains(state.getBlock())) return ActionType.CLICK;
+        else if (crops.containsKey(state)) return ActionType.HARVEST;
+        return ActionType.NONE;
+    }
 
-		int range = HoeHarvestingModule.getRange(inHand);
+    public static boolean click(Player player, InteractionHand hand, BlockPos pos, BlockHitResult pick) {
+        if (player == null || hand == null || player.isSpectator())
+            return false;
 
-		boolean hasHarvested = false;
+        if (pick.getType() != HitResult.Type.BLOCK || !pick.getBlockPos().equals(pos))
+            return false;
 
-		for(int x = 1 - range; x < range; x++)
-			for (int z = 1 - range; z < range; z++) {
-				BlockPos shiftPos = pos.offset(x, 0, z);
+        if(!IClaimIntegration.INSTANCE.canBreak(player, pos))
+            return false;
 
-				if (!handle(player, hand, shiftPos, range > 1)) {
-					shiftPos = shiftPos.above();
+        BlockState stateAt = player.level.getBlockState(pos);
+        if (stateAt.getToolModifiedState(new UseOnContext(player, hand, pick), ToolActions.HOE_TILL, true) != null)
+            return false;
 
-					if (handle(player, hand, shiftPos, range > 1))
-						hasHarvested = true;
-				} else {
-					hasHarvested = true;
-				}
-			}
+        ItemStack inHand = player.getItemInHand(hand);
+        boolean isHoe = HoeHarvestingModule.isHoe(inHand);
 
-		if (!hasHarvested)
-			return false;
+        if (!emptyHandHarvest && !isHoe)
+            return false;
 
-		if (player.level.isClientSide) {
-			if (inHand.isEmpty())
-				QuarkNetwork.sendToServer(new HarvestMessage(pos, hand));
-		} else {
-			if (harvestingCostsDurability && isHoe)
-				inHand.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
-		}
+        BlockState stateAbove = player.level.getBlockState(pos.above());
 
-		return true;
-	}
+        if (isHoe) {
+            boolean aboveValid = !stateAbove.is(simpleHarvestBlacklistedTag) && (cropBlocks.contains(stateAbove.getBlock()) || rightClickCrops.contains(stateAbove.getBlock()));
+            boolean atValid = !stateAt.is(simpleHarvestBlacklistedTag) && (cropBlocks.contains(stateAt.getBlock()) || rightClickCrops.contains(stateAt.getBlock()));
+            if (!aboveValid && !atValid)
+                return false;
+        }
+
+        int range = HoeHarvestingModule.getRange(inHand);
+
+        boolean hasHarvested = false;
+
+        for (int x = 1 - range; x < range; x++)
+            for (int z = 1 - range; z < range; z++) {
+                BlockPos shiftPos = pos.offset(x, 0, z);
+
+                if (!handle(player, hand, shiftPos, range > 1, isHoe)) {
+                    shiftPos = shiftPos.above();
+
+                    if (handle(player, hand, shiftPos, range > 1, isHoe))
+                        hasHarvested = true;
+                } else {
+                    hasHarvested = true;
+                }
+            }
+
+        if (!hasHarvested)
+            return false;
+
+        if (player.level.isClientSide) {
+            if (inHand.isEmpty())
+                QuarkNetwork.sendToServer(new HarvestMessage(pos, hand));
+        } else {
+            if (harvestingCostsDurability && isHoe)
+                inHand.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+        }
+
+        return true;
+    }
 }

@@ -10,6 +10,7 @@ import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.config.type.CompoundBiomeConfig;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.world.undergroundstyle.PermafrostStyle;
 import vazkii.quark.content.world.undergroundstyle.base.AbstractUndergroundStyleModule;
 import vazkii.quark.content.world.undergroundstyle.base.UndergroundStyleConfig;
@@ -17,7 +18,7 @@ import vazkii.quark.content.world.undergroundstyle.base.UndergroundStyleConfig;
 @LoadModule(category = ModuleCategory.WORLD)
 public class PermafrostModule extends AbstractUndergroundStyleModule<PermafrostStyle> {
 
-	public static QuarkBlock permafrost;
+	@Hint public static QuarkBlock permafrost;
 	
 	@Override
 	public void register() {

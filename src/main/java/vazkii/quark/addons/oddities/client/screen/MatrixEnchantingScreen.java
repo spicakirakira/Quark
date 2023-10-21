@@ -191,14 +191,32 @@ public class MatrixEnchantingScreen extends AbstractContainerScreen<MatrixEnchan
 			int hover = enchanter.matrix.matrix[gridHoverX][gridHoverY];
 			hoveredPiece = getPiece(hover);
 		}
+		
+		pieceList.mouseMoved(gridMouseX, gridMouseY);
 
 		super.mouseMoved(mouseX, mouseY);
+	}
+	
+	@Override
+	public boolean mouseDragged(double p_97752_, double p_97753_, int p_97754_, double p_97755_, double p_97756_) {
+		pieceList.mouseDragged(p_97752_, p_97753_, p_97754_, p_97755_, p_97756_);
+		
+		return super.mouseDragged(p_97752_, p_97753_, p_97754_, p_97755_, p_97756_);
+	}
+	
+	@Override
+	public boolean mouseReleased(double p_97812_, double p_97813_, int p_97814_) {
+		pieceList.mouseReleased(p_97812_, p_97813_, p_97814_);
+		
+		return super.mouseReleased(p_97812_, p_97813_, p_97814_);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
+		pieceList.mouseClicked(mouseX, mouseY, mouseButton);
+		
 		if(enchanter.matrix == null)
 			return true;
 

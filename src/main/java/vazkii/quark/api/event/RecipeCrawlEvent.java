@@ -24,17 +24,19 @@ public abstract class RecipeCrawlEvent extends Event {
 	public static class Digest extends RecipeCrawlEvent {
 		
 		private final Multimap<Item, ItemStack> digestion;
+		private final Multimap<Item, ItemStack> backwardsDigestion;
 		
-		public Digest(Multimap<Item, ItemStack> digestion) {
+		public Digest(Multimap<Item, ItemStack> digestion, Multimap<Item, ItemStack> backwardsDigestion) {
 			this.digestion = digestion;
+			this.backwardsDigestion = backwardsDigestion;
 		}
 		
-		public boolean has(Item item) {
-			return digestion.containsKey(item);
+		public boolean has(Item item, boolean backwards) {
+			return (backwards ? backwardsDigestion : digestion).containsKey(item);
 		}
 		
-		public Collection<ItemStack> get(Item item) {
-			return digestion.get(item);
+		public Collection<ItemStack> get(Item item, boolean backwards) {
+			return (backwards ? backwardsDigestion : digestion).get(item);
 		}
 		
 	}

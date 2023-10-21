@@ -1,10 +1,5 @@
 package vazkii.quark.content.automation.block;
 
-import java.util.function.BooleanSupplier;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -23,9 +18,15 @@ import net.minecraft.world.level.material.Material;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.api.ICollateralMover;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.content.automation.module.IronRodModule;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.function.BooleanSupplier;
 
 public class IronRodBlock extends EndRodBlock implements ICollateralMover, IQuarkBlock {
 
@@ -41,7 +42,7 @@ public class IronRodBlock extends EndRodBlock implements ICollateralMover, IQuar
 				.noOcclusion());
 
 		RegistryHelper.registerBlock(this, "iron_rod");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 
@@ -79,12 +80,13 @@ public class IronRodBlock extends EndRodBlock implements ICollateralMover, IQuar
 
 	@Override
 	public boolean isCollateralMover(Level world, BlockPos source, Direction moveDirection, BlockPos pos) {
-		return moveDirection == world.getBlockState(pos).getValue(FACING);
+		return moveDirection == world.getBlockState(pos).getValue(FACING) &&
+			!world.getBlockState(pos.relative(moveDirection)).is(IronRodModule.ironRodImmuneTag);
 	}
 
 	@Override
 	public MoveResult getCollateralMovement(Level world, BlockPos source, Direction moveDirection, Direction side, BlockPos pos) {
-		return side == moveDirection ? MoveResult.BREAK : MoveResult.SKIP;
+		return side == moveDirection && !world.getBlockState(pos.relative(side)).is(IronRodModule.ironRodImmuneTag) ? MoveResult.BREAK : MoveResult.SKIP;
 	}
 
 	@Override

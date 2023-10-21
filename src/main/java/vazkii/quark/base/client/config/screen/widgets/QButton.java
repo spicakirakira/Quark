@@ -23,6 +23,7 @@ import vazkii.arl.util.ClientTicker;
 import vazkii.quark.base.client.config.screen.QuarkConfigHomeScreen;
 import vazkii.quark.base.client.handler.TopLayerTooltipHandler;
 import vazkii.quark.base.handler.ContributorRewardHandler;
+import vazkii.quark.base.handler.GeneralConfig;
 import vazkii.quark.base.handler.MiscUtil;
 
 public class QButton extends Button {
@@ -41,7 +42,12 @@ public class QButton extends Button {
 		celebrate("vns", 9, Month.APRIL, ORANGE);
 		celebrate("vazkii", 22, Month.NOVEMBER, ORANGE);
 		celebrate("wire", 23, Month.SEPTEMBER, ORANGE);
-
+		celebrate("anb", 6, Month.JUNE, ORANGE);
+		celebrate("kame", 5, Month.NOVEMBER, ORANGE);
+		celebrate("adrian", 4, Month.MAY, ORANGE);
+		celebrate("train", 16, Month.AUGUST, ORANGE);
+		celebrate("zemmy", 9, Month.JUNE, ORANGE);
+		
 		celebrate("iad", 6, Month.APRIL, RAINBOW);
 		celebrate("iad2", 26, Month.OCTOBER, RAINBOW);
 		celebrate("idr", 8, Month.NOVEMBER, RAINBOW);
@@ -63,6 +69,8 @@ public class QButton extends Button {
 		celebrate("iyd", 12, Month.AUGUST, PURPLE);
 		celebrate("hrd", 9, Month.DECEMBER, PURPLE);
 		celebrate("ny", 1, 3, Month.JANUARY, PURPLE);
+		
+		celebrate("edballs", 28, Month.APRIL, ORANGE);
 		celebrate("doyouremember", 21, Month.SEPTEMBER, ORANGE);
 
 		// Order is important, ensure mutli day ones are at the bottom
@@ -145,7 +153,7 @@ public class QButton extends Button {
 			blit(mstack, rx, ry, u, v, w, h);
 		}
 		
-		if(showBubble) {
+		if(showBubble && GeneralConfig.enableOnboarding) {
 			Font font = Minecraft.getInstance().font;
 			int cy = y - 2;
 			if(ClientTicker.total % 20 > 10)

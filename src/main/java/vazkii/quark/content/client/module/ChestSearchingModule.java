@@ -1,16 +1,7 @@
 package vazkii.quark.content.client.module;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiPredicate;
-import java.util.regex.Pattern;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
@@ -40,11 +31,11 @@ import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ScreenEvent.CharacterTyped;
 import net.minecraftforge.client.event.ScreenEvent.KeyPressed;
 import net.minecraftforge.client.event.ScreenEvent.MouseButtonPressed;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.EmptyHandler;
 import vazkii.arl.util.ItemNBTHelper;
@@ -61,6 +52,10 @@ import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.inputtable.RGBAColorConfig;
 import vazkii.quark.content.management.client.screen.widgets.MiniInventoryButton;
+
+import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.regex.Pattern;
 
 @LoadModule(category = ModuleCategory.CLIENT, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class ChestSearchingModule extends QuarkModule {
@@ -92,7 +87,7 @@ public class ChestSearchingModule extends QuarkModule {
 	@OnlyIn(Dist.CLIENT)
 	public void initGui(ScreenEvent.Init.Post event) {
 		Screen gui = event.getScreen();
-		boolean apiAllowed = gui instanceof IQuarkButtonAllowed; 
+		boolean apiAllowed = gui instanceof IQuarkButtonAllowed;
 		if(!(gui instanceof InventoryScreen) &&
 				gui instanceof AbstractContainerScreen<?> chest &&
 				(apiAllowed || GeneralConfig.isScreenAllowed(gui))) {
@@ -229,7 +224,7 @@ public class ChestSearchingModule extends QuarkModule {
 
 				BlockEntity te = BlockEntity.loadStatic(BlockPos.ZERO, ((BlockItem) item).getBlock().defaultBlockState(), cmp);
 				if (te != null) {
-					LazyOptional<IItemHandler> handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+					LazyOptional<IItemHandler> handler = te.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 					if (handler.isPresent()) {
 						IItemHandler items = handler.orElseGet(EmptyHandler::new);
 

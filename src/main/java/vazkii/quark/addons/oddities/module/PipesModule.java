@@ -21,6 +21,7 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.ODDITIES)
 public class PipesModule extends QuarkModule {
@@ -42,7 +43,8 @@ public class PipesModule extends QuarkModule {
 	@Config public static boolean renderPipeItems = true;
 	@Config public static boolean emitVibrations = true; 
 	
-	public static Block pipe;
+	@Hint public static Block pipe;
+	@Hint(key = "pipe", value = "encased_pipes")
 	public static Block encasedPipe;
 	
 	public static TagKey<Block> pipesTag;

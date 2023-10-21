@@ -46,20 +46,26 @@ public class ImprovedTooltipsModule extends QuarkModule {
 	@Config public static boolean shulkerBoxRequireShift = false;
 	@Config public static boolean mapRequireShift = false;
 
+	@Config(description = "The value of each shank of food.\n" +
+			"Tweak this when using mods like Hardcore Hunger which change that value.")
+	public static int foodDivisor = 2;
+	
 	@Config public static boolean showSaturation = true;
 	@Config public static int foodCompressionThreshold = 4;
 	
 	@Config public static int fuelTimeDivisor = 200;
-
-	@Config(description = "The value of each shank of food. " +
-			"Tweak this when using mods like Hardcore Hunger which change that value.")
-	public static int foodDivisor = 2;
+	
+	@Config(description = "Should item attributes be colored relative to your current equipped item?\n"
+			+ "e.g. if wearing an Iron Helmet, the armor value in a Diamond Helmet will show as green, and vice versa would be red.\n"
+			+ "If set to false, item attributes will show in white or red if they're negative values.") 
+	public static boolean showUpgradeStatus = true;
+	@Config public static boolean animateUpDownArrows = true;
 
 	@Config
 	public static List<String> enchantingStacks = Lists.newArrayList("minecraft:diamond_sword", "minecraft:diamond_pickaxe", "minecraft:diamond_shovel", "minecraft:diamond_axe", "minecraft:diamond_hoe",
 			"minecraft:diamond_helmet", "minecraft:diamond_chestplate", "minecraft:diamond_leggings", "minecraft:diamond_boots",
 			"minecraft:shears", "minecraft:bow", "minecraft:fishing_rod", "minecraft:crossbow", "minecraft:trident", "minecraft:elytra", "minecraft:shield",
-			"quark:pickarang");
+			"quark:pickarang", "supplementaries:slingshot", "supplementaries:bubble_blower", "farmersdelight:diamond_knife");
 
 	@Config(description = "A list of additional stacks to display on each enchantment\n"
 			+ "The format is as follows:\n"

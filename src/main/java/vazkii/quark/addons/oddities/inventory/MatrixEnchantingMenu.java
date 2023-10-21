@@ -80,8 +80,12 @@ public class MatrixEnchantingMenu extends AbstractContainerMenu {
 
 		player.awardStat(Stats.ENCHANT_ITEM);
 
-		if(player instanceof ServerPlayer serverPlayer)
+		if(player instanceof ServerPlayer serverPlayer) {
 			CriteriaTriggers.ENCHANTED_ITEM.trigger(serverPlayer, stack, 1);
+			
+			if(enchanter.isMatrixInfluenced())
+				MatrixEnchantingModule.influenceTrigger.trigger(serverPlayer);
+		}
 
 		player.level.playSound(null, enchanter.getBlockPos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, player.level.random.nextFloat() * 0.1F + 0.9F);
 	}

@@ -7,8 +7,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.Material;
@@ -19,14 +24,22 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
+
+import java.util.Arrays;
+import java.util.List;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class MoreNoteBlockSoundsModule extends QuarkModule {
 
-	@Config
+	@Config(flag = "skull_note_block")
 	public static boolean enableSkullSounds = true;
-	@Config
+	@Config(flag = "amethyst_note_block")
 	public static boolean enableAmethystSound = true;
+
+	@Hint("amethyst_note_block") Item amethyst_block = Items.AMETHYST_BLOCK;
+	@Hint(value = "skull_note_block", key = "head_sfx")
+	List<Item> skulls = Arrays.asList(Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.ZOMBIE_HEAD, Items.CREEPER_HEAD, Items.DRAGON_HEAD);
 
 	@SubscribeEvent
 	public void noteBlockPlayed(NoteBlockEvent.Play event) {
@@ -59,7 +72,7 @@ public class MoreNoteBlockSoundsModule extends QuarkModule {
 			event.setCanceled(true);
 			int note = event.getState().getValue(NoteBlock.NOTE);
 			float pitch = (float) Math.pow(2.0D, (double) (note - 12) / 12.0D);
-			world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.RECORDS, 0.5F, pitch);
+			world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.RECORDS, 1F, pitch);
 			serverLevel.sendParticles(ParticleTypes.NOTE, (double) pos.getX() + 0.5D, (double) pos.getY() + 1.2D, (double) pos.getZ() + 0.5D, 1, 0.0D, 0.0D, 0, (double) note / 24.0D);
 		}
 	}

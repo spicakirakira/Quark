@@ -899,7 +899,7 @@
 	"entity.quark.pickarang": "Pickarang",
 	"entity.quark.chest_passenger": "Chest In Boat",
 	"entity.quark.glass_frame": "Glass Item Frame",
-	"entity.quark.colored_frame": "Dyed Item Frame",
+	"entity.quark.dyed_item_frame": "Dyed Item Frame",
 	"entity.quark.totem": "Totem of Holding",
 	"entity.quark.stoneling": "Stoneling",
 	"entity.quark.gravisand": "Floating Gravisand",

@@ -1,14 +1,6 @@
 package vazkii.quark.content.building.block;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,9 +25,16 @@ import net.minecraftforge.fml.ModList;
 import vazkii.arl.interf.IBlockItemProvider;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.building.block.be.VariantChestBlockEntity;
 import vazkii.quark.content.building.module.VariantChestsModule.IChestTextureProvider;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @OnlyIn(value = Dist.CLIENT, _interface = IBlockItemProvider.class)
 public class VariantChestBlock extends ChestBlock implements IBlockItemProvider, IQuarkBlock, IChestTextureProvider {
@@ -45,16 +44,24 @@ public class VariantChestBlock extends ChestBlock implements IBlockItemProvider,
 
 	private final String path;
 
-	public VariantChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
+	public VariantChestBlock(String prefix, String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
 		super(props, supplier);
-		RegistryHelper.registerBlock(this, type + "_chest");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		RegistryHelper.registerBlock(this, (prefix != null ? prefix + "_" : "") + type + "_chest");
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 
-		path = (this instanceof Compat ? "compat/" : "") + type + "/";
+		path = (isCompat() ? "compat/" : "") + type + "/";
 	}
-	
+
+	public VariantChestBlock(String type, QuarkModule module, Supplier<BlockEntityType<? extends ChestBlockEntity>> supplier, Properties props) {
+		this(null, type, module, supplier, props);
+	}
+
+	protected boolean isCompat() {
+		return false;
+	}
+
 	@Override
 	public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
 		return 0;
@@ -108,7 +115,7 @@ public class VariantChestBlock extends ChestBlock implements IBlockItemProvider,
 	public BlockItem provideItemBlock(Block block, Item.Properties props) {
 		return new Item(block, props);
 	}
-	
+
 	public static class Item extends BlockItem {
 
 		public Item(Block block, Properties props) {
@@ -146,6 +153,10 @@ public class VariantChestBlock extends ChestBlock implements IBlockItemProvider,
 			setCondition(() -> ModList.get().isLoaded(mod));
 		}
 
+		@Override
+		protected boolean isCompat() {
+			return true;
+		}
 	}
 
 }

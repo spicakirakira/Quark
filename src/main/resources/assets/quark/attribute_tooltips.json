@@ -9,7 +9,8 @@
       "head": "difference",
       "potion": "difference"
     },
-    "texture": "quark:attribute/max_health"
+    "texture": "quark:attribute/max_health",
+    "compare": "higher_better"
   },
   "minecraft:generic.knockback_resistance": {
     "display": {
@@ -21,7 +22,8 @@
       "head": "percentage",
       "potion": "percentage"
     },
-    "texture": "quark:attribute/knockback_resistance"
+    "texture": "quark:attribute/knockback_resistance",
+    "compare": "higher_better"
   },
   "minecraft:generic.movement_speed": {
     "display": {
@@ -33,7 +35,8 @@
       "head": "multiplier",
       "potion": "multiplier"
     },
-    "texture": "quark:attribute/speed"
+    "texture": "quark:attribute/speed",
+    "compare": "higher_better"
   },
   "minecraft:generic.attack_damage": {
     "display": {
@@ -45,7 +48,8 @@
       "head": "difference",
       "potion": "difference"
     },
-    "texture": "quark:attribute/attack_damage"
+    "texture": "quark:attribute/attack_damage",
+    "compare": "higher_better"
   },
   "minecraft:generic.attack_knockback": {
     "display": {
@@ -57,7 +61,8 @@
       "head": "difference",
       "potion": "difference"
     },
-    "texture": "quark:attribute/attack_knockback"
+    "texture": "quark:attribute/attack_knockback",
+    "compare": "higher_better"
   },
   "minecraft:generic.attack_speed": {
     "display": {
@@ -69,7 +74,8 @@
       "head": "difference",
       "potion": "multiplier"
     },
-    "texture": "quark:attribute/attack_speed"
+    "texture": "quark:attribute/attack_speed",
+    "compare": "higher_better"
   },
   "minecraft:generic.armor": {
     "display": {
@@ -81,7 +87,8 @@
       "head": "flat",
       "potion": "flat"
     },
-    "texture": "quark:attribute/armor"
+    "texture": "quark:attribute/armor",
+    "compare": "higher_better"
   },
   "minecraft:generic.armor_toughness": {
     "display": {
@@ -93,7 +100,8 @@
       "head": "flat",
       "potion": "flat"
     },
-    "texture": "quark:attribute/armor_toughness"
+    "texture": "quark:attribute/armor_toughness",
+    "compare": "higher_better"
   },
   "minecraft:generic.luck": {
     "display": {
@@ -105,7 +113,8 @@
       "head": "percentage",
       "potion": "percentage"
     },
-    "texture": "quark:attribute/luck"
+    "texture": "quark:attribute/luck",
+    "compare": "higher_better"
   },
   "forge:swim_speed": {
     "display": {
@@ -117,7 +126,8 @@
       "head": "multiplier",
       "potion": "multiplier"
     },
-    "texture": "quark:attribute/swim_speed"
+    "texture": "quark:attribute/swim_speed",
+    "compare": "higher_better"
   },
   "forge:entity_gravity": {
     "display": {
@@ -141,6 +151,33 @@
       "head": "difference",
       "potion": "difference"
     },
-    "texture": "quark:attribute/reach_distance"
+    "texture": "quark:attribute/reach_distance",
+    "compare": "higher_better"
+  },
+  "forge:attack_range": {
+    "display": {
+      "mainhand": "difference",
+      "offhand": "difference",
+      "feet": "difference",
+      "legs": "difference",
+      "chest": "difference",
+      "head": "difference",
+      "potion": "difference"
+    },
+    "texture": "quark:attribute/attack_range",
+    "compare": "higher_better"
+  },
+  "forge:step_height_addition": {
+    "display": {
+      "mainhand": "difference",
+      "offhand": "difference",
+      "feet": "difference",
+      "legs": "difference",
+      "chest": "difference",
+      "head": "difference",
+      "potion": "difference"
+    },
+    "texture": "quark:attribute/step_height",
+    "compare": "higher_better"
   }
 }

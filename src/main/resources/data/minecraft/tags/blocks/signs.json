@@ -6,6 +6,8 @@
         "quark:blossom_sign",
         "quark:blossom_wall_sign",
         "quark:bamboo_sign",
-        "quark:bamboo_wall_sign"
+        "quark:bamboo_wall_sign",
+        "quark:ancient_sign",
+        "quark:ancient_wall_sign"
     ]
 }

@@ -24,13 +24,14 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.client.tooltip.SeedPouchClientTooltipComponent;
 import vazkii.quark.content.tools.item.SeedPouchItem;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class SeedPouchModule extends QuarkModule {
 
-	public static Item seed_pouch;
+	@Hint public static Item seed_pouch;
 
 	public static TagKey<Item> seedPouchHoldableTag;
 
@@ -70,7 +71,7 @@ public class SeedPouchModule extends QuarkModule {
 
 		ImmutableSet<ItemStack> stacks = ImmutableSet.of(main, off);
 		for(ItemStack heldStack : stacks)
-			if(heldStack.getItem() == seed_pouch) {
+			if(heldStack.getItem() == seed_pouch && heldStack.getCount() == 1) {
 				Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(heldStack);
 				if(contents != null) {
 					ItemStack pouchStack = contents.getLeft();

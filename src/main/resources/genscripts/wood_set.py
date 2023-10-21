@@ -44,8 +44,8 @@ def makeWood(type):
 	run(f"py pressure_plates.py texname={type}_planks {type}")
 	run(f"py generic_item.py {type}_boat {type}_chest_boat")
 	run(f"py vertical_planks.py vertical_{type}_planks")
-	run(f"py vertical_planks_recipes.py {type}")
-	
+	run(f"py vertical_plank_recipes.py {type}")
+
 	run(f"py wood_set_recipes.py category={category} flag={flag} {type}")
 
 	appendTags(type)
@@ -54,23 +54,24 @@ def appendTags(type):
 	global category, flag, nolog, modid
 
 	if nolog:
-		addToTag('mineable/axe', type, ["%_planks", "%_post", 
-			"stripped_%_post", "%_bookshelf", "%_planks_slab", "%_planks_stairs", 
+		addToTag('mineable/axe', type, ["%_planks", "%_post",
+			"stripped_%_post", "%_bookshelf", "%_planks_slab", "%_planks_stairs",
 			"%_planks_vertical_slab", "%_fence", "%_fence_gate", "%_door",
-			 "%_trapdoor", "%_ladder", "%_sign", "%_wall_sign", "%_chest", 
+			 "%_trapdoor", "%_ladder", "%_sign", "%_wall_sign", "%_chest",
 			 "%_trapped_chest", "%_button", "%_pressure_plate"], False)
 	else:
-		addToTag('mineable/axe', type, ["%_planks", "%_log", "%_wood", 
-			"stripped_%_log", "stripped_%_wood", "%_post", 
-			"stripped_%_post", "%_bookshelf", "%_planks_slab", "%_planks_stairs", 
+		addToTag('mineable/axe', type, ["%_planks", "%_log", "%_wood",
+			"stripped_%_log", "stripped_%_wood", "%_post",
+			"stripped_%_post", "%_bookshelf", "%_planks_slab", "%_planks_stairs",
 			"%_planks_vertical_slab", "%_fence", "%_fence_gate", "%_door",
-			 "%_trapdoor", "%_ladder", "%_sign", "%_wall_sign", "%_chest", 
+			 "%_trapdoor", "%_ladder", "%_sign", "%_wall_sign", "%_chest",
 			 "%_trapped_chest", "%_button", "%_pressure_plate"], False)
+		addToTag('overworld_natural_logs', type, ["%_log"])
 		bulkTag(['logs', 'logs_that_burn', f"{modid}:{type}_logs"], type, ["%_log", "stripped_%_log", "%_wood", "stripped_%_wood"])
 
 	addToTag('quark:ladders', type, ["%_ladder"])
 	addToTag('climbable', type, ["%_ladder"], False)
-	addToTag('planks', type, ["%_planks"])
+	addToTag('planks', type, ["%_planks", "vertical_%_planks"])
 	addToTag('wooden_stairs', type, ["%_planks_stairs"])
 	addToTag('wooden_slabs', type, ["%_planks_slab"])
 	addToTag('quark:wooden_vertical_slabs', type, ["%_planks_vertical_slab"])
@@ -78,14 +79,14 @@ def appendTags(type):
 	bulkTag(['fences', 'wooden_fences', 'forge:fences', 'forge:fences/wooden'], type, ["%_fence"])
 	bulkTag(['fence_gates', 'forge:fence_gates', 'forge:fence_gates/wooden'], type, ["%_fence_gate"])
 	bulkTag(['buttons', 'wooden_buttons'], type, ["%_button"])
-	bulkTag(['pressure_plates', 'pressure_plates'], type, ["%_pressure_plate"])
+	bulkTag(['pressure_plates', 'pressure_plates', 'wooden_pressure_plates'], type, ["%_pressure_plate"])
 	bulkTag(['doors', 'wooden_doors'], type, ["%_door"])
 	addToTag('forge:bookshelves', type, ["%_bookshelf"])
 	bulkTag(['signs', 'standing_signs'], type, ["%_sign"], False)
 	bulkTag(['signs', 'wall_signs'], type, ["%_wall_sign"], False)
 	bulkTag(['forge:chests', 'forge:chests/wooden', 'guarded_by_piglins'], type, ["%_chest", "%_trapped_chest"])
 	addToTag('forge:chests/trapped', type, ["%_trapped_chest"])
-	addToTag('quark:boatable_chests', type, ["%_chest"], False, False)
+	addToTag('quark:hollow_logs', type, ["hollow_%_log"])
 
 def bulkTag(tags, type, items, mirror=True, is_block=True):
 	for tag in tags:
@@ -122,7 +123,7 @@ def addToTag(tag, type, items, mirror=True, is_block=True):
 			if not item in values:
 				values.append(item)
 				changed = True
-		
+
 		if changed:
 			with open(path, 'w') as fw:
 				json.dump(data, fw, indent=4)

@@ -1,41 +1,40 @@
 package vazkii.quark.base.module;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import com.google.common.base.Preconditions;
-
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.event.ModelEvent.BakingCompleted;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.item.IQuarkItem;
 import vazkii.quark.base.module.config.ConfigResolver;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public final class ModuleLoader {
 
 	private enum Step {
 		CONSTRUCT, CONSTRUCT_CLIENT, REGISTER, POST_REGISTER, CONFIG_CHANGED, CONFIG_CHANGED_CLIENT, SETUP, SETUP_CLIENT,
-		REGISTER_RELOADABLE, MODEL_BAKE, MODEL_LAYERS, TEXTURE_STITCH, POST_TEXTURE_STITCH, LOAD_COMPLETE,
-		FIRST_CLIENT_TICK, REGISTER_KEYBINDS, REIGSTER_ADDITIONAL_MODELS, REGISTER_TOOLTIP_COMPONENT_FACTORIES
+		REGISTER_RELOADABLE, MODEL_BAKE, MODEL_LAYERS, TEXTURE_STITCH, POST_TEXTURE_STITCH, LOAD_COMPLETE, GENERATE_HINTS,
+		FIRST_CLIENT_TICK, REGISTER_KEYBINDS, REGISTER_ADDITIONAL_MODELS, REGISTER_TOOLTIP_COMPONENT_FACTORIES,
+		REGISTER_ITEM_COLORS, REGISTER_BLOCK_COLORS
 	}
 
 	public static final ModuleLoader INSTANCE = new ModuleLoader();
@@ -73,9 +72,14 @@ public final class ModuleLoader {
 		config.makeSpec();
 	}
 
+	public ModConfig getConfig() {
+		return config.getConfig();
+	}
+
 	public void register() {
 		dispatch(Step.REGISTER, QuarkModule::register);
 		dispatch(Step.POST_REGISTER, QuarkModule::postRegister);
+		CreativeTabHandler.finalizeTabs();
 		config.registerConfigBoundElements();
 	}
 
@@ -133,7 +137,7 @@ public final class ModuleLoader {
 	public void postTextureStitch(TextureStitchEvent.Post event) {
 		dispatch(Step.POST_TEXTURE_STITCH, m -> m.postTextureStitch(event));
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public void registerKeybinds(RegisterKeyMappingsEvent event) {
 		dispatch(Step.REGISTER_KEYBINDS, m -> m.registerKeybinds(event));
@@ -141,17 +145,34 @@ public final class ModuleLoader {
 
 	@OnlyIn(Dist.CLIENT)
 	public void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
-		dispatch(Step.REIGSTER_ADDITIONAL_MODELS, m -> m.registerAdditionalModels(event));
+		dispatch(Step.REGISTER_ADDITIONAL_MODELS, m -> m.registerAdditionalModels(event));
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public void registerClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {
 		dispatch(Step.REGISTER_TOOLTIP_COMPONENT_FACTORIES, m -> m.registerClientTooltipComponentFactories(event));
 	}
-	
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerItemColors(RegisterColorHandlersEvent.Item event) {
+		dispatch(Step.REGISTER_ITEM_COLORS, m -> m.registerItemColors(event));
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	public void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+		dispatch(Step.REGISTER_BLOCK_COLORS, m -> m.registerBlockColors(event));
+	}
+
 	public void loadComplete(ParallelDispatchEvent event) {
 		this.event = event;
 		dispatch(Step.LOAD_COMPLETE, QuarkModule::loadComplete);
+	}
+
+	public void addStackInfo(BiConsumer<Item, Component> consumer) {
+		dispatch(Step.GENERATE_HINTS, m -> {
+			if(m.enabled)
+				m.addStackInfo(consumer);
+		});
 	}
 
 	@OnlyIn(Dist.CLIENT)

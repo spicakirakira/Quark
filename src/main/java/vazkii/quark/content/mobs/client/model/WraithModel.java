@@ -45,20 +45,20 @@ public class WraithModel extends EntityModel<Wraith> {
 
 		main.addOrReplaceChild("arms", 
 			CubeListBuilder.create()
-			.texOffs(35, 5)
+			.texOffs(36, 6)
 			.addBox(-8.5F, 1.0F, -2.0F, 3.0F, 15.0F, 5.0F, new CubeDeformation(0.0F))
 			
 			.texOffs(0, 55)
 			.addBox(-5.5F, 12.0F, 0.0F, 11.0F, 4.0F, 0.0F, new CubeDeformation(0.0F))
 			
-			.texOffs(46, 3)
+			.texOffs(47, 3)
 			.addBox(-8.5F, 11.0F, -2.0F, 3.0F, 3.0F, 5.0F, new CubeDeformation(0.25F))
 			
-			.texOffs(35, 5)
+			.texOffs(36, 6)
 			.mirror()
 			.addBox(5.5F, 1.0F, -2.0F, 3.0F, 15.0F, 5.0F, new CubeDeformation(0.0F)).mirror(false)
 			
-			.texOffs(46, 3)
+			.texOffs(47, 3)
 			.mirror()
 			.addBox(5.5F, 11.0F, -2.0F, 3.0F, 3.0F, 5.0F, new CubeDeformation(0.25F))
 	

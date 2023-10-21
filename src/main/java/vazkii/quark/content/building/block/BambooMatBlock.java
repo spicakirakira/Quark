@@ -20,12 +20,12 @@ public class BambooMatBlock extends QuarkBlock {
 	private static final EnumProperty<Direction> FACING = BlockStateProperties.FACING_HOPPER;
 	
 	public BambooMatBlock(String name, QuarkModule module) {
-		this(name, module, CreativeModeTab.TAB_BUILDING_BLOCKS);
+		this(name, module, Material.BAMBOO, CreativeModeTab.TAB_BUILDING_BLOCKS);
 	}
 	
-	public BambooMatBlock(String name, QuarkModule module, CreativeModeTab tab) {
+	public BambooMatBlock(String name, QuarkModule module, Material material, CreativeModeTab tab) {
 		super(name, module, tab,
-				Block.Properties.of(Material.BAMBOO, MaterialColor.COLOR_YELLOW)
+				Block.Properties.of(material, MaterialColor.COLOR_YELLOW)
 				.strength(0.5F)
 				.sound(SoundType.BAMBOO));
 		

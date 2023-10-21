@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -30,7 +31,7 @@ public class VariantLadderBlock extends LadderBlock implements IQuarkBlock {
 		super(props);
 
 		RegistryHelper.registerBlock(this, type + "_ladder");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);

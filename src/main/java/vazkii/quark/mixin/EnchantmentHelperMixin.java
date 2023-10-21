@@ -1,5 +1,6 @@
 package vazkii.quark.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -18,9 +19,9 @@ import java.util.Map;
 @Mixin(EnchantmentHelper.class)
 public class EnchantmentHelperMixin {
 
-	@Inject(method = "getAvailableEnchantmentResults", at = @At("RETURN"), cancellable = true)
-	private static void begoneEnchantments(int cost, ItemStack stack, boolean treasure, CallbackInfoReturnable<List<EnchantmentInstance>> cir) {
-		cir.setReturnValue(EnchantmentsBegoneModule.begoneEnchantmentInstances(cir.getReturnValue()));
+	@ModifyReturnValue(method = "getAvailableEnchantmentResults", at = @At("RETURN"))
+	private static List<EnchantmentInstance> begoneEnchantments(List<EnchantmentInstance> prev, int cost, ItemStack stack, boolean treasure) {
+		return EnchantmentsBegoneModule.begoneEnchantmentInstances(prev);
 	}
 
 	@Inject(method = "getEnchantments", at = @At("HEAD"), cancellable = true)

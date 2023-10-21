@@ -34,12 +34,13 @@ import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.inputtable.RGBAColorConfig;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.item.AbacusItem;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true, subscribeOn = Dist.CLIENT)
 public class AbacusModule extends QuarkModule {
 
-	public static Item abacus;
+	@Hint public static Item abacus;
 	@Config RGBAColorConfig highlightColor = RGBAColorConfig.forColor(0, 0, 0, 0.4);
 
 	@Override

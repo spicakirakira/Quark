@@ -1,6 +1,12 @@
 package vazkii.quark.content.world.module;
 
+import java.util.ArrayDeque;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.BooleanSupplier;
+
 import com.google.common.collect.Maps;
+
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
@@ -16,6 +22,7 @@ import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
 import vazkii.quark.base.module.config.type.DimensionConfig;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.base.world.WorldGenHandler;
 import vazkii.quark.base.world.WorldGenWeights;
 import vazkii.quark.base.world.generator.OreGenerator;
@@ -23,18 +30,13 @@ import vazkii.quark.content.world.block.MyaliteBlock;
 import vazkii.quark.content.world.config.BigStoneClusterConfig;
 import vazkii.quark.content.world.config.StoneTypeConfig;
 
-import java.util.ArrayDeque;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.BooleanSupplier;
-
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class NewStoneTypesModule extends QuarkModule {
 
-	@Config(flag = "limestone") private static boolean enableLimestone = true;
-	@Config(flag = "jasper") private static boolean enableJasper = true;
-	@Config(flag = "shale") private static boolean enableShale = true;
-	@Config(flag = "myalite") private static boolean enableMyalite = true;
+	@Config(flag = "limestone") public static boolean enableLimestone = true;
+	@Config(flag = "jasper") public static boolean enableJasper = true;
+	@Config(flag = "shale") public static boolean enableShale = true;
+	@Config(flag = "myalite") public static boolean enableMyalite = true;
 
 	public static boolean enabledWithLimestone, enabledWithJasper, enabledWithShale, enabledWithMyalite;
 
@@ -43,7 +45,10 @@ public class NewStoneTypesModule extends QuarkModule {
 	@Config public static StoneTypeConfig shale = new StoneTypeConfig();
 	@Config public static StoneTypeConfig myalite = new StoneTypeConfig(DimensionConfig.end(false));
 
-	public static Block limestoneBlock, jasperBlock, shaleBlock, myaliteBlock;
+	@Hint("limestone") public static Block limestoneBlock;
+	@Hint("jasper") public static Block jasperBlock;
+	@Hint("shale") public static Block shaleBlock;
+	@Hint("myalite") public static Block myaliteBlock;
 
 	public static Map<Block, Block> polishedBlocks = Maps.newHashMap();
 
@@ -81,7 +86,7 @@ public class NewStoneTypesModule extends QuarkModule {
 		QuarkBlock polished = constr.make("polished_" + name, module, CreativeModeTab.TAB_BUILDING_BLOCKS, props).setCondition(enabledCond);
 		polishedBlocks.put(normal, polished);
 
-		VariantHandler.addSlabStairsWall(normal instanceof IQuarkBlock quarkBlock ? quarkBlock : new QuarkBlockWrapper(normal, module));
+		VariantHandler.addSlabStairsWall(normal instanceof IQuarkBlock quarkBlock ? quarkBlock : new QuarkBlockWrapper(normal, module).setCondition(enabledCond));
 		VariantHandler.addSlabAndStairs(polished);
 
 		if(raw == null) {

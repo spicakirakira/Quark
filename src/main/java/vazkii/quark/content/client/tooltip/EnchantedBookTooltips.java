@@ -24,6 +24,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.content.client.module.ImprovedTooltipsModule;
 import vazkii.quark.content.tools.item.AncientTomeItem;
@@ -38,6 +39,8 @@ public class EnchantedBookTooltips {
 
 	private static List<ItemStack> testItems = null;
 	private static Multimap<Enchantment, ItemStack> additionalStacks = null;
+
+	public static final String TABLE_ONLY_DISPLAY = "quark:only_show_table_enchantments";
 
 	public static void reloaded() {
 		additionalStacks = null;
@@ -66,12 +69,13 @@ public class EnchantedBookTooltips {
 				for(; tooltipIndex < tooltip.size(); tooltipIndex++) {
 					Either<FormattedText, TooltipComponent> elmAt = tooltip.get(tooltipIndex);
 					if(elmAt.left().isPresent() && elmAt.left().get().equals(match)) {
-						List<ItemStack> items = getItemsForEnchantment(ed.enchantment);
+						boolean tableOnly = ItemNBTHelper.getBoolean(stack, TABLE_ONLY_DISPLAY, false);
+						List<ItemStack> items = getItemsForEnchantment(ed.enchantment, tableOnly);
 						int itemCount = items.size();
 						int lines = (int) Math.ceil((double) itemCount / 10.0);
 
 						int len = 3 + Math.min(10, itemCount) * 9;
-						tooltip.add(tooltipIndex + 1, Either.right(new EnchantedBookComponent(len, lines * 10, ed.enchantment)));
+						tooltip.add(tooltipIndex + 1, Either.right(new EnchantedBookComponent(len, lines * 10, ed.enchantment, tableOnly)));
 
 						break;
 					}
@@ -80,7 +84,9 @@ public class EnchantedBookTooltips {
 		}
 	}
 
-	public static List<ItemStack> getItemsForEnchantment(Enchantment e) {
+	private static ItemStack BOOK;
+
+	public static List<ItemStack> getItemsForEnchantment(Enchantment e, boolean onlyForTable) {
 		List<ItemStack> list = new ArrayList<>();
 
 		for(ItemStack stack : getTestItems()) {
@@ -88,8 +94,17 @@ public class EnchantedBookTooltips {
 			if(item instanceof QuarkItem && !((QuarkItem) item).isEnabled())
 				continue;
 
-			if(!stack.isEmpty() && e.canEnchant(stack))
+			if(!stack.isEmpty() && e.canEnchant(stack)) {
+				if (onlyForTable && (!e.canApplyAtEnchantingTable(stack) || !stack.isEnchantable() || stack.getEnchantmentValue() <= 0))
+					continue;
 				list.add(stack);
+			}
+		}
+
+		if (onlyForTable) {
+			if (BOOK == null)
+				BOOK = new ItemStack(Items.BOOK);
+			list.add(BOOK);
 		}
 
 		if(getAdditionalStacks().containsKey(e))
@@ -161,7 +176,7 @@ public class EnchantedBookTooltips {
 
 	@OnlyIn(Dist.CLIENT)
 	public record EnchantedBookComponent(int width, int height,
-										 Enchantment enchantment) implements ClientTooltipComponent, TooltipComponent {
+										 Enchantment enchantment, boolean tableOnly) implements ClientTooltipComponent, TooltipComponent {
 
 		@Override
 		public void renderImage(@Nonnull Font font, int tooltipX, int tooltipY, @Nonnull PoseStack basePose, @Nonnull ItemRenderer itemRenderer, int something) {
@@ -171,7 +186,7 @@ public class EnchantedBookTooltips {
 			modelviewPose.translate(tooltipX, tooltipY, 0);
 			modelviewPose.scale(0.5f, 0.5f, 1.0f);
 			Minecraft mc = Minecraft.getInstance();
-			List<ItemStack> items = getItemsForEnchantment(enchantment);
+			List<ItemStack> items = getItemsForEnchantment(enchantment, tableOnly);
 			int drawn = 0;
 			for (ItemStack testStack : items) {
 				mc.getItemRenderer().renderGuiItem(testStack, 6 + (drawn % 10) * 18, (drawn / 10) * 20);

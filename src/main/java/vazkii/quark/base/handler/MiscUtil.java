@@ -1,15 +1,5 @@
 package vazkii.quark.base.handler;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -18,19 +8,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.arguments.blocks.BlockStateParser.BlockResult;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
@@ -46,6 +30,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -55,7 +42,10 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -65,11 +55,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ScreenEvent.KeyPressed;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
@@ -81,6 +70,10 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.client.config.screen.AbstractQScreen;
 import vazkii.quark.content.experimental.module.EnchantmentsBegoneModule;
 import vazkii.quark.mixin.accessor.AccessorLootTable;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @EventBusSubscriber(modid = Quark.MOD_ID)
 public class MiscUtil {
@@ -97,34 +90,77 @@ public class MiscUtil {
 			Direction.EAST
 	};
 
+
+	public static BooleanProperty directionProperty(Direction direction) {
+		return switch (direction) {
+			case DOWN -> BlockStateProperties.DOWN;
+			case UP -> BlockStateProperties.UP;
+			case NORTH -> BlockStateProperties.NORTH;
+			case SOUTH -> BlockStateProperties.SOUTH;
+			case WEST -> BlockStateProperties.WEST;
+			case EAST -> BlockStateProperties.EAST;
+		};
+	}
+
+	/**
+	 * Reconstructs the goal selector's list to add in a new goal.
+	 *
+	 * This is because vanilla doesn't play it safe around CMEs with skeletons.
+	 * See: https://github.com/VazkiiMods/Quark/issues/4356
+	 *
+	 * If a Skeleton is killed with Thorns damage and drops its weapon, it will reassess its goals.
+	 * Because the thorns damage is being dealt during goal execution of the MeleeAttackGoal or RangedBowAttackGoal,
+	 * this will cause a CME if the attack goal is not the VERY LAST goal in the set.
+	 *
+	 * Thankfully, the set GoalSelector uses is Linked, so we can just reconstruct the set and avoid the problem.
+	 */
+	public static void addGoalJustAfterLatestWithPriority(GoalSelector selector, int priority, Goal goal) {
+		Set<WrappedGoal> allGoals = new LinkedHashSet<>(selector.getAvailableGoals());
+		WrappedGoal latestWithPriority = null;
+		for (WrappedGoal wrappedGoal : allGoals) {
+			if (wrappedGoal.getPriority() == priority)
+				latestWithPriority = wrappedGoal;
+		}
+
+		selector.removeAllGoals();
+		if (latestWithPriority == null)
+			selector.addGoal(priority, goal);
+
+		for (WrappedGoal wrappedGoal : allGoals) {
+			selector.addGoal(wrappedGoal.getPriority(), wrappedGoal.getGoal());
+			if (wrappedGoal == latestWithPriority)
+				selector.addGoal(priority, goal);
+		}
+	}
+
 	@OnlyIn(Dist.CLIENT)
 	public static void drawChatBubble(PoseStack matrix, int x, int y, Font font, String text, float alpha, boolean extendRight) {
 		matrix.pushPose();
-		matrix.translate(0, 0, 100);
+		matrix.translate(0, 0, 200);
 		RenderSystem.setShaderTexture(0, MiscUtil.GENERAL_ICONS);
 		int w = font.width(text);
 		int left = x - (extendRight ? 0 : w);
 		int top = y - 8;
 
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-		
+
 		if(extendRight) {
 			Screen.blit(matrix, left, top, 227, 9, 6, 17, 256, 256);
 			for(int i = 0; i < w; i++)
 				Screen.blit(matrix, left + i + 6, top, 232, 9, 1, 17, 256, 256);
-			Screen.blit(matrix, left + w + 5, top, 236, 9, 5, 17, 256, 256);			
+			Screen.blit(matrix, left + w + 5, top, 236, 9, 5, 17, 256, 256);
 		} else {
 			Screen.blit(matrix, left, top, 242, 9, 5, 17, 256, 256);
 			for(int i = 0; i < w; i++)
 				Screen.blit(matrix, left + i + 5, top, 248, 9, 1, 17, 256, 256);
-			Screen.blit(matrix, left + w + 5, top, 250, 9, 6, 17, 256, 256);	
+			Screen.blit(matrix, left + w + 5, top, 250, 9, 6, 17, 256, 256);
 		}
 
 		int alphaInt = (int) (256F * alpha) << 24;
 		font.draw(matrix, text, left + 5, top + 3, alphaInt);
 		matrix.popPose();
 	}
-	
+
 	public static void addToLootTable(LootTable table, LootPoolEntryContainer entry) {
 		List<LootPool> pools = ((AccessorLootTable) table).quark$getPools();
 		if (pools != null && !pools.isEmpty()) {
@@ -141,25 +177,6 @@ public class MiscUtil {
 
 	public static void damageStack(Player player, InteractionHand hand, ItemStack stack, int dmg) {
 		stack.hurtAndBreak(dmg, player, (p) -> p.broadcastBreakEvent(hand));
-	}
-
-	public static <T, V> void editFinalField(Class<T> clazz, String fieldName, Object obj, V value) {
-		Field f = ObfuscationReflectionHelper.findField(clazz, fieldName);
-		editFinalField(f, obj, value);
-	}
-
-	public static <T> void editFinalField(Field f, Object obj, T value) {
-		try {
-			f.setAccessible(true);
-
-			Field modifiers = Field.class.getDeclaredField("modifiers");
-			modifiers.setAccessible(true);
-			modifiers.setInt(f, f.getModifiers() & ~Modifier.FINAL);
-
-			f.set(obj, value);
-		} catch(ReflectiveOperationException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public static void initializeEnchantmentList(Iterable<String> enchantNames, List<Enchantment> enchants) {
@@ -224,7 +241,7 @@ public class MiscUtil {
 		if(level != null && blockPos != null && level.getBlockState(blockPos).getBlock() instanceof WorldlyContainerHolder holder) {
 			handler = new SidedInvWrapper(holder.getContainer(level.getBlockState(blockPos), level, blockPos), face);
 		} else if(tile != null) {
-			LazyOptional<IItemHandler> opt = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face);
+			LazyOptional<IItemHandler> opt = tile.getCapability(ForgeCapabilities.ITEM_HANDLER, face);
 			if(opt.isPresent())
 				handler = opt.orElse(new ItemStackHandler());
 			else if(tile instanceof WorldlyContainer container)
@@ -319,7 +336,7 @@ public class MiscUtil {
 				"-FCYE87P5L0","mybsDDymrsc","6a4BWpBJppI","thpTOAS1Vgg","ZNcBZM5SvbY","_qJEoSa3Ie0",
 				"RWeyOyY_puQ","VBbeuXW8Nko","LIDe-yTxda0","BVVfMFS3mgc","m5qwcYL8a0o","UkY8HvgvBJ8",
 				"4K4b9Z9lSwc","tyInv6RWL0Q","tIWpr3tHzII","AFJPFfnzZ7w","846cjX0ZTrk","XEOCbFJjRw0",
-				"GEo5bmUKFvI","b6li05zh3Kg", "_EEo-iE5u_A", "SPYX2y4NzTU"
+				"GEo5bmUKFvI","b6li05zh3Kg","_EEo-iE5u_A","SPYX2y4NzTU","UDxID0_A9x4","ZBl48MK17cI" 
 		};
 		final int[] keys = new int[] { 265, 265, 264, 264, 263, 262, 263, 262, 66, 65 };
 		if(event.getScreen() instanceof AbstractQScreen) {
@@ -332,6 +349,15 @@ public class MiscUtil {
 				}
 			} else progress = 0;
 		}
+	}
+
+	//gets rid of lambdas that could contain references to blockstate properties we might not have
+	public static BlockBehaviour.Properties copyPropertySafe(BlockBehaviour blockBehaviour) {
+		BlockBehaviour.Properties p = BlockBehaviour.Properties.copy(blockBehaviour);
+		p.lightLevel(s -> 0);
+		p.offsetType(BlockBehaviour.OffsetType.NONE);
+		p.color(blockBehaviour.defaultMaterialColor());
+		return p;
 	}
 
 }

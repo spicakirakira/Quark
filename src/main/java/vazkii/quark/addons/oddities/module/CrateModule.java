@@ -17,32 +17,35 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.ODDITIES)
 public class CrateModule extends QuarkModule {
 
-	public static BlockEntityType<CrateBlockEntity> blockEntityType;
-	public static MenuType<CrateMenu> menuType;
-	
-	public static Block crate;
-	
-	@Config public static int maxItems = 640;
+    public static BlockEntityType<CrateBlockEntity> blockEntityType;
+    public static MenuType<CrateMenu> menuType;
 
-	@Override
-	public void register() {
-		crate = new CrateBlock(this);
-		
-		menuType = IForgeMenuType.create(CrateMenu::fromNetwork);
-		RegistryHelper.register(menuType, "crate", Registry.MENU_REGISTRY);
-		
-		blockEntityType = BlockEntityType.Builder.of(CrateBlockEntity::new, crate).build(null);
-		RegistryHelper.register(blockEntityType, "crate", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
-	}
-	
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void clientSetup() {
-		MenuScreens.register(menuType, CrateScreen::new);
-	}
-	
+    @Hint(content = "maxItems")
+    public static Block crate;
+
+    @Config
+    public static int maxItems = 640;
+
+    @Override
+    public void register() {
+        crate = new CrateBlock(this);
+
+        menuType = IForgeMenuType.create(CrateMenu::fromNetwork);
+        RegistryHelper.register(menuType, "crate", Registry.MENU_REGISTRY);
+
+        blockEntityType = BlockEntityType.Builder.of(CrateBlockEntity::new, crate).build(null);
+        RegistryHelper.register(blockEntityType, "crate", Registry.BLOCK_ENTITY_TYPE_REGISTRY);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void clientSetup() {
+        MenuScreens.register(menuType, CrateScreen::new);
+    }
+
 }

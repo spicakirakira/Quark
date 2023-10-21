@@ -1,15 +1,6 @@
 package vazkii.quark.content.tools.module;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Lists;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -19,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -28,11 +20,7 @@ import net.minecraft.world.entity.npc.VillagerTrades.ItemListing;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantContainer;
 import net.minecraft.world.inventory.MerchantMenu;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -45,14 +33,13 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.LootTableLoadEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -62,14 +49,24 @@ import vazkii.quark.api.IRuneColorProvider;
 import vazkii.quark.api.QuarkCapabilities;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.MiscUtil;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.item.AncientTomeItem;
 import vazkii.quark.content.tools.loot.EnchantTome;
 import vazkii.quark.content.world.module.MonsterBoxModule;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @LoadModule(category = ModuleCategory.TOOLS, hasSubscriptions = true)
 public class AncientTomesModule extends QuarkModule {
@@ -105,21 +102,33 @@ public class AncientTomesModule extends QuarkModule {
 	@Config(name = "Valid Enchantments")
 	public static List<String> enchantNames = generateDefaultEnchantmentList();
 
-	@Config 
+	@Config
 	public static boolean overleveledBooksGlowRainbow = true;
 
-	@Config(description = "When enabled, Efficiency VI Diamond and Netherite pickaxes can instamine Deepslate when under Haste 2")
-	public static boolean deepslateTweak = true; 
-	
+	@Config(description = "When enabled, Efficiency VI Diamond and Netherite pickaxes can instamine Deepslate when under Haste 2", flag = "deepslate_tweak")
+	public static boolean deepslateTweak = true;
+
 	@Config
 	public static boolean deepslateTweakNeedsHaste2 = true;
 
 	@Config(description = "Master Librarians will offer to exchange Ancient Tomes, provided you give them a max-level Enchanted Book of the Tome's enchantment too.")
 	public static boolean librariansExchangeAncientTomes = true;
 
-	public static Item ancient_tome;
+	@Config(description = "Applying a tome will also randomly curse your item")
+	public static boolean curseGear = false;
+
+	@Config(description = "Allows combining tomes with normal books")
+	public static boolean combineWithBooks = true;
+
+	@Config(description = "Whether a sanity check is performed on the valid enchantments. If this is turned off, enchantments such as Silk Touch will be allowed to generate Ancient Tomes, if explicitly added to the Valid Enchantments.")
+	public static boolean sanityCheck = true;
+
+	@Hint public static Item ancient_tome;
 	public static final List<Enchantment> validEnchants = new ArrayList<>();
 	private static boolean initialized = false;
+
+	public static QuarkGenericTrigger overlevelTrigger;
+	public static QuarkGenericTrigger instamineDeepslateTrigger;
 
 	@Override
 	public void register() {
@@ -127,6 +136,9 @@ public class AncientTomesModule extends QuarkModule {
 
 		tomeEnchantType = new LootItemFunctionType(new EnchantTome.Serializer());
 		Registry.register(Registry.LOOT_FUNCTION_TYPE, new ResourceLocation(Quark.MOD_ID, "tome_enchant"), tomeEnchantType);
+
+		overlevelTrigger = QuarkAdvancementHandler.registerGenericTrigger("overlevel");
+		instamineDeepslateTrigger = QuarkAdvancementHandler.registerGenericTrigger("instamine_deepslate");
 	}
 
 	@SubscribeEvent
@@ -164,6 +176,7 @@ public class AncientTomesModule extends QuarkModule {
 	@Override
 	public void setup() {
 		setupEnchantList();
+		setupCursesList();
 		initialized = true;
 	}
 
@@ -194,7 +207,12 @@ public class AncientTomesModule extends QuarkModule {
 		String name = event.getName();
 
 		if(!left.isEmpty() && !right.isEmpty() ) {
+
+			// Apply tome to book or item
 			if(right.is(ancient_tome)) {
+				if(!combineWithBooks && left.is(Items.ENCHANTED_BOOK))
+					return;
+
 				Enchantment ench = getTomeEnchantment(right);
 				Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(left);
 
@@ -216,7 +234,8 @@ public class AncientTomesModule extends QuarkModule {
 				}
 			}
 
-			else if(right.is(Items.ENCHANTED_BOOK)) {
+			// Apply overleveled book to item
+			else if(combineWithBooks && right.is(Items.ENCHANTED_BOOK)) {
 				Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(right);
 				Map<Enchantment, Integer> currentEnchants = EnchantmentHelper.getEnchantments(left);
 				boolean hasOverLevel = false;
@@ -281,38 +300,53 @@ public class AncientTomesModule extends QuarkModule {
 	}
 
 	@SubscribeEvent
+	public void onAnvilUse(AnvilRepairEvent event) {
+		ItemStack output = event.getOutput();
+		ItemStack right = event.getRight();
+
+		if(curseGear && (right.is(ancient_tome) || event.getLeft().is(ancient_tome))){
+			event.getOutput().enchant(curses.get(event.getEntity().level.random.nextInt(curses.size())),1);
+		}
+
+		if(isOverlevel(output) && (right.getItem() == Items.ENCHANTED_BOOK || right.getItem() == ancient_tome) && event.getEntity() instanceof ServerPlayer sp)
+			overlevelTrigger.trigger(sp);
+	}
+
+	@SubscribeEvent
 	public void onGetSpeed(PlayerEvent.BreakSpeed event) {
 		if(deepslateTweak) {
 			Player player = event.getEntity();
 			ItemStack stack = player.getMainHandItem();
 			BlockState state = event.getState();
-			
-			if(state.is(Blocks.DEEPSLATE) 
-					&& EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, stack) >= 6 
+
+			if(state.is(Blocks.DEEPSLATE)
+					&& EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, stack) >= 6
 					&& event.getOriginalSpeed() >= 45F
-					&& (!deepslateTweakNeedsHaste2 || playerHasHaste2(player)))
-				
+					&& (!deepslateTweakNeedsHaste2 || playerHasHaste2(player))) {
+
 				event.setNewSpeed(100F);
+
+				if(player instanceof ServerPlayer sp)
+					instamineDeepslateTrigger.trigger(sp);
+			}
 		}
 	}
-	
+
 	private boolean playerHasHaste2(Player player) {
 		MobEffectInstance inst = player.getEffect(MobEffects.DIG_SPEED);
 		return inst != null && inst.getAmplifier() > 0;
 	}
 
 	private static boolean isOverlevel(ItemStack stack) {
-		if (stack.getItem() == Items.ENCHANTED_BOOK) {
-			Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
-			for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-				Enchantment enchantment = entry.getKey();
-				if (enchantment == null)
-					continue;
+		Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
+		for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+			Enchantment enchantment = entry.getKey();
+			if (enchantment == null)
+				continue;
 
-				int level = entry.getValue();
-				if (level > enchantment.getMaxLevel()) {
-					return true;
-				}
+			int level = entry.getValue();
+			if (level > enchantment.getMaxLevel()) {
+				return true;
 			}
 		}
 
@@ -326,7 +360,6 @@ public class AncientTomesModule extends QuarkModule {
 		if (event.getObject().getItem() == Items.ENCHANTED_BOOK) {
 			IRuneColorProvider provider = new IRuneColorProvider() {
 				@Override
-				@OnlyIn(Dist.CLIENT)
 				public int getRuneColor(ItemStack stack) {
 					if (overleveledBooksGlowRainbow && isOverlevel(stack))
 						return 16;
@@ -389,7 +422,16 @@ public class AncientTomesModule extends QuarkModule {
 
 	private void setupEnchantList() {
 		MiscUtil.initializeEnchantmentList(enchantNames, validEnchants);
-		validEnchants.removeIf((ench) -> ench.getMaxLevel() == 1);
+		if (sanityCheck)
+			validEnchants.removeIf((ench) -> ench.getMaxLevel() == 1);
+	}
+
+	private final List<Enchantment> curses = new ArrayList<>();
+
+	public void setupCursesList() {
+		for (var e : Registry.ENCHANTMENT) {
+			if (e.isCurse()) curses.add(e);
+		}
 	}
 
 	public static Enchantment getTomeEnchantment(ItemStack stack) {

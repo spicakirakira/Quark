@@ -197,7 +197,7 @@ public class EmotesModule extends QuarkModule {
 			}
 
 			int buttonX = buttonShiftX;
-			int buttonY = (expandDown ? 2 : gui.height - 40) + buttonShiftX;
+			int buttonY = (expandDown ? 2 : gui.height - 40) + buttonShiftY;
 
 			List<Button> emoteButtons = new LinkedList<>();
 			for (int tier : keys) {
@@ -286,7 +286,7 @@ public class EmotesModule extends QuarkModule {
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, transparency);
 				RenderSystem.setShaderTexture(0, resource);
 
-				RenderSystem.enableBlend(); // TODO LOW PRIO blend doesn't enable
+				RenderSystem.enableBlend();
 				RenderSystem.defaultBlendFunc();
 
 				Screen.blit(stack, x, y, 0, 0, 32, 32, 32, 32);

@@ -1,7 +1,12 @@
-DELETE THIS TEXT BEFORE WRITING YOUR REPORT
+READ THIS BEFORE WRITING YOUR REPORT
 
-If this is your first time writing an issue here, please click and read through the Contributing link over on the right. Submitting good issues saves us both some time!
+If this is your first time writing a report to Quark, please check this page out:
 
-If your issue is about the Quark BLM Screen, you can expect it to be promptly locked and closed.
+https://github.com/VazkiiMods/Quark/blob/master/CONTRIBUTING.md
 
----------------------------->
+It lists what you need to know to provide actually useful info we can use.
+Not reading this may result in your issue being closed or just not including enough
+info we can act upon, so your problem may never get resolved.
+
+Once you've read it, you can delete all of this text and start writing.
+Thank you.

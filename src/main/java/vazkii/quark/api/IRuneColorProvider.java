@@ -1,8 +1,6 @@
 package vazkii.quark.api;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * @author WireSegal
@@ -10,6 +8,5 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 public interface IRuneColorProvider {
 
-	@OnlyIn(Dist.CLIENT)
 	int getRuneColor(ItemStack stack);
 }

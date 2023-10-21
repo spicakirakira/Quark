@@ -11,7 +11,7 @@
             "to": [ 16, 1, 16 ],
             "faces": {
                 "down":  { "texture": "#top", "cullface": "down", "rotation":  180 },
-                "up":    { "texture": "#top", "cullface": "up" },
+                "up":    { "texture": "#top" },
                 "north": { "texture": "#sides", "cullface": "north" },
                 "south": { "texture": "#sides", "cullface": "south" },
                 "west":  { "texture": "#sides", "cullface": "west" },

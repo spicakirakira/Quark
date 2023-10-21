@@ -1,20 +1,6 @@
 package vazkii.quark.addons.oddities.block.be;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Random;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-
 import com.mojang.math.Vector3f;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -34,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,7 +28,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEvent.Context;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import vazkii.arl.block.be.SimpleInventoryBlockEntity;
 import vazkii.quark.addons.oddities.block.pipe.BasePipeBlock;
 import vazkii.quark.addons.oddities.module.PipesModule;
@@ -49,19 +36,28 @@ import vazkii.quark.base.client.handler.NetworkProfilingHandler;
 import vazkii.quark.base.handler.MiscUtil;
 import vazkii.quark.base.handler.QuarkSounds;
 
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.function.Predicate;
+
 public class PipeBlockEntity extends SimpleInventoryBlockEntity {
+
 
 	public PipeBlockEntity(BlockPos pos, BlockState state) {
 		super(PipesModule.blockEntityType, pos, state);
 	}
 
 	private static final String TAG_PIPE_ITEMS = "pipeItems";
+	private static final String TAG_CONNECTIONS = "connections";
 
 	private boolean iterating = false;
 	public final List<PipeItem> pipeItems = new LinkedList<>();
 	public final List<PipeItem> queuedItems = new LinkedList<>();
 
 	private boolean skipSync = false;
+
+	private final ConnectionType[] connectionsCache = new ConnectionType[6];
+	private boolean convert = false; //used to convert old pipes
 
 	public static boolean isTheGoodDay(Level world) {
 		Calendar calendar = Calendar.getInstance();
@@ -73,14 +69,19 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	}
 
 	public void tick() {
+		//convert old pipes
+		if (convert) {
+			convert = false;
+			refreshAllConnections();
+		}
 		boolean enabled = isPipeEnabled();
-		if(!enabled && level.getGameTime() % 10 == 0 && level instanceof ServerLevel serverLevel)
+		if (!enabled && level.getGameTime() % 10 == 0 && level instanceof ServerLevel serverLevel)
 			serverLevel.sendParticles(new DustParticleOptions(new Vector3f(1.0F, 0.0F, 0.0F), 1.0F), worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, 3, 0.2, 0.2, 0.2, 0);
 
 		BlockState blockAt = level.getBlockState(worldPosition);
-		if(!level.isClientSide && enabled && blockAt.is(PipesModule.pipesTag)) {
-			for(Direction side : Direction.values()) {
-				if(getConnectionTo(level, worldPosition, side) == ConnectionType.OPENING) {
+		if (!level.isClientSide && enabled && blockAt.is(PipesModule.pipesTag)) {
+			for (Direction side : Direction.values()) {
+				if (connectionsCache[side.ordinal()] == ConnectionType.OPENING) {
 					double minX = worldPosition.getX() + 0.25 + 0.5 * Math.min(0, side.getStepX());
 					double minY = worldPosition.getY() + 0.25 + 0.5 * Math.min(0, side.getStepY());
 					double minZ = worldPosition.getZ() + 0.25 + 0.5 * Math.min(0, side.getStepZ());
@@ -92,7 +93,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 					boolean pickedItemsUp = false;
 					Predicate<ItemEntity> predicate = entity -> {
-						if(entity == null || !entity.isAlive())
+						if (entity == null || !entity.isAlive())
 							return false;
 
 						Vec3 motion = entity.getDeltaMovement();
@@ -103,22 +104,22 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 					for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(minX, minY, minZ, maxX, maxY, maxZ), predicate)) {
 						passIn(item.getItem().copy(), side);
-						
+
 						if (PipesModule.doPipesWhoosh) {
 							if (isTheGoodDay(level))
 								level.playSound(null, item.getX(), item.getY(), item.getZ(), QuarkSounds.BLOCK_PIPE_PICKUP_LENNY, SoundSource.BLOCKS, 1f, 1f);
 							else
 								level.playSound(null, item.getX(), item.getY(), item.getZ(), QuarkSounds.BLOCK_PIPE_PICKUP, SoundSource.BLOCKS, 1f, 1f);
 						}
-						
-						if(PipesModule.emitVibrations)
+
+						if (PipesModule.emitVibrations)
 							getLevel().gameEvent(GameEvent.PROJECTILE_LAND, getBlockPos(), Context.of(getBlockState()));
 
 						pickedItemsUp = true;
 						item.discard();
 					}
 
-					if(pickedItemsUp)
+					if (pickedItemsUp)
 						sync();
 				}
 			}
@@ -126,19 +127,19 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 		int currentOut = getComparatorOutput();
 
-		if(!pipeItems.isEmpty()) {
-			if(PipesModule.maxPipeItems > 0 && pipeItems.size() > PipesModule.maxPipeItems && !level.isClientSide) {
-				level.levelEvent(2001, worldPosition, Block.getId(level.getBlockState(worldPosition)));
+		if (!pipeItems.isEmpty()) {
+			if (PipesModule.maxPipeItems > 0 && pipeItems.size() > PipesModule.maxPipeItems && !level.isClientSide) {
+				level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, worldPosition, Block.getId(level.getBlockState(worldPosition)));
 				dropItem(new ItemStack(getBlockState().getBlock()));
 				level.removeBlock(getBlockPos(), false);
 			}
 
 			ListIterator<PipeItem> itemItr = pipeItems.listIterator();
 			iterating = true;
-			while(itemItr.hasNext()) {
+			while (itemItr.hasNext()) {
 				PipeItem item = itemItr.next();
 				Direction lastFacing = item.outgoingFace;
-				if(item.tick(this)) {
+				if (item.tick(this)) {
 					itemItr.remove();
 
 					if (item.valid)
@@ -151,13 +152,13 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 			iterating = false;
 
 			pipeItems.addAll(queuedItems);
-			if(!queuedItems.isEmpty())
+			if (!queuedItems.isEmpty())
 				sync();
 
 			queuedItems.clear();
 		}
-		
-		if(getComparatorOutput() != currentOut)
+
+		if (getComparatorOutput() != currentOut)
 			level.updateNeighbourForOutputSignal(getBlockPos(), getBlockState().getBlock());
 	}
 
@@ -168,22 +169,23 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	public Iterator<PipeItem> getItemIterator() {
 		return pipeItems.iterator();
 	}
-	
+
 	public boolean allowsFullConnection(PipeBlockEntity.ConnectionType conn) {
 		return blockState.getBlock() instanceof BasePipeBlock pipe && pipe.allowsFullConnection(conn);
 	}
 
 	public boolean passIn(ItemStack stack, Direction face, Direction backlog, long seed, int time) {
 		PipeItem item = new PipeItem(stack, face, seed);
+		item.lastTickUpdated = level.getGameTime();
 		item.backloggedFace = backlog;
-		if(!iterating) {
+		if (!iterating) {
 			int currentOut = getComparatorOutput();
 			pipeItems.add(item);
 			item.timeInWorld = time;
-			if(getComparatorOutput() != currentOut)
+			if (getComparatorOutput() != currentOut)
 				level.updateNeighbourForOutputSignal(getBlockPos(), getBlockState().getBlock());
 		} else queuedItems.add(item);
-		
+
 		return true;
 	}
 
@@ -195,35 +197,35 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		boolean did = false;
 
 		BlockPos targetPos = getBlockPos().relative(item.outgoingFace);
-		if(level.getBlockState(targetPos).getBlock() instanceof WorldlyContainerHolder) {
+		if (level.getBlockState(targetPos).getBlock() instanceof WorldlyContainerHolder) {
 			ItemStack result = MiscUtil.putIntoInv(item.stack, level, targetPos, null, item.outgoingFace.getOpposite(), false, false);
-			if(result.getCount() != item.stack.getCount()) {
+			if (result.getCount() != item.stack.getCount()) {
 				did = true;
-				if(!result.isEmpty())
+				if (!result.isEmpty())
 					bounceBack(item, result);
 			}
 		} else {
 			BlockEntity tile = level.getBlockEntity(targetPos);
-			if(tile != null) {
-				if(tile instanceof PipeBlockEntity pipe)
+			if (tile != null) {
+				if (tile instanceof PipeBlockEntity pipe)
 					did = pipe.passIn(item.stack, item.outgoingFace.getOpposite(), null, item.rngSeed, item.timeInWorld);
 				else if (!level.isClientSide) {
 					ItemStack result = MiscUtil.putIntoInv(item.stack, level, targetPos, tile, item.outgoingFace.getOpposite(), false, false);
-					if(result.getCount() != item.stack.getCount()) {
+					if (result.getCount() != item.stack.getCount()) {
 						did = true;
-						if(!result.isEmpty())
+						if (!result.isEmpty())
 							bounceBack(item, result);
 					}
 				}
 			}
 		}
 
-		if(!did)
+		if (!did)
 			bounceBack(item, null);
 	}
 
 	private void bounceBack(PipeItem item, ItemStack stack) {
-		if(!level.isClientSide)
+		if (!level.isClientSide)
 			passIn(stack == null ? item.stack : stack, item.outgoingFace, item.incomingFace, item.rngSeed, item.timeInWorld);
 	}
 
@@ -232,7 +234,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	}
 
 	public void dropItem(ItemStack stack, Direction facing, boolean playSound) {
-		if(!level.isClientSide) {
+		if (!level.isClientSide) {
 			double posX = worldPosition.getX() + 0.5;
 			double posY = worldPosition.getY() + 0.25;
 			double posZ = worldPosition.getZ() + 0.5;
@@ -249,16 +251,16 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 			float pitch = 1f;
 			if (!shootOut)
 				pitch = 0.025f;
-			
+
 			if (playSound) {
-				if(PipesModule.doPipesWhoosh) {
+				if (PipesModule.doPipesWhoosh) {
 					if (isTheGoodDay(level))
 						level.playSound(null, posX, posY, posZ, QuarkSounds.BLOCK_PIPE_SHOOT_LENNY, SoundSource.BLOCKS, 1f, pitch);
 					else
 						level.playSound(null, posX, posY, posZ, QuarkSounds.BLOCK_PIPE_SHOOT, SoundSource.BLOCKS, 1f, pitch);
 				}
-				
-				if(PipesModule.emitVibrations)
+
+				if (PipesModule.emitVibrations)
 					getLevel().gameEvent(GameEvent.PROJECTILE_SHOOT, getBlockPos(), Context.of(getBlockState()));
 			}
 
@@ -287,7 +289,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	}
 
 	public void dropAllItems() {
-		for(PipeItem item : pipeItems)
+		for (PipeItem item : pipeItems)
 			dropItem(item.stack);
 		pipeItems.clear();
 	}
@@ -309,6 +311,13 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 			PipeItem item = PipeItem.readFromNBT((CompoundTag) listCmp);
 			pipeItems.add(item);
 		});
+
+		if (cmp.contains(TAG_CONNECTIONS)) {
+			var c = cmp.getByteArray(TAG_CONNECTIONS);
+			for (int i = 0; i < c.length; i++) {
+				connectionsCache[i] = ConnectionType.values()[c[i]];
+			}
+		}
 	}
 
 	@Override
@@ -316,23 +325,31 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		super.writeSharedNBT(cmp);
 
 		ListTag pipeItemList = new ListTag();
-		for(PipeItem item : pipeItems) {
+		for (PipeItem item : pipeItems) {
 			CompoundTag listCmp = new CompoundTag();
 			item.writeToNBT(listCmp);
 			pipeItemList.add(listCmp);
 		}
 		cmp.put(TAG_PIPE_ITEMS, pipeItemList);
+
+		for (int i = 0; i < connectionsCache.length; i++) {
+			if (connectionsCache[i] == null) {
+				connectionsCache[i] = ConnectionType.NONE;
+				this.convert = true;
+			}
+		}
+		cmp.putByteArray(TAG_CONNECTIONS, (Arrays.stream(connectionsCache).map(c -> (byte) c.ordinal()).toList()));
 	}
 
 	protected boolean canFit(ItemStack stack, BlockPos pos, Direction face) {
-		if(level.getBlockState(pos).getBlock() instanceof WorldlyContainerHolder)
-			return MiscUtil.canPutIntoInv(stack, level, pos, null, face,false);
+		if (level.getBlockState(pos).getBlock() instanceof WorldlyContainerHolder)
+			return MiscUtil.canPutIntoInv(stack, level, pos, null, face, false);
 
 		BlockEntity tile = level.getBlockEntity(pos);
-		if(tile == null)
+		if (tile == null)
 			return false;
 
-		if(tile instanceof PipeBlockEntity pipe)
+		if (tile instanceof PipeBlockEntity pipe)
 			return pipe.isPipeEnabled();
 		else
 			return MiscUtil.canPutIntoInv(stack, level, pos, tile, face, false);
@@ -345,16 +362,16 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 	@Override
 	public boolean canPlaceItemThroughFace(int index, @Nonnull ItemStack itemStackIn, @Nonnull Direction direction) {
-		return index == direction.ordinal() && isPipeEnabled();
+		return direction != null && index == direction.ordinal() && isPipeEnabled();
 	}
 
 	@Override
 	public void setItem(int i, @Nonnull ItemStack itemstack) {
-		if(!itemstack.isEmpty()) {
+		if (!itemstack.isEmpty()) {
 			Direction side = Direction.values()[i];
 			passIn(itemstack, side);
 
-			if(!level.isClientSide && !skipSync)
+			if (!level.isClientSide && !skipSync)
 				sync();
 		}
 	}
@@ -374,32 +391,52 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		MiscUtil.syncTE(this);
 	}
 
-	public static ConnectionType getConnectionTo(BlockGetter world, BlockPos pos, Direction face) {
-		return getConnectionTo(world, pos, face, false);
+	public void refreshAllConnections() {
+		Arrays.stream(Direction.values()).forEach(this::updateConnection);
 	}
 
-	private static ConnectionType getConnectionTo(BlockGetter world, BlockPos pos, Direction face, boolean recursed) {
+	protected ConnectionType updateConnection(Direction facing) {
+		var c = computeConnectionTo(level, worldPosition, facing);
+		connectionsCache[facing.ordinal()] = c;
+		return c;
+	}
+
+	public ConnectionType getConnectionTo(Direction side) {
+		var c = connectionsCache[side.ordinal()];
+		if (c == null) {
+			//backwards compat
+			c = updateConnection(side);
+		}
+		return c;
+	}
+
+	public static ConnectionType computeConnectionTo(BlockGetter world, BlockPos pos, Direction face) {
+		return computeConnectionTo(world, pos, face, false);
+	}
+
+	private static ConnectionType computeConnectionTo(BlockGetter world, BlockPos pos, Direction face, boolean recursed) {
 		BlockPos truePos = pos.relative(face);
 
-		if(world.getBlockState(truePos).getBlock() instanceof WorldlyContainerHolder)
+		if (world.getBlockState(truePos).getBlock() instanceof WorldlyContainerHolder)
 			return ConnectionType.TERMINAL;
 
 		BlockEntity tile = world.getBlockEntity(truePos);
 
-		if(tile != null) {
-			if(tile instanceof PipeBlockEntity)
+		if (tile != null) {
+			if (tile instanceof PipeBlockEntity)
 				return ConnectionType.PIPE;
-			else if(tile instanceof Container || tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, face.getOpposite()).isPresent())
+			else if (tile instanceof Container || tile.getCapability(ForgeCapabilities.ITEM_HANDLER, face.getOpposite()).isPresent())
 				return tile instanceof ChestBlockEntity ? ConnectionType.TERMINAL_OFFSET : ConnectionType.TERMINAL;
 		}
 
-		checkSides: if(!recursed) {
-			ConnectionType other = getConnectionTo(world, pos, face.getOpposite(), true);
-			if(other.isSolid) {
-				for(Direction d : Direction.values())
-					if(d.getAxis() != face.getAxis()) {
-						other = getConnectionTo(world, pos, d, true);
-						if(other.isSolid)
+		checkSides:
+		if (!recursed) {
+			ConnectionType other = computeConnectionTo(world, pos, face.getOpposite(), true);
+			if (other.isSolid) {
+				for (Direction d : Direction.values())
+					if (d.getAxis() != face.getAxis()) {
+						other = computeConnectionTo(world, pos, d, true);
+						if (other.isSolid)
 							break checkSides;
 					}
 
@@ -409,6 +446,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 		return ConnectionType.NONE;
 	}
+
 
 	public static class PipeItem {
 
@@ -430,6 +468,8 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		public int timeInWorld = 0;
 		public boolean valid = true;
 
+		protected long lastTickUpdated = 0;
+
 		public PipeItem(ItemStack stack, Direction face, long rngSeed) {
 			this.stack = stack;
 			ticksInPipe = 0;
@@ -438,16 +478,21 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 		}
 
 		protected boolean tick(PipeBlockEntity pipe) {
-			ticksInPipe++;
-			timeInWorld++;
+			long gameTime = pipe.level.getGameTime();
+			if (lastTickUpdated != gameTime) {
+				lastTickUpdated = gameTime;
 
-			if(ticksInPipe == PipesModule.effectivePipeSpeed / 2 - 1) {
-				outgoingFace = getTargetFace(pipe);
-			}
+				ticksInPipe++;
+				timeInWorld++;
 
-			if(outgoingFace == null) {
-				valid = false;
-				return true;
+				if (ticksInPipe == PipesModule.effectivePipeSpeed / 2 - 1) {
+					outgoingFace = getTargetFace(pipe);
+				}
+
+				if (outgoingFace == null) {
+					valid = false;
+					return true;
+				}
 			}
 
 			return ticksInPipe >= PipesModule.effectivePipeSpeed;
@@ -455,13 +500,13 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 		protected Direction getTargetFace(PipeBlockEntity pipe) {
 			BlockPos pipePos = pipe.getBlockPos();
-			if(incomingFace != Direction.DOWN && backloggedFace != Direction.DOWN && pipe.canFit(stack, pipePos.relative(Direction.DOWN), Direction.UP))
+			if (incomingFace != Direction.DOWN && backloggedFace != Direction.DOWN && pipe.canFit(stack, pipePos.relative(Direction.DOWN), Direction.UP))
 				return Direction.DOWN;
 
 			Direction incomingOpposite = incomingFace; // init as same so it doesn't break in the remove later
-			if(incomingFace.getAxis() != Axis.Y) {
+			if (incomingFace.getAxis() != Axis.Y) {
 				incomingOpposite = incomingFace.getOpposite();
-				if(incomingOpposite != backloggedFace && pipe.canFit(stack, pipePos.relative(incomingOpposite), incomingFace))
+				if (incomingOpposite != backloggedFace && pipe.canFit(stack, pipePos.relative(incomingOpposite), incomingFace))
 					return incomingOpposite;
 			}
 
@@ -472,15 +517,15 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 			Random rng = new Random(rngSeed);
 			rngSeed = rng.nextLong();
 			Collections.shuffle(sides, rng);
-			for(Direction side : sides) {
-				if(side != backloggedFace && pipe.canFit(stack, pipePos.relative(side), side.getOpposite()))
+			for (Direction side : sides) {
+				if (side != backloggedFace && pipe.canFit(stack, pipePos.relative(side), side.getOpposite()))
 					return side;
 			}
 
-			if(incomingFace != Direction.UP && backloggedFace != Direction.UP && pipe.canFit(stack, pipePos.relative(Direction.UP), Direction.DOWN))
+			if (incomingFace != Direction.UP && backloggedFace != Direction.UP && pipe.canFit(stack, pipePos.relative(Direction.UP), Direction.DOWN))
 				return Direction.UP;
 
-			if(backloggedFace != null)
+			if (backloggedFace != null)
 				return backloggedFace;
 
 			return null;
@@ -533,11 +578,11 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 			this.flareShift = flareShift;
 			this.fullFlareShift = fullFlareShift;
 		}
-		
+
 		ConnectionType(boolean isSolid, boolean allowsItems, boolean isFlared, double flareShift) {
 			this(isSolid, allowsItems, isFlared, flareShift, flareShift);
 		}
-		
+
 		public double getFlareShift(PipeBlockEntity pipe) {
 			return pipe.allowsFullConnection(this) ? fullFlareShift : flareShift;
 		}

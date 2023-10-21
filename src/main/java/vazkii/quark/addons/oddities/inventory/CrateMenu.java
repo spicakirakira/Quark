@@ -99,44 +99,50 @@ public class CrateMenu extends AbstractContainerMenu {
 	// and was like yeah just take whatever you want lol
 	// https://github.com/CoFH/CoFHCore/blob/d4a79b078d257e88414f5eed598d57490ec8e97f/src/main/java/cofh/core/util/helpers/InventoryHelper.java
 	@Override
-	public boolean moveItemStackTo(ItemStack stack, int start, int length, boolean r) {
+	public boolean moveItemStackTo(ItemStack stack, int start, int length, boolean reverse) {
 		boolean successful = false;
-		int i = !r ? start : length - 1;
-		int iterOrder = !r ? 1 : -1;
-
+		int i = reverse ? (length - 1) : start;
+		int iterOrder = reverse ? -1 : 1;
+		
 		Slot slot;
 		ItemStack existingStack;
 
-		if(stack.isStackable()) while (stack.getCount() > 0 && (!r && i < length || r && i >= start)) {
-			slot = slots.get(i);
+		// First pass, try to merge
+		if(stack.isStackable()) 
+			while (stack.getCount() > 0 && (!reverse && i < length || reverse && i >= start)) {
+				slot = slots.get(i);
 
-			existingStack = slot.getItem();
+				existingStack = slot.getItem();
 
-			if (!existingStack.isEmpty()) {
-				int maxStack = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
-				int rmv = Math.min(maxStack, stack.getCount());
+				if (!existingStack.isEmpty()) {
+					int maxStack = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
+					int rmv = Math.min(maxStack, stack.getCount());
 
-				if (slot.mayPlace(cloneStack(stack, rmv)) && existingStack.getItem().equals(stack.getItem()) && ItemStack.tagMatches(stack, existingStack)) {
-					int existingSize = existingStack.getCount() + stack.getCount();
-
-					if (existingSize <= maxStack) {
-						stack.setCount(0);
-						existingStack.setCount(existingSize);
-						slot.set(existingStack);
-						successful = true;
-					} else if (existingStack.getCount() < maxStack) {
-						stack.shrink(maxStack - existingStack.getCount());
-						existingStack.setCount(maxStack);
-						slot.set(existingStack);
-						successful = true;
+					if (slot.mayPlace(cloneStack(stack, rmv)) && existingStack.getItem().equals(stack.getItem()) && ItemStack.tagMatches(stack, existingStack)) {
+						int existingSize = existingStack.getCount() + stack.getCount();
+						ItemStack existingStackCopy = existingStack.copy();
+						
+						if (existingSize <= maxStack) {
+							stack.setCount(0);
+							existingStackCopy.setCount(existingSize);
+							slot.set(existingStackCopy);
+							successful = true;
+						} else if (existingStackCopy.getCount() < maxStack) {
+							stack.shrink(maxStack - existingStackCopy.getCount());
+							
+							existingStackCopy.setCount(maxStack);
+							slot.set(existingStackCopy);
+							successful = true;
+						}
 					}
 				}
+				i += iterOrder;
 			}
-			i += iterOrder;
-		}
+		
+		// Second pass, after marged, if any remaining, try to insert into empty slots
 		if(stack.getCount() > 0) {
-			i = !r ? start : length - 1;
-			while(stack.getCount() > 0 && (!r && i < length || r && i >= start)) {
+			i = reverse ? (length - 1) : start;
+			while(stack.getCount() > 0 && (!reverse && i < length || reverse && i >= start)) {
 				slot = slots.get(i);
 				existingStack = slot.getItem();
 
@@ -153,6 +159,7 @@ public class CrateMenu extends AbstractContainerMenu {
 				i += iterOrder;
 			}
 		}
+		
 		return successful;
 	}
 

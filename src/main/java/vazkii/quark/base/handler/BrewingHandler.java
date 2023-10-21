@@ -1,15 +1,7 @@
 package vazkii.quark.base.handler;
 
-import java.util.List;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
-
 import com.google.common.collect.Lists;
-
+import com.google.common.collect.Maps;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -23,17 +15,23 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.recipe.ingredient.FlagIngredient;
 import vazkii.quark.mixin.accessor.AccessorPotionBrewing;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author WireSegal
  * Created at 3:34 PM on 9/23/19.
  */
 public class BrewingHandler {
-
 
 	public static void addPotionMix(String flag, Supplier<Ingredient> reagent, MobEffect effect) {
 		addPotionMix(flag, reagent, effect, null);
@@ -53,7 +51,7 @@ public class BrewingHandler {
 	public static void addPotionMix(String flag, Supplier<Ingredient> reagent, MobEffect effect,
 									@Nullable MobEffect negation, int normalTime, int longTime, int strongTime) {
 		ResourceLocation loc = RegistryHelper.getRegistryName(effect, Registry.MOB_EFFECT);
-		
+
 		if (loc != null) {
 			String baseName = loc.getPath();
 			boolean hasStrong = strongTime > 0;
@@ -112,6 +110,8 @@ public class BrewingHandler {
 		return stack;
 	}
 
+	private static final Map<Potion, String> flags = Maps.newHashMap();
+
 	private static boolean isInjectionPrepared = false;
 	private static final List<Triple<Potion, Supplier<Ingredient>, Potion>> toRegister = Lists.newArrayList();
 
@@ -124,6 +124,7 @@ public class BrewingHandler {
 	}
 
 	private static void add(String flag, Potion potion, Supplier<Ingredient> reagent, Potion to) {
+		flags.put(to, flag);
 		if (isInjectionPrepared)
 			addBrewingRecipe(potion, new FlagIngredient(reagent.get(), flag), to);
 		else
@@ -151,5 +152,11 @@ public class BrewingHandler {
 
 	private static Ingredient spiderEye() {
 		return Ingredient.of(Items.FERMENTED_SPIDER_EYE);
+	}
+
+	public static boolean isEnabled(Potion potion) {
+		if (!flags.containsKey(potion))
+			return true;
+		return FlagIngredient.Serializer.INSTANCE.flagManager().getFlag(flags.get(potion));
 	}
 }

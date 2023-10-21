@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.IronBarsBlock;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -24,7 +25,7 @@ public class QuarkPaneBlock extends IronBarsBlock implements IQuarkBlock {
 
 		this.module = module;
 		RegistryHelper.registerBlock(this, name);
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		if(renderType != null)
 			RenderLayerHandler.setRenderType(this, renderType);

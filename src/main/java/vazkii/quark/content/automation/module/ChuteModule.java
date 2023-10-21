@@ -10,6 +10,7 @@ import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.automation.block.ChuteBlock;
 import vazkii.quark.content.automation.block.be.ChuteBlockEntity;
 
@@ -21,10 +22,11 @@ import vazkii.quark.content.automation.block.be.ChuteBlockEntity;
 public class ChuteModule extends QuarkModule {
 
 	public static BlockEntityType<ChuteBlockEntity> blockEntityType;
+	@Hint Block chute;
 
 	@Override
 	public void register() {
-		Block chute = new ChuteBlock("chute", this, CreativeModeTab.TAB_REDSTONE,
+		chute = new ChuteBlock("chute", this, CreativeModeTab.TAB_REDSTONE,
 				Block.Properties.of(Material.WOOD)
 						.strength(2.5F)
 						.sound(SoundType.WOOD));

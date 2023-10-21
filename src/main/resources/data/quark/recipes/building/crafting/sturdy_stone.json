@@ -15,8 +15,20 @@
   },
   "conditions": [
     {
-      "type": "quark:flag",
-      "flag": "sturdy_stone"
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "forge:not",
+          "value": {
+            "type": "forge:mod_loaded",
+            "modid": "cyclic"  
+          }
+        },
+        {
+          "type": "quark:flag",
+          "flag": "sturdy_stone"
+        }
+      ]
     }
   ]
 }

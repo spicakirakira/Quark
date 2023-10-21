@@ -4,6 +4,10 @@ import java.util.function.BooleanSupplier;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.collect.ImmutableList;
+
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
@@ -23,6 +27,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.IPlantable;
@@ -30,6 +37,7 @@ import net.minecraftforge.common.PlantType;
 import vazkii.arl.interf.IBlockColorProvider;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
 import vazkii.quark.base.module.QuarkModule;
@@ -37,6 +45,17 @@ import vazkii.quark.content.building.module.HedgesModule;
 import vazkii.quark.content.world.block.BlossomLeavesBlock;
 
 public class HedgeBlock extends FenceBlock implements IQuarkBlock, IBlockColorProvider {
+	
+	private static final VoxelShape WOOD_SHAPE = box(6F, 0F, 6F, 10F, 15F, 10F);
+	private static final VoxelShape HEDGE_CENTER_SHAPE = box(2F, 1F, 2F, 14F, 16F, 14F);
+	private static final VoxelShape NORTH_SHAPE = box(2F, 1F, 0F, 14F, 16F, 2F);
+	private static final VoxelShape SOUTH_SHAPE = box(2F, 1F, 14F, 14F, 16F, 15F);
+	private static final VoxelShape EAST_SHAPE = box(14F, 1F, 2F, 16F, 16F, 14F);
+	private static final VoxelShape WEST_SHAPE = box(0F, 1F, 2F, 2F, 16F, 14F);
+	private static final VoxelShape EXTEND_SHAPE = box(2F, 0F, 2F, 14F, 1F, 14F);
+	
+	private final Object2IntMap<BlockState> hedgeStateToIndex;
+	private final VoxelShape[] hedgeShapes;
 
 	private final QuarkModule module;
 	private final Block leaf;
@@ -57,13 +76,63 @@ public class HedgeBlock extends FenceBlock implements IQuarkBlock, IBlockColorPr
 		} else {
 			RegistryHelper.registerBlock(this, leafRes.getPath().replaceAll("_leaves", "_hedge"));
 		}
-
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
 
 		registerDefaultState(defaultBlockState().setValue(EXTEND, false));
+		
+		hedgeStateToIndex = new Object2IntOpenHashMap<>();
+		hedgeShapes = cacheHedgeShapes(stateDefinition.getPossibleStates());
 	}
+
+	@Override
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+		return hedgeShapes[getHedgeAABBIndex(state)];
+	}	
+	
+	private VoxelShape[] cacheHedgeShapes(ImmutableList<BlockState> possibleStates) {
+		VoxelShape[] shapes = new VoxelShape[possibleStates.size()];
+		
+		for(int i = 0; i < shapes.length; i++) {
+			BlockState state = possibleStates.get(i);
+			int realIndex = getHedgeAABBIndex(state);
+
+			VoxelShape finishedShape = Shapes.or(state.getValue(HedgeBlock.EXTEND) ? EXTEND_SHAPE : WOOD_SHAPE, HEDGE_CENTER_SHAPE);
+			if(state.getValue(FenceBlock.NORTH))
+				finishedShape = Shapes.or(finishedShape, NORTH_SHAPE);
+			if(state.getValue(FenceBlock.SOUTH))
+				finishedShape = Shapes.or(finishedShape, SOUTH_SHAPE);
+			if(state.getValue(FenceBlock.EAST))
+				finishedShape = Shapes.or(finishedShape, EAST_SHAPE);
+			if(state.getValue(FenceBlock.WEST))
+				finishedShape = Shapes.or(finishedShape, WEST_SHAPE);
+			
+			shapes[realIndex] = finishedShape;
+		}
+		
+		return shapes;
+	}
+
+	protected int getHedgeAABBIndex(BlockState curr) {
+		return hedgeStateToIndex.computeIntIfAbsent(curr, (state) -> {
+			int i = 0;
+
+			if(state.getValue(FenceBlock.NORTH))
+				i |= 0b00001;
+			if(state.getValue(FenceBlock.SOUTH))
+				i |= 0b00010;
+			if(state.getValue(FenceBlock.EAST))
+				i |= 0b00100;
+			if(state.getValue(FenceBlock.WEST))
+				i |= 0b01000;
+			if(state.getValue(EXTEND))
+				i |= 0b10000;
+
+			return i;
+		});
+	}
+
 
 	@Override
 	public boolean connectsTo(BlockState state, boolean isSideSolid, @Nonnull Direction direction) {

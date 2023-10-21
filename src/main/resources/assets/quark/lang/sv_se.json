@@ -1102,7 +1102,7 @@
 
     "entity.quark.pickarang": "Hackarang",
     "entity.quark.glass_frame": "Glasföremålsram",
-    "entity.quark.colored_frame": "Färgad föremålsram",
+    "entity.quark.dyed_item_frame": "Färgad föremålsram",
     "entity.quark.totem": "Besittningstotem",
     "entity.quark.stoneling": "Stenling",
     "entity.quark.gravisand": "Svävande gravisand",

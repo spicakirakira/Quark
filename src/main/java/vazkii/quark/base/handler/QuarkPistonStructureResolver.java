@@ -14,6 +14,7 @@ import vazkii.quark.api.ICollateralMover;
 import vazkii.quark.api.ICollateralMover.MoveResult;
 import vazkii.quark.api.IConditionalSticky;
 import vazkii.quark.api.IIndirectConnector;
+import vazkii.quark.mixin.accessor.AccessorPistonStructureResolver;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -30,18 +31,22 @@ public class QuarkPistonStructureResolver extends PistonStructureResolver {
 	private final List<BlockPos> toMove = Lists.newArrayList();
 	private final List<BlockPos> toDestroy = Lists.newArrayList();
 
-	public QuarkPistonStructureResolver(PistonStructureResolver parent, Level worldIn, BlockPos posIn, Direction pistonFacing, boolean extending) {
-		super(worldIn, posIn, pistonFacing, extending);
+	public QuarkPistonStructureResolver(PistonStructureResolver parent) {
+		super(((AccessorPistonStructureResolver) parent).quark$level(),
+			((AccessorPistonStructureResolver) parent).quark$pistonPos(),
+			((AccessorPistonStructureResolver) parent).quark$pistonDirection(),
+			((AccessorPistonStructureResolver) parent).quark$extending());
 		this.parent = parent;
 
-		this.world = worldIn;
-		this.pistonPos = posIn;
-		if(extending) {
+		this.world = ((AccessorPistonStructureResolver) parent).quark$level();
+		this.pistonPos = ((AccessorPistonStructureResolver) parent).quark$pistonPos();
+		Direction pistonFacing = ((AccessorPistonStructureResolver) parent).quark$pistonDirection();
+		if(((AccessorPistonStructureResolver) parent).quark$extending()) {
 			this.moveDirection = pistonFacing;
-			this.blockToMove = posIn.relative(pistonFacing);
+			this.blockToMove = this.pistonPos.relative(pistonFacing);
 		} else {
 			this.moveDirection = pistonFacing.getOpposite();
-			this.blockToMove = posIn.relative(pistonFacing, 2);
+			this.blockToMove = this.pistonPos.relative(pistonFacing, 2);
 		}
 	}
 

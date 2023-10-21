@@ -26,8 +26,8 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderTooltipEvent;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import vazkii.arl.util.ItemNBTHelper;
 import vazkii.quark.base.handler.SimilarBlockTypeHandler;
@@ -55,7 +55,7 @@ public class ShulkerBoxTooltips {
 				return;
 
 			BlockEntity te = BlockEntity.loadStatic(BlockPos.ZERO, ((BlockItem) stack.getItem()).getBlock().defaultBlockState(), cmp);
-			if (te != null && te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent()) {
+			if (te != null && te.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()) {
 				List<Either<FormattedText, TooltipComponent>> tooltip = event.getTooltipElements();
 				List<Either<FormattedText, TooltipComponent>> tooltipCopy = new ArrayList<>(tooltip);
 
@@ -112,7 +112,7 @@ public class ShulkerBoxTooltips {
 					if (te instanceof RandomizableContainerBlockEntity randomizable)
 						randomizable.setLootTable(null, 0);
 
-					LazyOptional<IItemHandler> handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+					LazyOptional<IItemHandler> handler = te.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 					handler.ifPresent((capability) -> {
 						ItemStack currentBox = stack;
 						int currentX = tooltipX;

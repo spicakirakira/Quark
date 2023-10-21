@@ -1,5 +1,8 @@
 package vazkii.quark.content.tools.item;
 
+import javax.annotation.Nonnull;
+
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -13,8 +16,7 @@ import net.minecraft.world.level.Level;
 import vazkii.quark.base.item.QuarkItem;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.tools.entity.ParrotEgg;
-
-import javax.annotation.Nonnull;
+import vazkii.quark.content.tools.module.ParrotEggsModule;
 
 public class ParrotEggItem extends QuarkItem {
 	private final int variant;
@@ -38,6 +40,9 @@ public class ParrotEggItem extends QuarkItem {
 			parrotEgg.setVariant(variant);
 			parrotEgg.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
 			world.addFreshEntity(parrotEgg);
+			
+			if(player instanceof ServerPlayer sp)
+				ParrotEggsModule.throwParrotEggTrigger.trigger(sp);
 		}
 
 		player.awardStat(Stats.ITEM_USED.get(this));

@@ -46,22 +46,25 @@ public class QuarkBeaconBlockEntityRenderer {
 		int height = segment.getHeight();
 		float[] colors = segment.getColor();
 		float alpha = segment.alpha;
-		
+
 		matrixStackIn.pushPose();
 		matrixStackIn.translate(0.5D, 0.5D, 0.5D); // Y translation changed to 0.5
 		matrixStackIn.translate(segment.offset.getX(), segment.offset.getY(), segment.offset.getZ()); // offset by the correct distance
 		matrixStackIn.mulPose(segment.dir.getRotation());
 
-		float angle = -(Math.floorMod(totalWorldTime, 40L) + partialTicks);
-		float partAngle = Mth.frac(1 * 0.2F - (float)Mth.floor(angle * 0.1F));
+		float angle = Math.floorMod(totalWorldTime, 40L) + partialTicks;
 		float r = colors[0];
 		float g = colors[1];
 		float b = colors[2];
 
 		matrixStackIn.pushPose();
 		matrixStackIn.mulPose(Vector3f.YP.rotationDegrees(angle * 2.25F - 45.0F));
+
+		float renderTime = -(totalWorldTime + partialTicks);
+		float partAngle = Mth.frac(renderTime * 0.2F - (float)Mth.floor(angle * 0.1F));
 		float v2 = -1.0F + partAngle;
 		float v1 = (float)height * textureScale * (0.5F / beamRadius) + v2;
+
 		renderPart(matrixStackIn, bufferIn.getBuffer(RenderType.beaconBeam(textureLocation, alpha < 1F)), r, g, b, alpha, height, 0.0F, beamRadius, beamRadius, 0.0F, -beamRadius, 0.0F, 0.0F, -beamRadius, 0.0F, 1.0F, v1, v2);
 		matrixStackIn.popPose();
 		v1 = (float)height * textureScale + v2;

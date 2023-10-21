@@ -14,12 +14,12 @@ import vazkii.quark.base.module.QuarkModule;
 public class BambooBackportModule extends QuarkModule {
 
 	public static WoodSet woodSet;
-	
+
 	@Override
 	public void register() {
-		woodSet = WoodSetHandler.addWoodSet(this, "bamboo", MaterialColor.COLOR_YELLOW, MaterialColor.COLOR_YELLOW, false, false);
-		
+		woodSet = WoodSetHandler.addWoodSet(this, "bamboo", MaterialColor.COLOR_YELLOW, MaterialColor.COLOR_YELLOW, false, false, true);
+
 		new QuarkBlock("bamboo_mosaic", this, CreativeModeTab.TAB_BUILDING_BLOCKS, BlockBehaviour.Properties.copy(woodSet.planks));
 	}
-	
+
 }

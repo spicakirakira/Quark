@@ -1,9 +1,11 @@
 package vazkii.quark.content.building.module;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Functions;
+import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -17,11 +19,15 @@ import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.BUILDING)
 public class MorePottedPlantsModule extends QuarkModule {
 
 	private static Map<Block, Block> tintedBlocks = new HashMap<>();
+	
+	@Hint(key = "pottable_stuff")
+	List<Block> pottableBlocks = Lists.newArrayList();
 	
 	@Override
 	public void register() {
@@ -48,6 +54,7 @@ public class MorePottedPlantsModule extends QuarkModule {
 		Block vine = add(Blocks.VINE, "vine");
 		add(Blocks.WEEPING_VINES, "weeping_vines");
 		add(Blocks.WHEAT, "wheat");
+		VariantHandler.addFlowerPot(Blocks.CAVE_VINES, "cave_vines", p -> p.lightLevel(b -> 14));
 		
 		tintedBlocks.put(grass, Blocks.GRASS);
 		tintedBlocks.put(largeFern, Blocks.LARGE_FERN);
@@ -57,6 +64,7 @@ public class MorePottedPlantsModule extends QuarkModule {
 	}
 	
 	private FlowerPotBlock add(Block block, String name) {
+		pottableBlocks.add(block);
 		return VariantHandler.addFlowerPot(block, name, Functions.identity());
 	}
 	

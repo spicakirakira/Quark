@@ -1,5 +1,7 @@
 package vazkii.quark.content.world.module;
 
+import java.util.ArrayList;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,13 +29,12 @@ import vazkii.quark.content.world.block.be.MonsterBoxBlockEntity;
 import vazkii.quark.content.world.gen.MonsterBoxGenerator;
 import vazkii.quark.mixin.accessor.AccessorLivingEntity;
 
-import java.util.ArrayList;
-
 @LoadModule(category = ModuleCategory.WORLD, hasSubscriptions = true)
 public class MonsterBoxModule extends QuarkModule {
 
 	public static final String TAG_MONSTER_BOX_SPAWNED = "quark:monster_box_spawned";
 	public static final ResourceLocation MONSTER_BOX_LOOT_TABLE = new ResourceLocation(Quark.MOD_ID, "misc/monster_box");
+	public static final ResourceLocation MONSTER_BOX_SPAWNS_LOOT_TABLE = new ResourceLocation(Quark.MOD_ID, "misc/monster_box_spawns");
 
 	public static BlockEntityType<MonsterBoxBlockEntity> blockEntityType;
 
@@ -46,6 +47,7 @@ public class MonsterBoxModule extends QuarkModule {
 	@Config public static int maxMobCount = 8;
 	@Config public static DimensionConfig dimensions = DimensionConfig.overworld(false);
 	@Config public static boolean enableExtraLootTable = true;
+	@Config public static double activationRange = 2.5;
 
 	@Config(description = "How many blocks to search vertically from a position before trying to place a block. Higher means you'll get more boxes in open spaces.")
 	public static int searchRange = 15;

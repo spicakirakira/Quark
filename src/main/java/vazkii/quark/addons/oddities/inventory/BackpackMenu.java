@@ -9,6 +9,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import vazkii.arl.util.InventoryIIH;
+import vazkii.quark.addons.oddities.inventory.slot.BackpackSlot;
+import vazkii.quark.addons.oddities.inventory.slot.CachedItemHandlerSlot;
 import vazkii.quark.addons.oddities.module.BackpackModule;
 
 import javax.annotation.Nonnull;
@@ -35,7 +37,7 @@ public class BackpackMenu extends InventoryMenu {
 			for(int i = 0; i < 3; ++i)
 				for(int j = 0; j < 9; ++j) {
 					int k = j + i * 9;
-					addSlot(new SlotCachingItemHandler(inv, k, left + j * 18, top + i * 18));
+					addSlot(new BackpackSlot(inv, k, left + j * 18, top + i * 18));
 				}
 		}
 	}
@@ -87,7 +89,7 @@ public class BackpackMenu extends InventoryMenu {
 			}
 
 			else if (index < invEnd) {
-				if (!this.moveItemStackTo(stack, hotbarStart, hotbarEnd, false) && !this.moveItemStackTo(stack, backpackStart, backpackEnd, false))
+				if (!this.moveItemStackTo(stack, backpackStart, backpackEnd, false) && !this.moveItemStackTo(stack, hotbarStart, hotbarEnd, false))
 					return ItemStack.EMPTY;
 			}
 
@@ -177,9 +179,9 @@ public class BackpackMenu extends InventoryMenu {
 
 	@Override
 	public void clicked(int slotId, int dragType, @Nonnull ClickType clickTypeIn, @Nonnull Player player) {
-		SlotCachingItemHandler.cache(this);
+		CachedItemHandlerSlot.cache(this);
 		super.clicked(slotId, dragType, clickTypeIn, player);
-		SlotCachingItemHandler.applyCache(this);
+		CachedItemHandlerSlot.applyCache(this);
 	}
 
 	private static ItemStack cloneStack(ItemStack stack, int size) {

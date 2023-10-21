@@ -40,10 +40,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.Quark;
 import vazkii.quark.base.handler.QuarkSounds;
+import vazkii.quark.base.handler.advancement.QuarkAdvancementHandler;
+import vazkii.quark.base.handler.advancement.QuarkGenericTrigger;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 import vazkii.quark.content.tools.entity.ParrotEgg;
 import vazkii.quark.content.tools.item.ParrotEggItem;
 
@@ -59,6 +62,7 @@ public class ParrotEggsModule extends QuarkModule {
 
 	public static TagKey<Item> feedTag;
 
+	@Hint(key = "parrot_eggs")
 	public static List<Item> parrotEggs;
 
 	@Config(description = "The chance feeding a parrot will produce an egg")
@@ -69,6 +73,8 @@ public class ParrotEggsModule extends QuarkModule {
 	public static boolean enableKotobirb = true;
 
 	private static boolean isEnabled;
+	
+	public static QuarkGenericTrigger throwParrotEggTrigger;
 
 	@Override
 	public void register() {
@@ -97,8 +103,9 @@ public class ParrotEggsModule extends QuarkModule {
 					});
 				}
 			});
-
 		}
+		
+		throwParrotEggTrigger = QuarkAdvancementHandler.registerGenericTrigger("throw_parrot_egg");
 	}
 
 	@Override

@@ -13,6 +13,7 @@ public class GeneralConfig {
 	private static final List<String> STATIC_ALLOWED_SCREENS = Lists.newArrayList(
 			"appeng.client.gui.implementations.SkyChestScreen",
 			"com.progwml6.ironchest.client.screen.IronChestScreen",
+			"net.mehvahdjukaar.supplementaries.client.screens.SackScreen",
 			"vazkii.quark.addons.oddities.client.screen.CrateScreen",
 			"vazkii.quark.addons.oddities.client.screen.BackpackInventoryScreen"
 			);
@@ -86,6 +87,24 @@ public class GeneralConfig {
 	@Config(description = "Used for terrablender integration")
 	public static int terrablenderRegionWeight = 1;
 
+	@Config(description = "Set to false to stop quark from adding its own items to multi-requirement vanilla advancements")
+	public static boolean enableAdvancementModification = true;
+	
+	@Config(description = "Set to false to stop quark from adding its own advancements")
+	public static boolean enableQuarkAdvancements = true;
+	
+	@Config(description = "Set to false to disable the popup message telling you that you can config quark in the q menu")
+	public static boolean enableOnboarding = true;
+	
+	@Config(description = "Set to false to disable the behavior where quark will automatically hide any disabled items")
+	public static boolean hideDisabledContent = true;
+	
+	@Config(description = "Set to false to disable Quark's item info when viewing recipe/uses for an item in JEI")
+	public static boolean enableJeiItemInfo = true;
+	
+	@Config(description = "For JEI info purposes, add any items here to specifically disable their JEI info from Quark. Note that Quark already only shows info that's relevant to which features are enabled")
+	public static List<String> suppressedInfo = Lists.newArrayList();
+	
 	private GeneralConfig() {
 		// NO-OP
 	}

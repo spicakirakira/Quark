@@ -15,12 +15,15 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.Quark;
@@ -29,9 +32,25 @@ import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.ModuleLoader;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.config.Config;
+import vazkii.quark.base.module.hint.Hint;
 
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class HoeHarvestingModule extends QuarkModule {
+
+	@Config
+	@Config.Min(1)
+	@Config.Max(5)
+	public static int regularHoeRadius = 2;
+
+	@Config
+	@Config.Min(1)
+	@Config.Max(5)
+	public static int highTierHoeRadius = 3;
+
+
+	@Hint(key = "hoe_harvesting")
+	TagKey<Item> hoes = Tags.Items.TOOLS_HOES;
 
 	public static TagKey<Item> bigHarvestingHoesTag;
 
@@ -42,13 +61,16 @@ public class HoeHarvestingModule extends QuarkModule {
 		if(!isHoe(hoe))
 			return 1;
 		else if (hoe.is(bigHarvestingHoesTag))
-			return 3;
+			return highTierHoeRadius;
 		else
-			return 2;
+			return regularHoeRadius;
 	}
 
 	public static boolean isHoe(ItemStack itemStack) {
-		return !itemStack.isEmpty() && itemStack.getItem() instanceof HoeItem;
+		return !itemStack.isEmpty() &&
+				(itemStack.getItem() instanceof HoeItem
+						|| itemStack.is(Tags.Items.TOOLS_HOES)
+						|| itemStack.getItem().canPerformAction(itemStack, ToolActions.HOE_DIG));
 	}
 
 	@Override
@@ -84,7 +106,7 @@ public class HoeHarvestingModule extends QuarkModule {
 						if (block.canHarvestBlock(state, world, pos, player))
 							block.playerDestroy(level, player, pos, state, world.getBlockEntity(pos), stack);
 						world.destroyBlock(pos, false);
-						world.levelEvent(2001, pos, Block.getId(state));
+						world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
 					}
 				}
 

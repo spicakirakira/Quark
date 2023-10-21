@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import vazkii.arl.interf.IBlockColorProvider;
 import vazkii.arl.interf.IItemColorProvider;
 import vazkii.arl.util.RegistryHelper;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.handler.RenderLayerHandler;
 import vazkii.quark.base.handler.VariantHandler;
 import vazkii.quark.base.module.QuarkModule;
@@ -32,7 +33,7 @@ public class QuarkWallBlock extends WallBlock implements IQuarkBlock, IBlockColo
 
 		this.parent = parent;
 		RegistryHelper.registerBlock(this, IQuarkBlock.inheritQuark(parent, "%s_wall"));
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		RenderLayerHandler.setInherited(this, parent.getBlock());
 	}

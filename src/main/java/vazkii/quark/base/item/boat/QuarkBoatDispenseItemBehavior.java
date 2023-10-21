@@ -1,7 +1,5 @@
 package vazkii.quark.base.item.boat;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -11,7 +9,10 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import vazkii.quark.base.handler.WoodSetHandler;
+
+import javax.annotation.Nonnull;
 
 // Pretty much just a copy of BoatDispenseItemBehavior but for the quark boat
 public class QuarkBoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
@@ -45,8 +46,8 @@ public class QuarkBoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
 			offset = 0.0D;
 		}
 
-		Boat boat = 
-				chest ? new QuarkChestBoat(level, boatX, boatY + offset, boatZ) 
+		Boat boat =
+				chest ? new QuarkChestBoat(level, boatX, boatY + offset, boatZ)
 						: new QuarkBoat(level, boatX, boatY + offset, boatZ);
 
 		((IQuarkBoat) boat).setQuarkBoatTypeObj(WoodSetHandler.getQuarkBoatType(type));
@@ -58,6 +59,6 @@ public class QuarkBoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
 
 	@Override
 	protected void playSound(BlockSource world) {
-		world.getLevel().levelEvent(1000, world.getPos(), 0);
+		world.getLevel().levelEvent(LevelEvent.SOUND_DISPENSER_DISPENSE, world.getPos(), 0);
 	}
 }

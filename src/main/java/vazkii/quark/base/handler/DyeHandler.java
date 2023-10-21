@@ -1,10 +1,5 @@
 package vazkii.quark.base.handler;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
@@ -33,44 +28,51 @@ import vazkii.quark.base.Quark;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.base.recipe.DyeRecipe;
 
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
 @EventBusSubscriber(modid = Quark.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
 public final class DyeHandler {
-	
+
 	private static final Map<Item, Supplier<Boolean>> dyeableConditions = new HashMap<>();
 	private static final DyeSurrogate SURROGATE = new DyeSurrogate();
-	
+
 	public static void register() {
 		ForgeRegistries.RECIPE_SERIALIZERS.register(Quark.MOD_ID + ":dye_item", DyeRecipe.SERIALIZER);
 	}
-	
+
 	@OnlyIn(Dist.CLIENT)
 	public static void clientSetup(ParallelDispatchEvent event) {
 		ResourceLocation res = new ResourceLocation("quark_dyed");
 		ItemColors colors = Minecraft.getInstance().getItemColors();
-		
+
 		ItemPropertyFunction fun = (s, e, l, i) -> DyeHandler.isDyed(s) ? 1 : 0;
 		ItemColor color = (s, l) -> {
 			if(l != 0 || !isDyed(s))
 				return 0xFFFFFF;
-			
+
 			return SURROGATE.getColor(s);
 		};
-		
+
 		event.enqueueWork(() -> {
 			for(Item item : dyeableConditions.keySet()) {
 				ItemProperties.register(item, res, fun);
-				
+
 				colors.register(color, item);
-				
+
 				CauldronInteraction.WATER.put(item, DyeHandler::cauldronInteract);
 			}
 		});
 	}
-	
+
+	@Nonnull
 	private static InteractionResult cauldronInteract(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 	      if(!isDyed(stack))
 	         return InteractionResult.PASS;
-	      
+
          if(!level.isClientSide) {
             SURROGATE.clearColor(stack);
 //            p_175632_.awardStat(Stats.CLEAN_ARMOR);
@@ -79,37 +81,37 @@ public final class DyeHandler {
 
          return InteractionResult.sidedSuccess(level.isClientSide);
 	}
-	
+
 	public static void addAlwaysDyeable(Item item) {
 		addDyeable(item, () -> true);
 	}
-	
+
 	public static void addDyeable(Item item, QuarkModule module) {
 		addDyeable(item, () -> module.enabled);
 	}
-	
+
 	public static void addDyeable(Item item, Supplier<Boolean> cond) {
 		dyeableConditions.put(item, cond);
 	}
-	
+
 	public static boolean isDyeable(ItemStack stack) {
 		Item item = stack.getItem();
 		return dyeableConditions.containsKey(item) && dyeableConditions.get(item).get();
 	}
-	
+
 	public static boolean isDyed(ItemStack stack) {
 		return isDyeable(stack) && SURROGATE.hasCustomColor(stack);
 	}
-	
+
 	public static int getDye(ItemStack stack) {
 		return SURROGATE.getColor(stack);
 	}
-	
+
 	public static void applyDye(ItemStack stack, int color) {
 		if(isDyeable(stack))
 			SURROGATE.setColor(stack, color);
 	}
-	
+
 	// Copy of DyeableLeatherItem but for our system
 	public static ItemStack dyeItem(ItemStack stack, List<DyeItem> dyes) {
 	      ItemStack itemstack = ItemStack.EMPTY;
@@ -143,7 +145,7 @@ public final class DyeHandler {
 	            aint[2] += i1;
 	            ++j;
 	         }
-	         
+
 	         int j1 = aint[0] / j;
 	         int k1 = aint[1] / j;
 	         int l1 = aint[2] / j;
@@ -155,13 +157,13 @@ public final class DyeHandler {
 	         int j2 = (j1 << 8) + k1;
 	         j2 = (j2 << 8) + l1;
 	         SURROGATE.setColor(itemstack, j2);
-	         
+
 	         return itemstack;
 	      }
-	      
+
 	      return ItemStack.EMPTY;
 	   }
-	
+
 	private static class DyeSurrogate implements DyeableLeatherItem {}
-	
+
 }

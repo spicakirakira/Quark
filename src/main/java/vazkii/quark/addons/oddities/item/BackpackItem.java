@@ -1,13 +1,7 @@
 package vazkii.quark.addons.oddities.item;
 
-import java.util.Map;
-import java.util.function.Consumer;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.core.NonNullList;
@@ -24,12 +18,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ArmorMaterials;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.DyeableArmorItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -37,9 +26,9 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import vazkii.arl.interf.IItemColorProvider;
@@ -53,6 +42,10 @@ import vazkii.quark.base.client.handler.RequiredModTooltipHandler;
 import vazkii.quark.base.handler.ProxiedItemStackHandler;
 import vazkii.quark.base.item.IQuarkItem;
 import vazkii.quark.base.module.QuarkModule;
+
+import javax.annotation.Nonnull;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class BackpackItem extends DyeableArmorItem implements IQuarkItem, IItemColorProvider, MenuProvider {
 
@@ -91,7 +84,7 @@ public class BackpackItem extends DyeableArmorItem implements IQuarkItem, IItemC
 	}
 
 	public static boolean doesBackpackHaveItems(ItemStack stack) {
-		LazyOptional<IItemHandler> handlerOpt = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+		LazyOptional<IItemHandler> handlerOpt = stack.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 
 		if (!handlerOpt.isPresent())
 			return false;
@@ -102,6 +95,21 @@ public class BackpackItem extends DyeableArmorItem implements IQuarkItem, IItemC
 				return true;
 
 		return false;
+	}
+
+	@Override
+	public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+		return false;
+	}
+
+	@Override
+	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+		return false;
+	}
+
+	@Override
+	public int getEnchantmentValue(ItemStack stack) {
+		return 0;
 	}
 
 	@Override
@@ -133,7 +141,7 @@ public class BackpackItem extends DyeableArmorItem implements IQuarkItem, IItemC
 				}
 
 				if(BackpackModule.itemsInBackpackTick) {
-					LazyOptional<IItemHandler> handlerOpt = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+					LazyOptional<IItemHandler> handlerOpt = stack.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 					IItemHandler handler = handlerOpt.orElse(new ItemStackHandler());
 					for(int i = 0; i < handler.getSlots(); i++) {
 						ItemStack inStack = handler.getStackInSlot(i);
@@ -163,7 +171,7 @@ public class BackpackItem extends DyeableArmorItem implements IQuarkItem, IItemC
 		if (!ItemNBTHelper.detectNBT(stack))
 			return false;
 
-		LazyOptional<IItemHandler> handlerOpt = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+		LazyOptional<IItemHandler> handlerOpt = stack.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 
 		if(!handlerOpt.isPresent())
 			return false;

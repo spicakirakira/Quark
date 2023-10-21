@@ -1,11 +1,14 @@
 package vazkii.quark.content.tweaks.module;
 
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import vazkii.quark.base.module.LoadModule;
 import vazkii.quark.base.module.ModuleCategory;
 import vazkii.quark.base.module.QuarkModule;
+import vazkii.quark.base.module.hint.Hint;
 
 /**
  * @author WireSegal
@@ -13,6 +16,9 @@ import vazkii.quark.base.module.QuarkModule;
  */
 @LoadModule(category = ModuleCategory.TWEAKS, hasSubscriptions = true)
 public class ArmedArmorStandsModule extends QuarkModule {
+
+	@Hint Item armor_stand = Items.ARMOR_STAND;
+
 	@SubscribeEvent
 	public void entityConstruct(EntityEvent.EntityConstructing event) {
 		if(event.getEntity() instanceof ArmorStand stand) {

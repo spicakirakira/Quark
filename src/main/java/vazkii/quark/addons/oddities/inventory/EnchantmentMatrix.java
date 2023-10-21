@@ -1,16 +1,5 @@
 package vazkii.quark.addons.oddities.inventory;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -28,6 +17,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import vazkii.quark.addons.oddities.module.MatrixEnchantingModule;
 import vazkii.quark.content.experimental.module.EnchantmentsBegoneModule;
 
+import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class EnchantmentMatrix {
 
 	public static final int MATRIX_WIDTH = 5;
@@ -41,6 +36,7 @@ public class EnchantmentMatrix {
 	private static final String TAG_PLACED_PIECES = "placedPieces";
 	private static final String TAG_COUNT = "count";
 	private static final String TAG_TYPE_COUNT = "typeCount";
+	private static final String TAG_INFLUENCED = "influenced";
 
 	public final Map<Enchantment, Integer> totalValue = new HashMap<>();
 	public final Map<Integer, Piece> pieces = new HashMap<>();
@@ -49,6 +45,7 @@ public class EnchantmentMatrix {
 
 	public int[][] matrix;
 	public int count, typeCount;
+	private boolean influenced;
 
 	public final boolean book;
 	public final ItemStack target;
@@ -61,11 +58,15 @@ public class EnchantmentMatrix {
 		computeMatrix();
 	}
 
+	public boolean isInfluenced() {
+		return influenced;
+	}
+
 	public boolean canGeneratePiece(Map<Enchantment, Integer> influences, int bookshelfPower, int enchantability) {
 		if(enchantability == 0)
 			return false;
 
-		if (!generatePiece(influences, bookshelfPower, true))
+		if (!generatePiece(influences, bookshelfPower, book, true))
 			return false;
 
 		if(book) {
@@ -102,8 +103,8 @@ public class EnchantmentMatrix {
 		return 1 + (MatrixEnchantingModule.piecePriceScale == 0 ? 0 : count / MatrixEnchantingModule.piecePriceScale);
 	}
 
-	public boolean generatePiece(Map<Enchantment, Integer> influences, int bookshelfPower, boolean simulate) {
-		EnchantmentDataWrapper data = generateRandomEnchantment(influences, bookshelfPower);
+	public boolean generatePiece(Map<Enchantment, Integer> influences, int bookshelfPower, boolean isBook, boolean simulate) {
+		EnchantmentDataWrapper data = generateRandomEnchantment(influences, bookshelfPower, isBook, simulate);
 		if (data == null)
 			return false;
 
@@ -137,17 +138,24 @@ public class EnchantmentMatrix {
 		return true;
 	}
 
-	private EnchantmentDataWrapper generateRandomEnchantment(Map<Enchantment, Integer> influences, int bookshelfPower) {
+	private EnchantmentDataWrapper generateRandomEnchantment(Map<Enchantment, Integer> influences, int bookshelfPower, boolean isBook, boolean simulate) {
 		int level = book ? (MatrixEnchantingModule.bookEnchantability + rng.nextInt(Math.max(1, bookshelfPower) * 2)) : 0;
 
 		List<Piece> marked = pieces.values().stream().filter(p -> p.marked).collect(Collectors.toList());
 
 		List<EnchantmentDataWrapper> validEnchants = new ArrayList<>();
 		ForgeRegistries.ENCHANTMENTS.forEach(enchantment -> {
-			if ((!enchantment.isTreasureOnly() || MatrixEnchantingModule.allowTreasures)
+			String id = ForgeRegistries.ENCHANTMENTS.getKey(enchantment).toString();
+			boolean isValid = true;
+			if(enchantment.isTreasureOnly()){
+				isValid = MatrixEnchantingModule.allowTreasures ||
+						(isBook && MatrixEnchantingModule.treasureWhitelist.contains(id));
+			}
+
+			if (isValid
 					&& !EnchantmentsBegoneModule.shouldBegone(enchantment)
-					&& !MatrixEnchantingModule.disallowedEnchantments.contains(Objects.toString(Registry.ENCHANTMENT.getKey(enchantment)))
-					&& (enchantment.canApplyAtEnchantingTable(target) || (book && enchantment.isAllowedOnBooks()))) {
+					&& !MatrixEnchantingModule.disallowedEnchantments.contains(id)
+					&& ((enchantment.canEnchant(target) && enchantment.canApplyAtEnchantingTable(target)) || (book && enchantment.isAllowedOnBooks()))) {
 				int enchantLevel = 1;
 				if (book) {
 					for (int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
@@ -182,7 +190,11 @@ public class EnchantmentMatrix {
 				wrapper.mutableWeight.val++;
 		}
 
-		return WeightedRandom.getRandomItem(rng, validEnchants).orElse(null);
+		EnchantmentDataWrapper ret =  WeightedRandom.getRandomItem(rng, validEnchants).orElse(null);
+		if(!simulate && ret != null && influences.containsKey(ret.enchantment) && influences.get(ret.enchantment) > 0)
+			influenced = true;
+
+		return ret;
 	}
 
 	public boolean place(int id, int x, int y) {
@@ -271,6 +283,7 @@ public class EnchantmentMatrix {
 		cmp.putIntArray(TAG_PLACED_PIECES, packList(placedPieces));
 		cmp.putInt(TAG_COUNT, count);
 		cmp.putInt(TAG_TYPE_COUNT, typeCount);
+		cmp.putBoolean(TAG_INFLUENCED, influenced);
 	}
 
 	public void readFromNBT(CompoundTag cmp) {
@@ -291,6 +304,7 @@ public class EnchantmentMatrix {
 		placedPieces = unpackList(cmp.getIntArray(TAG_PLACED_PIECES));
 		count = cmp.getInt(TAG_COUNT);
 		typeCount = cmp.getInt(TAG_TYPE_COUNT);
+		influenced = cmp.getBoolean(TAG_INFLUENCED);
 
 		computeMatrix();
 	}
@@ -501,6 +515,8 @@ public class EnchantmentMatrix {
 				boolean mark = true;
 
 				for(Piece other : markedEnchants) {
+					if (other.enchant == null)
+						continue;
 					if(other.enchant == enchantment) {
 						mutableWeight.val *= MatrixEnchantingModule.dupeMultiplier;
 						mark = false;

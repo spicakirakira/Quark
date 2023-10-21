@@ -41,11 +41,11 @@ public class MoreStoneVariantsModule extends QuarkModule {
 		add("dripstone", MaterialColor.TERRACOTTA_BROWN, SoundType.DRIPSTONE_BLOCK, _true);
 		add("tuff", MaterialColor.TERRACOTTA_GRAY, SoundType.TUFF, _true);
 		
-		add("limestone", MaterialColor.STONE, SoundType.STONE, () -> NewStoneTypesModule.enabledWithLimestone);
-		add("jasper", MaterialColor.TERRACOTTA_RED, SoundType.STONE, () -> NewStoneTypesModule.enabledWithJasper);
-		add("shale", MaterialColor.ICE, SoundType.STONE, () -> NewStoneTypesModule.enabledWithShale);
+		add("limestone", MaterialColor.STONE, SoundType.STONE, () -> NewStoneTypesModule.enableLimestone);
+		add("jasper", MaterialColor.TERRACOTTA_RED, SoundType.STONE, () -> NewStoneTypesModule.enableJasper);
+		add("shale", MaterialColor.ICE, SoundType.STONE, () -> NewStoneTypesModule.enableShale);
 		
-		add("myalite", MaterialColor.COLOR_PURPLE, SoundType.STONE, () -> NewStoneTypesModule.enabledWithMyalite, MyaliteBlock::new, MyalitePillarBlock::new);
+		add("myalite", MaterialColor.COLOR_PURPLE, SoundType.STONE, () -> NewStoneTypesModule.enableMyalite, MyaliteBlock::new, MyalitePillarBlock::new);
 	}
 	
 	public static void expandVanillaStone(QuarkModule module, Block raw, String name) {
@@ -72,11 +72,14 @@ public class MoreStoneVariantsModule extends QuarkModule {
 				.sound(sound)
 				.strength(1.5F, 6.0F);
 		
-		QuarkBlock bricks = constr.make(name + "_bricks", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props).setCondition(() -> cond.getAsBoolean() && enableBricks);
+		QuarkBlock bricks = constr.make(name + "_bricks", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props)
+				.setCondition(() -> cond.getAsBoolean() && enableBricks);
 		VariantHandler.addSlabStairsWall(bricks);
 		
-		constr.make("chiseled_" + name + "_bricks", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props).setCondition(() -> cond.getAsBoolean() && enableBricks && enableChiseledBricks);
-		pillarConstr.make(name + "_pillar", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props).setCondition(() -> cond.getAsBoolean() && enablePillar);
+		constr.make("chiseled_" + name + "_bricks", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props)
+				.setCondition(() -> cond.getAsBoolean() && enableBricks && enableChiseledBricks);
+		pillarConstr.make(name + "_pillar", this, CreativeModeTab.TAB_BUILDING_BLOCKS, props)
+				.setCondition(() -> cond.getAsBoolean() && enablePillar);
 	}
 	
 }

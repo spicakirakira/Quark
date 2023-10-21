@@ -1,19 +1,13 @@
 package vazkii.quark.content.world.block;
 
 import java.util.OptionalInt;
-import java.util.function.BooleanSupplier;
 
 import javax.annotation.Nonnull;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.grower.AbstractTreeGrower;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -23,49 +17,15 @@ import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSi
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FancyFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
-import vazkii.arl.util.RegistryHelper;
-import vazkii.quark.base.block.IQuarkBlock;
-import vazkii.quark.base.handler.RenderLayerHandler;
-import vazkii.quark.base.handler.RenderLayerHandler.RenderTypeSkeleton;
+import vazkii.quark.base.block.QuarkSaplingBlock;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.world.module.BlossomTreesModule;
 
-public class BlossomSaplingBlock extends SaplingBlock implements IQuarkBlock {
+public class BlossomSaplingBlock extends QuarkSaplingBlock {
 
-	private final QuarkModule module;
-	private BooleanSupplier enabledSupplier = () -> true;
-
-	public BlossomSaplingBlock(String colorName, QuarkModule module, BlossomTree tree, Block leaf) {
-		super(tree, Block.Properties.copy(Blocks.OAK_SAPLING));
-		this.module = module;
-
-		RegistryHelper.registerBlock(this, colorName + "_blossom_sapling");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+	public BlossomSaplingBlock(String colorName, QuarkModule module, BlossomTree tree) {
+		super(colorName + "_blossom", module, tree);
 		tree.sapling = this;
-
-		RenderLayerHandler.setRenderType(this, RenderTypeSkeleton.CUTOUT);
-	}
-
-	@Override
-	public void fillItemCategory(@Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> items) {
-		if(isEnabled() || group == CreativeModeTab.TAB_SEARCH)
-			super.fillItemCategory(group, items);
-	}
-
-	@Override
-	public QuarkModule getModule() {
-		return module;
-	}
-
-	@Override
-	public BlossomSaplingBlock setCondition(BooleanSupplier enabledSupplier) {
-		this.enabledSupplier = enabledSupplier;
-		return this;
-	}
-
-	@Override
-	public boolean doesConditionApply() {
-		return enabledSupplier.getAsBoolean();
 	}
 
 	public static class BlossomTree extends AbstractTreeGrower {

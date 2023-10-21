@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import vazkii.arl.util.RegistryHelper;
 import vazkii.quark.base.block.IQuarkBlock;
+import vazkii.quark.base.handler.CreativeTabHandler;
 import vazkii.quark.base.module.QuarkModule;
 import vazkii.quark.content.building.block.be.VariantFurnaceBlockEntity;
 import vazkii.quark.content.building.module.VariantFurnacesModule;
@@ -28,7 +29,7 @@ public class VariantFurnaceBlock extends FurnaceBlock implements IQuarkBlock {
 		super(props);
 
 		RegistryHelper.registerBlock(this, type + "_furnace");
-		RegistryHelper.setCreativeTab(this, CreativeModeTab.TAB_DECORATIONS);
+		CreativeTabHandler.addTab(this, CreativeModeTab.TAB_DECORATIONS);
 
 		this.module = module;
 	}
