@@ -1,6 +1,2 @@
-- Added configs to variant selector to allow offsetting the HUD and more granular blacklisting
-- Changed minecraft fandom wiki link to new minecraft wiki (Spongecade)
-- Fixed hammer dupe on snow layers, cake, and potentially others
-- Fixed minor oversight in misc util
-- Improved the variant selector default configs
-- Improved the variant selector gui display
+- Fixed hammer losing variant info when switching block
+- Fixed hammer on slabs making double slabs
