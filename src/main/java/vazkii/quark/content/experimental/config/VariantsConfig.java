@@ -153,7 +153,7 @@ public class VariantsConfig extends AbstractConfigType {
 	}
 
 	public boolean isVariant(Block block) {
-		return blockVariants.containsKey(block) && !blockVariants.get(block).isEmpty();
+		return originals.containsKey(block);
 	}
 
 	private VariantMap getVariants(Block block) {

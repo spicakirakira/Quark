@@ -38,17 +38,22 @@ public class HammerItem extends QuarkItem {
 		if (player != null) {
 			String variant = VariantSelectorModule.getSavedVariant(player);
 			Block variantBlock = VariantSelectorModule.getVariantOrOriginal(block, variant);
+			
 			if (variantBlock != null) {
+				level.removeBlock(pos, false);
+				
 				BlockPlaceContext bpc = new YungsBetterBlockPlaceContext(context);
 				BlockState place = variantBlock.getStateForPlacement(bpc);
+
 				place = LockRotationModule.fixBlockRotation(place, bpc);
 
 				if (place != null && !place.equals(state) && !level.isClientSide) {
-					level.removeBlock(pos, false);
 					level.setBlock(pos, place, 1 | 2);
 					player.swing(context.getHand());
 
 					level.playSound(null, pos, place.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+				} else {
+					level.setBlock(pos, state, 0);
 				}
 
 				return InteractionResult.SUCCESS;
@@ -72,6 +77,7 @@ public class HammerItem extends QuarkItem {
 		@Override
 		public BlockPos getClickedPos() {
 			boolean oldRepl = replaceClicked;
+			
 			replaceClicked = true;
 			BlockPos pos = super.getClickedPos();
 
