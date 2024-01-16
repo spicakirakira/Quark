@@ -2,6 +2,7 @@
   "item": [
     "quark:backpack_blocked",
     "quark:reacharound_able",
-    "quark:vertical_slab"
+    "quark:vertical_slab",
+    "quark:ignore_multishot"
   ]
 }

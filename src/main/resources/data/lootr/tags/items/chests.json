@@ -16,6 +16,7 @@
     { "id": "quark:lootr_blossom_chest", "required": false },
     { "id": "quark:lootr_mangrove_chest", "required": false },
     { "id": "quark:lootr_bamboo_chest", "required": false },
-    { "id": "quark:lootr_ancient_chest", "required": false }
+    { "id": "quark:lootr_ancient_chest", "required": false },
+    { "id": "quark:lootr_cherry_chest", "required": false }
   ]
 }

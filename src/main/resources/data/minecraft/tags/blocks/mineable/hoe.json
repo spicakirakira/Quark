@@ -4,7 +4,6 @@
     "quark:blue_blossom_leaves",
     "quark:lavender_blossom_leaves",
     "quark:orange_blossom_leaves",
-    "quark:pink_blossom_leaves",
     "quark:yellow_blossom_leaves",
     "quark:red_blossom_leaves",
     "quark:oak_leaf_carpet",
@@ -13,12 +12,14 @@
     "quark:jungle_leaf_carpet",
     "quark:acacia_leaf_carpet",
     "quark:dark_oak_leaf_carpet",
+    "quark:mangrove_leaf_carpet",
+    "quark:cherry_leaf_carpet",
     "quark:azalea_leaf_carpet",
     "quark:flowering_azalea_leaf_carpet",
+    "quark:ancient_leaf_carpet",
     "quark:blue_blossom_leaf_carpet",
     "quark:lavender_blossom_leaf_carpet",
     "quark:orange_blossom_leaf_carpet",
-    "quark:pink_blossom_leaf_carpet",
     "quark:yellow_blossom_leaf_carpet",
     "quark:red_blossom_leaf_carpet",
     "quark:thatch",
@@ -33,7 +34,6 @@
     "quark:gunpowder_sack",
     "quark:berry_sack",
     "quark:glowberry_sack",
-    "quark:ancient_leaves",
-    "quark:ancient_leaf_carpet"
+    "quark:ancient_leaves"
   ]
 }

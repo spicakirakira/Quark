@@ -1,7 +1,7 @@
 {
     "parent": "builtin/entity",
     "textures": {
-        "particle": "quark:block/bamboo_planks"
+        "particle": "block/bamboo_planks"
     },
     "display": {
         "gui": {

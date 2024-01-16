@@ -1,9 +1,13 @@
 # Quark
 Small things. Learn more at [the Mod's website](https://quarkmod.net).
 
-This mod requires [AutoRegLib](https://github.com/VazkiiMods/AutoRegLib).
-
 This mod makes use of the [Java Universal Tween Engine](https://github.com/AurelienRibon/universal-tween-engine) by Aurelien Ribon, licensed under the Apache 2.0 License.  
+
+## Zeta?
+
+*Project Zeta* is a planned rearchitecture of Quark to make it less tightly-integrated with Forge. Read the roadmap [in Vazkii's post on the Violet Moon forums](https://forum.violetmoon.org/d/78-project-zeta-aka-quark-on-fabric-real).
+
+There is still lots to do! If you'd like to contribute, see `zeta-todo/README.md`
 
 ## Release Process
 Quark's release process is mostly automated. Here's the steps:

@@ -13,7 +13,7 @@
     "frame": "challenge",
     "hidden": true,
     "icon": {
-      "item": "quark:rainbow_rune"
+      "item": "quark:smithing_template_rune"
     },
     "show_toast": true,
     "title": {

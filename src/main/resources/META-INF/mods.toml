@@ -1,7 +1,7 @@
 modLoader="javafml"
 loaderVersion="[41,)"
-issueTrackerURL="https://github.com/Vazkii/Quark"
-license="https://github.com/Vazkii/Quark/blob/master/LICENSE.md"
+issueTrackerURL="https://github.com/VazkiiMods/Quark"
+license="https://github.com/Vazkii/QuarkMods/blob/master/LICENSE.md"
 
 [[mods]]
 modId="quark"
@@ -9,13 +9,6 @@ displayName="Quark"
 version="${file.jarVersion}"
 authors="Vazkii, WireSegal, MCVinnyq, Sully"
 description='''Small things, improving Minecraft bit by bit.'''
-
-[[dependencies.quark]]
-    modId="autoreglib"
-    mandatory=true
-    versionRange="[1.8-54,)"
-    ordering="AFTER"
-    side="BOTH"
 
 [[dependencies.quark]]
     modId="forge"

@@ -3,11 +3,10 @@
   "values": [
     "#forge:seeds",
     "#forge:mushrooms",
+    "#minecraft:villager_plantable_seeds",
     "minecraft:warped_fungus",
     "minecraft:crimson_fungus",
     "#minecraft:saplings",
-    "minecraft:carrot",
-    "minecraft:potato",
     "minecraft:sweet_berries",
     "minecraft:kelp",
     "minecraft:bamboo",
