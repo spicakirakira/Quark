@@ -11,7 +11,8 @@
         "quark:azalea_bookshelf",
         "quark:blossom_bookshelf",
         "quark:mangrove_bookshelf",
-        "quark:bamboo_bookshelf",
-        "quark:ancient_bookshelf"
+        "quark:ancient_bookshelf",
+        "quark:cherry_bookshelf",
+        "quark:bamboo_bookshelf"
     ]
 }

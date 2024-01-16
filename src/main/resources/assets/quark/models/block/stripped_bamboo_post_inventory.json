@@ -1,7 +1,7 @@
 {
   "parent": "quark:block/template/custom_post_inventory",
   "textures": {
-    "particle": "quark:block/bamboo_fence_particle",
-    "texture": "quark:block/bamboo_fence"
+    "particle": "minecraft:block/stripped_bamboo_block",
+    "texture": "quark:block/stripped_bamboo_post"
   }
 }
