@@ -13,12 +13,19 @@ public class QuarkGeneralConfig {
 
 	public static final QuarkGeneralConfig INSTANCE = new QuarkGeneralConfig();
 
+	/**
+	 * Note for future maintainers reading this and thinking "oh why is this referencing
+	 * the classes by name I can just replace that with the class object" no you can't
+	 * you will break the server.
+	 * 
+	 * - Vazkii, from the past.
+	 */
 	private static final List<String> STATIC_ALLOWED_SCREENS = Lists.newArrayList(
 			"appeng.client.gui.implementations.SkyChestScreen",
 			"com.progwml6.ironchest.client.screen.IronChestScreen",
 			"net.mehvahdjukaar.supplementaries.client.screens.SackScreen",
-			CrateScreen.class.getName(),
-			BackpackInventoryScreen.class.getName()
+			"org.violetmoon.quark.addons.oddities.client.screen.CrateScreen",
+			"org.violetmoon.quark.addons.oddities.client.screen.BackpackInventoryScreen"
 	);
 
 	private static final List<String> STATIC_DENIED_SCREENS = Lists.newArrayList(
