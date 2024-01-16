@@ -6,7 +6,7 @@
   ],
   "key": {
     "#": {
-      "tag": "minecraft:bamboo_blocks"
+      "tag": "quark:bamboo_logs"
     }
   },
   "result": {
@@ -15,8 +15,17 @@
   },
   "conditions": [
     {
-      "type": "quark:flag",
-      "flag": "easy_sticks"
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "easy_sticks"
+        },
+        {
+          "type": "quark:flag",
+          "flag": "bamboo_backport"
+        }
+      ]
     }
   ]
 }

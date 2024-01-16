@@ -1,9 +1,0 @@
-{
-	"sources": [
-		{
-			"type": "directory",
-			"source": "quark_variant_chests",
-			"prefix": "quark_variant_chests/"
-		}
-	]
-}

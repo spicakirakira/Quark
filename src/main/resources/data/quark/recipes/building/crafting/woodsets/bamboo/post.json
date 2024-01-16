@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "F",
+    "F",
+    "F"
+  ],
+  "key": {
+    "F": {
+      "item": "quark:bamboo_block"
+    }
+  },
+  "result": {
+    "item": "quark:bamboo_post",
+    "count": 4
+  },
+  "conditions": [
+    {
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "wooden_posts"
+        },
+        {
+          "type": "quark:flag",
+          "flag": "bamboo_backport"
+        }
+      ]
+    }
+  ]
+}

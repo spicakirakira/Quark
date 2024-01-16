@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "quark:bamboo_block"
+    }
+  ],
+  "result": {
+    "item": "minecraft:bamboo",
+    "count": 9
+  },
+   "conditions": [
+    {
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "bamboo_block"
+        },
+        {
+          "type": "forge:not",
+          "value": {
+            "type": "quark:flag",
+            "flag": "bamboo_backport"
+          }
+        }
+      ]
+    }
+  ]
+} 

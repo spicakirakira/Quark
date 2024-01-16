@@ -1,7 +1,7 @@
 {
   "parent": "quark:tiny_potato/base",
   "textures": {
-    "all": "quark:block/tiny_potato/default"
+    "all": "quark:model/tiny_potato/default"
   },
   "elements": [
     {

@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "bamboo_chest",
+  "pattern": [
+    "###",
+    "# #",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "quark:bamboo_planks"
+    }
+  },
+  "result": {
+    "item": "quark:bamboo_chest",
+    "count": 1
+  },
+  "conditions": [
+    {
+      "type": "forge:and",
+      "values": [
+        {
+          "type": "quark:flag",
+          "flag": "variant_chests"
+        },
+        {
+          "type": "quark:flag",
+          "flag": "bamboo_backport"
+        }
+      ]
+    }
+  ]
+} 

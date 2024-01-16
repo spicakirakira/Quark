@@ -178,6 +178,7 @@
 
 	"quark.jei.hint.pickarang": "É uma picareta boomerang! Pode ser atirado e vai minar tudo o que atingir e trazer os drops de volta. Também pode ser encantado para um melhor desempenho.",
 	"quark.jei.hint.flamerang": "Funciona como um Pickarang, mas todos os objetos que apanha tornam-se imunes a danos de fogo e lava enquanto viajam.",
+	"quark.jei.hint.echorang": "Funciona como um Pickarang, mas emite vibrações constantes e aumenta o seu tempo de voo se ouvir um alarme de sculk.",
 	"quark.jei.hint.abacus": "Utiliza este botão num bloco e ele conta a distância entre o bloco que estás a ver e aquele em que clicaste, até 48 blocos.",
 	"quark.jei.hint.ancient_fruit": "Cai de árvores ancestrais quando estas são cortadas. Dá-te uma pequena quantidade de XP quando comido.",
 	"quark.jei.hint.ancient_sapling": "Pode ser encontrado nos baús da cidade ancestral.",
@@ -245,6 +246,7 @@
 	"quark.jei.hint.gold_tool_fortune": "As Ferramentas de ouro vem com um efeito de fortuna %s ou pilhagem incorporado. Isto não se acumula com a versão de encantamento, apenas o mais alto será aplicado.",
 	"quark.jei.hint.gold_tool_harvest_level": "As ferramentas douradas têm agora um nível de colheita de %s",
 	"quark.jei.hint.hoe_harvesting": "As enxadas agora podem quebrar uma área de vegetação de 3 de largura de uma só vez. As enxadas de nível superior, como as de diamante ou netherite, podem partir 5.",
+	"quark.jei.hint.head_sfx": "Qualquer cabeça de monstro pode ser colocada na lateral de um bloco musical para emitir o seu som quando o bloco musical está ligado.",
 	"quark.jei.hint.sign_editing": "Os sinais podem ser editados clicando com o botão direito do rato sobre eles.",
 	"quark.jei.hint.chorus_weeds": "Spawnam invulgarmente nos pântanos do extremo exterior. Teletransportam-se aleatoriamente e reproduzem-se ao longo do tempo ou se forem forçados por pisoteio, farinha de ossos ou água adajcente. Pode também gerar Endermites quando pisado.",
 	"quark.jei.hint.corundum": "Pode ser encontrado no subsolo em grandes grupos de duas cores cada. Crescerão lentamente para cima se forem colocadas no subsolo. Pode ser encerado para evitar o crescimento e a emissão de partículas.",
@@ -529,6 +531,7 @@
 	"item.quark.soul_compass": "Bússola de alma",
 	"item.quark.bottled_cloud": "Nuvem numa garrafa",
 	"item.quark.flamerang": "Flamarang",
+	"item.quark.echorang": "Echorang",
 	"item.quark.seed_pouch": "Bolsa de sementes",
 	"item.quark.forgotten_hat": "Chapéu esqueçido",
 	"item.quark.soul_bead": "Missanga das almas",

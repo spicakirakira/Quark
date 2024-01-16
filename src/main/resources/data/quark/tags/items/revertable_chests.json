@@ -10,10 +10,6 @@
 	"quark:warped_chest",
 	"quark:crimson_chest",
 	"quark:azalea_chest",
-	"quark:blossom_chest",
-	"quark:bamboo_chest",
-	"quark:mangrove_chest",
-	"quark:cherry_chest",
-	"quark:ancient_chest"
+	"quark:blossom_chest"
   ]
 }

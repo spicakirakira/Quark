@@ -1,18 +1,2 @@
-Build 424 (beta)
-
-- Fix `mineable/pickaxe` tag being broken due to removal of the Crafter in the previous update.
-- Animals with big hitboxes can reach the Feeding Trough from farther away.
-- Feeding Trough should attract and feed animals a little more reliably. Every animal gets its own fakeplayer.
-- `needs_iron_tool` and `needs_stone_tool` tags have been added.
-- Fix thread-safety issue with JEI.
-- Fix the "Terrablender Add Region" option being... inverted!
-- Fix Nether Brick Fence Gate sounding like an overworld fence gate instead of a Nether fence gate.
-  - ZetaFenceGateBlock now exposes the relevant parameters. This change is backwards-compatible for addons.
-- Re-add Chest Searching by creative tab name.
-- Re-add Seed Pouch variants appearing in the Creative menu (and JEI).
-- Re-add Enchantments Begone hiding enchantments from Creative (and JEI).
-- Fix "right click to..." tooltips appearing on Creative infinite-copy slots.
-- Some code cleanups related to hedges, mini inventory buttons, and some other stuff.
-  - All changes should ( 🙏 🙏 ) be backwards-compatible for addons
-  - `ZCustomizeDebugText` is now deprecated.
-  - The old `ZStartClientTick`/`ZEndClientTick` events have been fully removed after their deprecation.
+- Fixed hammer losing variant info when switching block
+- Fixed hammer on slabs making double slabs

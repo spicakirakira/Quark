@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:smithing",
+  "base": {
+    "item": "quark:pickarang"
+  },
+  "addition": {
+    "item": "minecraft:echo_shard"
+  },
+  "result": {
+    "item": "quark:echorang"
+  },
+  "conditions": [
+    {
+      "type": "quark:flag",
+      "flag": "echorang"
+    }
+  ]
+}

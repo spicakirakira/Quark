@@ -141,7 +141,7 @@
     },
     "texture": "quark:attribute/gravity"
   },
-  "forge:block_reach": {
+  "forge:reach_distance": {
     "display": {
       "mainhand": "difference",
       "offhand": "difference",
@@ -154,7 +154,7 @@
     "texture": "quark:attribute/reach_distance",
     "compare": "higher_better"
   },
-  "forge:entity_reach": {
+  "forge:attack_range": {
     "display": {
       "mainhand": "difference",
       "offhand": "difference",

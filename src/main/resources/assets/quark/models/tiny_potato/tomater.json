@@ -8,7 +8,7 @@
     }
   },
   "textures": {
-    "all": "quark:block/tiny_potato/tomato"
+    "all": "quark:model/tiny_potato/tomato"
   },
   "elements": [
     {
