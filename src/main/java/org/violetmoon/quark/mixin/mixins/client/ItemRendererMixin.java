@@ -2,21 +2,16 @@ package org.violetmoon.quark.mixin.mixins.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import org.violetmoon.quark.content.management.module.ItemSharingModule;
 import org.violetmoon.quark.content.tools.module.ColorRunesModule;
 
@@ -70,8 +65,8 @@ public abstract class ItemRendererMixin {
 		return ColorRunesModule.Client.getEntityGlintDirect();
 	}
 
-	@ModifyConstant(method = "renderQuadList", constant = @Constant(floatValue = 1F), require = 0) // Allow failure in case of rubidium
-	public float renderQuads(float constant) {
-		return ItemSharingModule.Client.alphaValue * constant;
+	@ModifyExpressionValue(method = "renderQuadList", at = @At(value = "CONSTANT", args = "floatValue=1F"), require = 0) // Allow failure in case of rubidium/embeddium
+	public float renderQuads(float original) {
+		return ItemSharingModule.Client.alphaValue * original;
 	}
 }
