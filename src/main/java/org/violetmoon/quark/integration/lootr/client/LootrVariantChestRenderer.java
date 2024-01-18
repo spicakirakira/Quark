@@ -1,5 +1,6 @@
 package org.violetmoon.quark.integration.lootr.client;
 
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.resources.model.Material;
@@ -62,6 +63,6 @@ public class LootrVariantChestRenderer<T extends LootrVariantChestBlockEntity> e
 				tex.append("lootr_normal");
 		}
 
-		return new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(Quark.MOD_ID, tex.toString()));
+		return new Material(Sheets.CHEST_SHEET, new ResourceLocation(Quark.MOD_ID, tex.toString()));
 	}
 }
