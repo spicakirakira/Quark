@@ -82,9 +82,9 @@ public class BeaconRedirectionModule extends ZetaModule {
 
 	// The value that comes out of this is fed onto a constant for the FOR loop that
 	// computes the beacon segments, so we return 0 to run that code, or MAX_VALUE to not
-	public static int tickBeacon(BeaconBlockEntity beacon) {
+	public static int tickBeacon(BeaconBlockEntity beacon, int original) {
 		if(!staticEnabled)
-			return 0;
+			return original;
 
 		Level world = beacon.getLevel();
 		BlockPos beaconPos = beacon.getBlockPos();
