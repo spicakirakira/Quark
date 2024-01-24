@@ -72,7 +72,7 @@ public class BeaconRedirectionModule extends ZetaModule {
 		String type = "amethyst";
 
 		if(!Quark.ZETA.modules.isEnabled(CorundumModule.class))
-			event.hintItem(Items.AMETHYST_CLUSTER, redirectHint);
+			event.hintItem(zeta, Items.AMETHYST_CLUSTER, redirectHint);
 		else
 			type = "corundum";
 
