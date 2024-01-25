@@ -219,7 +219,7 @@ public class FeedingTroughModule extends ZetaModule {
         void tryEatingOrTickCooldown(Animal animal) {
             giveUpCooldown--;
             if (eatCooldown == 0) {
-                float feedDistance = animal.getBbWidth()*1.8f;
+                float feedDistance = 0.5f +animal.getBbWidth()*1.8f;
                 if (pos.distToCenterSqr(animal.position()) < (feedDistance * feedDistance)) {
                     if (animal.level().getBlockEntity(pos) instanceof FeedingTroughBlockEntity trough) {
                         switch (trough.tryFeedingAnimal(animal)) {

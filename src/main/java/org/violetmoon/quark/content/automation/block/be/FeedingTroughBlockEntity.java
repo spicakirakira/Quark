@@ -83,7 +83,7 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 			ItemStack stack = this.getItem(i);
 			if(animal.isFood(stack)) {
 				SoundEvent soundEvent = animal.getEatingSound(stack);
-				if (soundEvent != null) { // Null check is kinda required, don't remove :)
+				if (soundEvent != null) { // Null check is kinda required, don't remove :) (why tho, intellij says its never null)
 					animal.playSound(soundEvent, 0.5F + 0.5F * level.random.nextInt(2), (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
 				}
 

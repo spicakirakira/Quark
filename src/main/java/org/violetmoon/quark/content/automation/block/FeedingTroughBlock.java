@@ -90,10 +90,10 @@ public class FeedingTroughBlock extends ZetaBlock implements EntityBlock {
 	}
 
 	@Override
-	public SoundType getSoundTypeZeta(BlockState state, LevelReader world, BlockPos pos, @Nullable Entity entity) {
-		if(state.getValue(FULL))
+	public SoundType getSoundType(BlockState pState) {
+		if(pState.getValue(FULL))
 			return WOOD_WITH_PLANT_STEP;
-		return super.getSoundTypeZeta(state, world, pos, entity);
+		return super.getSoundType(pState);
 	}
 
 	@Override
