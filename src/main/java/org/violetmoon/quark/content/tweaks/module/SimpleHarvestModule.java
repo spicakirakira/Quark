@@ -196,13 +196,6 @@ public class SimpleHarvestModule extends ZetaModule {
 			}else{
 				// is this needed? isnt enchantent level handled intenrally?
 				copy = entity.getItemInHand(hand).copy();
-
-				//TODO: I'm pretty sure all this is unnecessary and can be removed
-				int fortune = Quark.ZETA.itemExtensions.get(copy).getEnchantmentLevelZeta(copy, Enchantments.BLOCK_FORTUNE);
-
-				Map<Enchantment, Integer> enchMap = EnchantmentHelper.getEnchantments(copy);
-				enchMap.put(Enchantments.BLOCK_FORTUNE, fortune);
-				EnchantmentHelper.setEnchantments(enchMap, copy);
 			}
 
 			MutableBoolean hasTaken = new MutableBoolean(false);
