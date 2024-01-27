@@ -221,7 +221,7 @@ public class ToretoiseModel extends EntityModel<Toretoise> {
 						.addBox(-1.0F, -5.0F, 5.0F, 5, 5, 5),
 				PartPose.offset(0.0F, 0.0F, 0.0F));
 
-		return LayerDefinition.create(mesh, 100, 100);
+		return LayerDefinition.create(mesh, 128, 128);
 	}
 
 	@Override
