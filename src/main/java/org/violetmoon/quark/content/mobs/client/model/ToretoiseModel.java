@@ -282,7 +282,7 @@ public class ToretoiseModel extends EntityModel<Toretoise> {
 
 			trans *= (1F - finalRideMultiplier);
 			rot *= (1F - finalRideMultiplier);
-			trans += finalRideMultiplier * -0.2;
+			trans += (float) (finalRideMultiplier * -0.2);
 
 			matrix.pushPose();
 
