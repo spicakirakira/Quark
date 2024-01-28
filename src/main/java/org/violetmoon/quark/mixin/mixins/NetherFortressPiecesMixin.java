@@ -14,7 +14,12 @@ import org.spongepowered.asm.mixin.injection.At;
 public class NetherFortressPiecesMixin {
     @Mixin(NetherFortressPieces.CastleEntrance.class)
     public static class CastleEntranceMixin {
-        @WrapOperation(method = "postProcess", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/structure/structures/NetherFortressPieces$CastleEntrance;generateBox(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;IIIIIILnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Z)V", ordinal = 11))
+        @WrapOperation(method = "postProcess", at = @At(
+                value = "INVOKE",
+                target = "Lnet/minecraft/world/level/levelgen/structure/structures/NetherFortressPieces$CastleEntrance;generateBox(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;IIIIIILnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Z)V",
+                ordinal = 11
+            )
+        )
         private void quark$fixFenceConnectionInPostProcess(NetherFortressPieces.CastleEntrance instance, WorldGenLevel pLevel, BoundingBox pBox, int pXMin, int pYMin, int pZMin, int pXMax, int pYMax, int pZMax, BlockState pBoundaryBlockState, BlockState pInsideBlockState, boolean pExistingOnly, Operation<Void> original) {
             instance.generateBox(pLevel, pBox, pXMin, pYMin, pZMin, pXMax, pYMax, pZMax, pBoundaryBlockState.setValue(FenceBlock.WEST, Boolean.TRUE).setValue(FenceBlock.EAST, Boolean.TRUE), pInsideBlockState, pExistingOnly);
         }
