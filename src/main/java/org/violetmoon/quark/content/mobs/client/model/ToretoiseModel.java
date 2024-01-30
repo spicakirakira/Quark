@@ -221,7 +221,7 @@ public class ToretoiseModel extends EntityModel<Toretoise> {
 						.addBox(-1.0F, -5.0F, 5.0F, 5, 5, 5),
 				PartPose.offset(0.0F, 0.0F, 0.0F));
 
-		return LayerDefinition.create(mesh, 100, 100);
+		return LayerDefinition.create(mesh, 128, 128);
 	}
 
 	@Override
@@ -282,7 +282,7 @@ public class ToretoiseModel extends EntityModel<Toretoise> {
 
 			trans *= (1F - finalRideMultiplier);
 			rot *= (1F - finalRideMultiplier);
-			trans += finalRideMultiplier * -0.2;
+			trans += (finalRideMultiplier * -0.2F);
 
 			matrix.pushPose();
 

@@ -25,7 +25,8 @@ public class ObsidianPressurePlateBlock extends ZetaPressurePlateBlock {
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
 	public ObsidianPressurePlateBlock(String regname, @Nullable ZetaModule module, Properties properties) {
-		super(null /*Sensitivity is unused*/, regname, module, properties, BlockSetType.STONE);
+		// sensitivity is unused | but cant be null incase other mods read it
+		super(Sensitivity.EVERYTHING , regname, module, properties, BlockSetType.STONE);
 		this.registerDefaultState(defaultBlockState().setValue(POWERED, false));
 	}
 

@@ -1,7 +1,12 @@
 package org.violetmoon.quark.base;
 
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.violetmoon.quark.base.proxy.ClientProxy;
 import org.violetmoon.quark.base.proxy.CommonProxy;
 import org.violetmoon.quark.integration.claim.FlanIntegration;
@@ -15,11 +20,6 @@ import org.violetmoon.zeta.Zeta;
 import org.violetmoon.zeta.multiloader.Env;
 import org.violetmoon.zeta.util.Utils;
 import org.violetmoon.zetaimplforge.ForgeZeta;
-
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.common.Mod;
 
 @Mod(Quark.MOD_ID)
 public class Quark {
@@ -53,6 +53,9 @@ public class Quark {
 
 		proxy = Env.unsafeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
 		proxy.start();
+
+		if (Utils.isDevEnv()) // force all mixins to load in dev
+			MixinEnvironment.getCurrentEnvironment().audit();
 	}
 
 	public static ResourceLocation asResource(String name) {

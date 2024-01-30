@@ -49,6 +49,8 @@
     "MerchantMenuMixin",
     "MerchantOfferMixin",
     "MerchantOffersMixin",
+    "NetherFortressPiecesMixin",
+    "NetherFortressPiecesMixin$CastleEntranceMixin",
     "OverworldBiomeBuilderMixin",
     "PigMixin",
     "PistonBaseBlockMixin",

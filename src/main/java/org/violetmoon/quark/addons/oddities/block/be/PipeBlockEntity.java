@@ -1,25 +1,5 @@
 package org.violetmoon.quark.addons.oddities.block.be;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Random;
-import java.util.function.Predicate;
-
-import net.minecraft.world.level.block.*;
-import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
-import org.violetmoon.quark.addons.oddities.block.pipe.BasePipeBlock;
-import org.violetmoon.quark.addons.oddities.module.PipesModule;
-import org.violetmoon.quark.base.handler.QuarkSounds;
-import org.violetmoon.zeta.util.MiscUtil;
-import org.violetmoon.zeta.util.SimpleInventoryBlockEntity;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -37,14 +17,25 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEvent.Context;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
+import org.violetmoon.quark.addons.oddities.block.pipe.BasePipeBlock;
+import org.violetmoon.quark.addons.oddities.module.PipesModule;
+import org.violetmoon.quark.base.handler.QuarkSounds;
+import org.violetmoon.zeta.util.MiscUtil;
+import org.violetmoon.zeta.util.SimpleInventoryBlockEntity;
+
+import java.util.*;
+import java.util.function.Predicate;
 
 public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
@@ -64,7 +55,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	private final ConnectionType[] connectionsCache = new ConnectionType[6];
 	private boolean convert = false; //used to convert old pipes
 
-	public static boolean isTheGoodDay(Level world) {
+	public static boolean isTheGoodDay() {
 		Calendar calendar = Calendar.getInstance();
 		return calendar.get(Calendar.MONTH) + 1 == 4 && calendar.get(Calendar.DAY_OF_MONTH) == 1;
 	}
@@ -111,7 +102,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 						passIn(item.getItem().copy(), side);
 
 						if(PipesModule.doPipesWhoosh) {
-							if(isTheGoodDay(level))
+							if(isTheGoodDay())
 								level.playSound(null, item.getX(), item.getY(), item.getZ(), QuarkSounds.BLOCK_PIPE_PICKUP_LENNY, SoundSource.BLOCKS, 1f, 1f);
 							else
 								level.playSound(null, item.getX(), item.getY(), item.getZ(), QuarkSounds.BLOCK_PIPE_PICKUP, SoundSource.BLOCKS, 1f, 1f);
@@ -260,7 +251,7 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 
 			if(playSound) {
 				if(PipesModule.doPipesWhoosh) {
-					if(isTheGoodDay(level))
+					if(isTheGoodDay())
 						level.playSound(null, posX, posY, posZ, QuarkSounds.BLOCK_PIPE_SHOOT_LENNY, SoundSource.BLOCKS, 1f, pitch);
 					else
 						level.playSound(null, posX, posY, posZ, QuarkSounds.BLOCK_PIPE_SHOOT, SoundSource.BLOCKS, 1f, pitch);
@@ -392,7 +383,8 @@ public class PipeBlockEntity extends SimpleInventoryBlockEntity {
 	}
 
 	public void refreshVisualConnections() {
-		Arrays.stream(Direction.values()).forEach(this::updateConnection);
+		for (Direction direction : Direction.values())
+			updateConnection(direction);
 	}
 
 	public ConnectionType updateConnection(Direction facing) {

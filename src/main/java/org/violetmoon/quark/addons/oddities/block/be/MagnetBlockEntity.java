@@ -20,18 +20,13 @@ public class MagnetBlockEntity extends BlockEntity {
 	}
 
 	public static void tick(Level level, BlockPos pos, BlockState state, MagnetBlockEntity be) {
-		be.tick();
-	}
-
-	public void tick() {
-		BlockState state = getBlockState();
 		boolean powered = state.getValue(MagnetBlock.POWERED);
 
 		if(powered) {
 			Direction dir = state.getValue(MagnetBlock.FACING);
-			int power = getPower(dir);
-			magnetize(dir, dir, power);
-			magnetize(dir.getOpposite(), dir, power);
+			int power = level.getBestNeighborSignal(pos);
+			be.magnetize(dir, dir, power);
+			be.magnetize(dir.getOpposite(), dir, power);
 		}
 	}
 
@@ -74,23 +69,6 @@ public class MagnetBlockEntity extends BlockEntity {
 				level.addParticle(ParticleTypes.SNEEZE, x, y, z, xOff, yOff, zOff);
 			}
 		}
-	}
-
-	private int getPower(Direction curr) {
-		if(level == null)
-			return 0;
-
-		int power = 0;
-		Direction opp = curr.getOpposite();
-
-		for(Direction dir : Direction.values()) {
-			if(dir != opp && dir != curr) {
-				int offPower = level.getSignal(worldPosition.relative(dir), dir);
-				power = Math.max(offPower, power);
-			}
-		}
-
-		return power;
 	}
 
 }

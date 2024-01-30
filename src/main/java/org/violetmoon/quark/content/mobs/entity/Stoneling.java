@@ -264,7 +264,7 @@ public class Stoneling extends PathfinderMob {
 
 		if(!isTame && !world.isClientSide()) {
 			List<ItemStack> items = world.getServer().getLootData()
-					.getLootTable(CARRY_LOOT_TABLE).getRandomItems(new LootParams.Builder((ServerLevel) world)
+					.getLootTable(CARRY_LOOT_TABLE).getRandomItems(new LootParams.Builder(world.getLevel())
 							.withParameter(LootContextParams.ORIGIN, position())
 							.create(LootContextParamSets.CHEST));
 			if(!items.isEmpty())

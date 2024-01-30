@@ -279,6 +279,8 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 		BlockState state = level.getBlockState(pos);
 		Block block = state.getBlock();
 		VoxelShape shape = block.getShape(state, level, pos, CollisionContext.empty());
+		if (shape.isEmpty())
+			return true;
 		AABB bounds = shape.bounds();
 
 		float f = (1F / 16F) * 3F;

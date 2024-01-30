@@ -1,24 +1,22 @@
 package org.violetmoon.quark.mixin.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.world.item.crafting.BannerDuplicateRecipe;
-
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
-
+import org.spongepowered.asm.mixin.injection.At;
 import org.violetmoon.quark.content.tweaks.module.MoreBannerLayersModule;
 
 @Mixin(BannerDuplicateRecipe.class)
 public class BannerDuplicateRecipeMixin {
 
-	@ModifyConstant(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", constant = @Constant(intValue = 6))
-	public int getLimitMatches(int curr) {
-		return MoreBannerLayersModule.getLimit(curr);
+	@ModifyExpressionValue(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At(value = "CONSTANT", args = "intValue=6"))
+	public int getLimitMatches(int original) {
+		return MoreBannerLayersModule.getLimit(original);
 	}
 
-	@ModifyConstant(method = "assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", constant = @Constant(intValue = 6))
-	public int getLimitAssemble(int curr) {
-		return MoreBannerLayersModule.getLimit(curr);
+	@ModifyExpressionValue(method = "assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "CONSTANT", args = "intValue=6"))
+	public int getLimitAssemble(int original) {
+		return MoreBannerLayersModule.getLimit(original);
 	}
 
 }

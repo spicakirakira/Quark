@@ -10,11 +10,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -24,10 +20,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.PushReaction;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetizedBlockBlockEntity;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
@@ -81,8 +75,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 		BlockPos targetPos = pos.relative(dir, data);
 		BlockState targetState = world.getBlockState(targetPos);
 
-		BlockEntity tile = world.getBlockEntity(pos);
-		if(!(tile instanceof MagnetBlockEntity be))
+		if(!(world.getBlockEntity(pos) instanceof MagnetBlockEntity be))
 			return false;
 
 		BlockPos endPos = targetPos.relative(moveDir);
@@ -115,12 +108,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 	}
 
 	private boolean isPowered(Level worldIn, BlockPos pos, Direction facing) {
-		Direction opp = facing.getOpposite();
-		for(Direction direction : Direction.values())
-			if(direction != facing && direction != opp && worldIn.hasSignal(pos.relative(direction), direction))
-				return true;
-
-		return false;
+		return worldIn.hasNeighborSignal(pos);
 	}
 
 	@Override

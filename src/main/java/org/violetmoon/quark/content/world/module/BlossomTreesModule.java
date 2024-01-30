@@ -115,7 +115,7 @@ public class BlossomTreesModule extends ZetaModule {
 	@PlayEvent
 	public void addAdditionalHints(ZGatherHints event) {
 		for(BlossomTree tree : blossomTrees)
-			event.hintItem(tree.sapling);
+			event.hintItem(zeta, tree.sapling);
 	}
 
 	private static ResourceKey<ConfiguredFeature<?, ?>> registerKey(String name) {

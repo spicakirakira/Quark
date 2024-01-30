@@ -1,17 +1,5 @@
 package org.violetmoon.quark.addons.oddities.block.pipe;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.violetmoon.quark.addons.oddities.block.be.PipeBlockEntity;
-import org.violetmoon.quark.addons.oddities.module.PipesModule;
-import org.violetmoon.zeta.block.ZetaBlock;
-import org.violetmoon.zeta.module.ZetaModule;
-import org.violetmoon.zeta.registry.RenderLayerRegistry;
-import org.violetmoon.zeta.util.MiscUtil;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -24,11 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -39,6 +23,17 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.violetmoon.quark.addons.oddities.block.be.PipeBlockEntity;
+import org.violetmoon.quark.addons.oddities.module.PipesModule;
+import org.violetmoon.zeta.block.ZetaBlock;
+import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.registry.RenderLayerRegistry;
+import org.violetmoon.zeta.util.MiscUtil;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class BasePipeBlock extends ZetaBlock implements EntityBlock {
 
@@ -172,9 +167,10 @@ public abstract class BasePipeBlock extends ZetaBlock implements EntityBlock {
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
-		super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
-		if(level.getBlockEntity(pos) instanceof PipeBlockEntity tile) {
+	public void neighborChanged(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos,
+								@NotNull Block pNeighborBlock, @NotNull BlockPos pNeighborPos, boolean pMovedByPiston) {
+		super.neighborChanged(pState, pLevel, pPos, pNeighborBlock, pNeighborPos, pMovedByPiston);
+		if(pLevel.getBlockEntity(pPos) instanceof PipeBlockEntity tile) {
 			tile.refreshVisualConnections();
 		}
 	}
@@ -186,10 +182,19 @@ public abstract class BasePipeBlock extends ZetaBlock implements EntityBlock {
 
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
-		if(level.getBlockEntity(pos) instanceof PipeBlockEntity tile) {
+		refreshVisualConnections(level, pos);
+		super.setPlacedBy(level, pos, state, entity, stack);
+	}
+
+	@Override
+	public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pMovedByPiston) {
+		refreshVisualConnections(pLevel, pPos);
+	}
+
+	public void refreshVisualConnections(Level pLevel, BlockPos pPos) {
+		if (pLevel.getBlockEntity(pPos) instanceof PipeBlockEntity tile) {
 			tile.refreshVisualConnections();
 		}
-		super.setPlacedBy(level, pos, state, entity, stack);
 	}
 
 	// Update all connections in blockstate
