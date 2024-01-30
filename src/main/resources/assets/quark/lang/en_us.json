@@ -1387,6 +1387,9 @@
 	"block.quark.azalea_hanging_sign": "Azalea Hanging Sign",
 	"block.quark.ancient_hanging_sign": "Ashen Hanging Sign",
 	"block.quark.crafter": "Crafter",
+	"block.quark.raw_iron_bricks_wall": "Raw Iron Brick Wall",
+	"block.quark.raw_gold_bricks_wall": "Raw Gold Brick Wall",
+	"block.quark.raw_copper_bricks_wall": "Raw Copper Brick Wall",
 
 	"item.quark.stoneling_spawn_egg": "Stoneling Spawn Egg",
 	"item.quark.crab_spawn_egg": "Crab Spawn Egg",

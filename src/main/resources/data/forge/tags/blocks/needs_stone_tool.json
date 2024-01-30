@@ -62,6 +62,8 @@
       "quark:raw_iron_bricks_slab",
       "quark:raw_copper_bricks_slab",
       "quark:raw_iron_bricks_vertical_slab",
-      "quark:raw_copper_bricks_vertical_slab"
+      "quark:raw_copper_bricks_vertical_slab",
+      "quark:raw_copper_bricks_wall",
+      "quark:raw_iron_bricks_wall"
   ]
 }
