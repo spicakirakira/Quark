@@ -31,7 +31,7 @@ function release_modrinth() {
 {
 	"dependencies": [
 			{
-			"project_id": "NvZ9ZhwE",
+			"project_id": "MVARlG2f",
 			"dependency_type": "required"
 	}],
 	"version_type": "release",
