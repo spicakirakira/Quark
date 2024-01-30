@@ -94,6 +94,9 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    maven { // Curios api
+        url = "https://maven.theillusivec4.top/"
+    }
 
     maven {
         name "jitpack"
@@ -118,6 +121,9 @@ dependencies {
     implementation fg.deobf("curse.maven:flan-forge-493246:${deps.flan}")
     implementation fg.deobf("curse.maven:lootr-361276:${deps.lootr}")
     implementation fg.deobf("curse.maven:just-enough-resources-jer-240630:4689010")
+
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${deps.curios}")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${deps.curios}:api")
 }
 
 spotless {
