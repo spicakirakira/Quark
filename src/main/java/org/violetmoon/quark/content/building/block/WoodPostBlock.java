@@ -1,8 +1,16 @@
 package org.violetmoon.quark.content.building.block;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.violetmoon.quark.base.Quark;
+import org.violetmoon.zeta.block.ZetaBlock;
+import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.registry.RenderLayerRegistry;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -24,14 +32,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import org.violetmoon.quark.base.Quark;
-import org.violetmoon.zeta.block.ZetaBlock;
-import org.violetmoon.zeta.module.ZetaModule;
-import org.violetmoon.zeta.registry.RenderLayerRegistry;
-
 public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 
 	private static final VoxelShape SHAPE_X = Block.box(0F, 6F, 6F, 16F, 10F, 10F);
@@ -41,13 +41,14 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<Axis> AXIS = BlockStateProperties.AXIS;
 
-	public static final BooleanProperty[] CHAINED = new BooleanProperty[] {
-			BooleanProperty.create("chain_down"),
-			BooleanProperty.create("chain_up"),
-			BooleanProperty.create("chain_north"),
-			BooleanProperty.create("chain_south"),
-			BooleanProperty.create("chain_west"),
-			BooleanProperty.create("chain_east")
+	@SuppressWarnings("unchecked")
+	public static final EnumProperty<PostSideType>[] SIDES = new EnumProperty[] {
+			EnumProperty.create("connect_down", PostSideType.class),
+			EnumProperty.create("connect_up", PostSideType.class),
+			EnumProperty.create("connect_north", PostSideType.class),
+			EnumProperty.create("connect_south", PostSideType.class),
+			EnumProperty.create("connect_west", PostSideType.class),
+			EnumProperty.create("connect_east", PostSideType.class)
 	};
 
 	public WoodPostBlock(@Nullable ZetaModule module, Block parent, String prefix, SoundType sound) {
@@ -56,8 +57,8 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 				Properties.copy(parent).sound(sound));
 
 		BlockState state = stateDefinition.any().setValue(WATERLOGGED, false).setValue(AXIS, Axis.Y);
-		for(BooleanProperty prop : CHAINED)
-			state = state.setValue(prop, false);
+		for(EnumProperty<PostSideType> prop : SIDES)
+			state = state.setValue(prop, PostSideType.NONE);
 		registerDefaultState(state);
 
 		if(module == null) //auto registration below this line
@@ -118,13 +119,21 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 		for(Direction d : Direction.values()) {
 			if(d.getAxis() == axis)
 				continue;
-
+			
+			EnumProperty<PostSideType> prop = SIDES[d.ordinal()];
 			BlockState sideState = world.getBlockState(pos.relative(d));
+			
 			if((sideState.getBlock() instanceof ChainBlock && sideState.getValue(BlockStateProperties.AXIS) == d.getAxis())
 					|| (d == Direction.DOWN && sideState.getBlock() instanceof LanternBlock && sideState.getValue(LanternBlock.HANGING))
 					|| (d == Direction.DOWN && sideState.getBlock() instanceof CeilingHangingSignBlock)) {
-				BooleanProperty prop = CHAINED[d.ordinal()];
-				state = state.setValue(prop, true);
+				
+				state = state.setValue(prop, PostSideType.CHAIN);
+				continue;
+			}
+			
+			if(sideState.getBlock() instanceof WoodPostBlock && sideState.getValue(AXIS) == d.getAxis()) {
+				state = state.setValue(prop, PostSideType.OTHER_POST);
+				continue;
 			}
 		}
 
@@ -134,8 +143,36 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
 		builder.add(WATERLOGGED, AXIS);
-		for(BooleanProperty prop : CHAINED)
+		for(EnumProperty<PostSideType> prop : SIDES)
 			builder.add(prop);
 	}
+	
+	public enum PostSideType implements StringRepresentable {
+		NONE("none"), 
+		CHAIN("chain"), 
+		OTHER_POST("other_post");
+		
+		private String name;
+		
+		private PostSideType(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+		
+		@Override
+		public String getSerializedName() {
+			return name;
+		}
+		
+		public boolean isSolid() {
+			return this != NONE;
+		}
+		
+	}
+
 
 }
