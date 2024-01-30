@@ -7,7 +7,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-
+import org.violetmoon.quark.content.tweaks.compat.BetterElytraRocketCuriosCompat;
 import org.violetmoon.zeta.event.bus.PlayEvent;
 import org.violetmoon.zeta.event.play.entity.player.ZRightClickItem;
 import org.violetmoon.zeta.module.ZetaLoadModule;
@@ -20,7 +20,10 @@ public class BetterElytraRocketModule extends ZetaModule {
 	public void onUseRocket(ZRightClickItem event) {
 		Player player = event.getEntity();
 		ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-		if(!player.isFallFlying() && zeta.itemExtensions.get(chest).canElytraFlyZeta(chest, player)) {
+
+		boolean curiosCheck = zeta.isModLoaded("curios") && BetterElytraRocketCuriosCompat.hasCuriosElytra(player);
+
+		if (curiosCheck || !player.isFallFlying() && zeta.itemExtensions.get(chest).canElytraFlyZeta(chest, player)) {
 			Level world = player.level();
 			ItemStack itemstack = event.getItemStack();
 
