@@ -25,7 +25,7 @@ public class HumanoidArmorLayerMixin<T extends LivingEntity, M extends HumanoidM
 	}
 
 	@ModifyExpressionValue(method = "renderGlint(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/Model;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;armorEntityGlint()Lnet/minecraft/client/renderer/RenderType;"))
-	private static RenderType getArmorGlint(RenderType prev) {
+	private RenderType getArmorGlint(RenderType prev) {
 		return ColorRunesModule.Client.getArmorEntityGlint();
 	}
 }
