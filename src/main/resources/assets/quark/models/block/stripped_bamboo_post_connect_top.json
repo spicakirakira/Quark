@@ -1,6 +1,6 @@
 {
   "parent": "quark:block/post_connect_top",
   "textures": {
-    "texture": "minecraft:block/stripped_bamboo_log"
+    "texture": "quark:block/stripped_bamboo_post_connect"
   }
 }

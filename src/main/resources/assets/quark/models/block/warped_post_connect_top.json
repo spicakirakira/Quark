@@ -1,6 +1,6 @@
 {
   "parent": "quark:block/post_connect_top",
   "textures": {
-    "texture": "minecraft:block/warped_log"
+    "texture": "minecraft:block/warped_stem"
   }
 }
