@@ -41,16 +41,20 @@ public class FetchArrowGoal extends Goal {
 		}
 
 		double dist = shiba.distanceTo(fetching);
-		if(dist < 3 && fetching.isAlive()) {
-			// Eat infinity arrows
-			if(fetching.pickup == Pickup.DISALLOWED || fetching.pickup == Pickup.CREATIVE_ONLY) {
-				shiba.level().playSound(null, shiba.blockPosition(), QuarkSounds.ENTITY_SHIBA_EAT_ARROW, SoundSource.NEUTRAL);
-				fetching.discard();
-
-				// Fetch normal arrow
-			} else if(fetching.pickup == Pickup.ALLOWED) {
+		if (dist < 3 && fetching.isAlive()) {
+			// Fetch normal arrow
+			if (fetching.pickup == Pickup.ALLOWED) {
 				shiba.setMouthItem(((AccessorAbstractArrow) fetching).quark$getPickupItem());
 				fetching.discard();
+			}
+
+			// Eat infinity arrows that are within 1 block of range
+			// anything above 1 block looks weird as it just gets booped out of existence
+			if (dist < 1) {
+				if (fetching.pickup == Pickup.DISALLOWED || fetching.pickup == Pickup.CREATIVE_ONLY) {
+					shiba.level().playSound(null, shiba.blockPosition(), QuarkSounds.ENTITY_SHIBA_EAT_ARROW, SoundSource.NEUTRAL);
+					fetching.discard();
+				}
 			}
 		}
 
