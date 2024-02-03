@@ -226,7 +226,7 @@ public class InventoryTransferHandler {
 			IItemHandler playerInv = new PlayerInvWrapper(player.getInventory());
 
 			for(int i = inv.getSlots() - 1; i >= 0; i--) {
-				ItemStack stackAt = inv.getStackInSlot(i);
+				ItemStack stackAt = inv.extractItem(i, inv.getStackInSlot(i).getCount(), true);
 
 				if(!stackAt.isEmpty()) {
 					ItemStack copy = stackAt.copy();
