@@ -6,7 +6,7 @@ license="https://github.com/Vazkii/QuarkMods/blob/master/LICENSE.md"
 [[mods]]
 modId="quark"
 displayName="Quark"
-version="${file.jarVersion}"
+version="${version}"
 authors="Vazkii, WireSegal, MCVinnyq, Sully"
 description='''Small things, improving Minecraft bit by bit.'''
 
