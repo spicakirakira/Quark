@@ -157,6 +157,16 @@ processResources {
         exclude '**/psd/**'
         duplicatesStrategy 'include'
     }
+
+    Map<String, ?> properties = Map.of(
+            "zeta_ver", deps.zeta.substring(0, deps.zeta.lastIndexOf('.'))
+    )
+
+    properties.forEach((k, v) -> inputs.property(k, v))
+
+    filesMatching("META-INF/mods.toml") {
+        expand properties
+    }
 }
 
 def parseConfig(File config) {

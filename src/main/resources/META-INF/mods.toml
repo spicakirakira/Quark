@@ -18,6 +18,13 @@ description='''Small things, improving Minecraft bit by bit.'''
     side="BOTH"
 
 [[dependencies.quark]]
+    modId="zeta"
+    mandatory=false
+    versionRange="[${zeta_ver},2.0)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.quark]]
     modId="lootr"
     mandatory=false
     versionRange="[0.4.24.61,)"
