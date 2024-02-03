@@ -88,6 +88,9 @@ public class QuarkGeneralConfig {
 
 	@Config(description = "Set to false to disable the popup message telling you that you can config quark in the q menu")
 	public static boolean enableOnboarding = true;
+	
+	@Config(description = "The amount of slots the chest button system should seek when trying to figure out if a container should be eligible for them.")
+	public static int chestButtonSlotTarget = 27;
 
 	private QuarkGeneralConfig() {
 		// NO-OP

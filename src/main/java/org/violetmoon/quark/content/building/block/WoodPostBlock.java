@@ -35,10 +35,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 
-	private static float START = 0F;
-	private static float END = 16F;
-	private static float LEFT_EDGE = 6F;
-	private static float RIGHT_EDGE = 10F;
+	private static final float START = 0F;
+	private static final float END = 16F;
+	private static final float LEFT_EDGE = 6F;
+	private static final float RIGHT_EDGE = 10F;
 	
 	private static final VoxelShape CENTER_SHAPE = Block.box(LEFT_EDGE, LEFT_EDGE, LEFT_EDGE, RIGHT_EDGE, RIGHT_EDGE, RIGHT_EDGE);
 
@@ -132,7 +132,18 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		return getState(context.getLevel(), context.getClickedPos(), context.getClickedFace().getAxis());
+		Axis axis = context.getClickedFace().getAxis();
+		BlockPos pos = context.getClickedPos();
+		Level level = context.getLevel();
+		BlockState state = defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).getType() == Fluids.WATER)
+				.setValue(AXIS, axis);
+
+		for(Direction d : Direction.values()) {
+			if(axis != d.getAxis()) {
+				state = state.setValue(SIDES[d.ordinal()], PostSideType.get(level, pos, d));
+			}
+		}
+		return state;
 	}
 
 	@NotNull
@@ -141,44 +152,8 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 		if(state.getValue(WATERLOGGED)) {
 			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
-
+		state = state.setValue(SIDES[facing.ordinal()], PostSideType.get(level, pos, facing));
 		return super.updateShape(state, facing, facingState, level, pos, facingPos);
-	}
-
-	@Override
-	public void neighborChanged(@NotNull BlockState state, @NotNull Level worldIn, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos, boolean isMoving) {
-		super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
-
-		BlockState newState = getState(worldIn, pos, state.getValue(AXIS));
-		if(!newState.equals(state))
-			worldIn.setBlockAndUpdate(pos, newState);
-	}
-
-	private BlockState getState(Level world, BlockPos pos, Axis axis) {
-		BlockState state = defaultBlockState().setValue(WATERLOGGED, world.getFluidState(pos).getType() == Fluids.WATER).setValue(AXIS, axis);
-
-		for(Direction d : Direction.values()) {
-			if(d.getAxis() == axis)
-				continue;
-			
-			EnumProperty<PostSideType> prop = SIDES[d.ordinal()];
-			BlockState sideState = world.getBlockState(pos.relative(d));
-			
-			if((sideState.getBlock() instanceof ChainBlock && sideState.getValue(BlockStateProperties.AXIS) == d.getAxis())
-					|| (d == Direction.DOWN && sideState.getBlock() instanceof LanternBlock && sideState.getValue(LanternBlock.HANGING))
-					|| (d == Direction.DOWN && sideState.getBlock() instanceof CeilingHangingSignBlock)) {
-				
-				state = state.setValue(prop, PostSideType.CHAIN);
-				continue;
-			}
-			
-			if(sideState.getBlock() instanceof WoodPostBlock && sideState.getValue(AXIS) == d.getAxis()) {
-				state = state.setValue(prop, PostSideType.OTHER_POST);
-				continue;
-			}
-		}
-
-		return state;
 	}
 
 	@Override
@@ -193,9 +168,9 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 		CHAIN("chain"), 
 		OTHER_POST("other_post");
 		
-		private String name;
+		private final String name;
 		
-		private PostSideType(String name) {
+		PostSideType(String name) {
 			this.name = name;
 		}
 
@@ -212,8 +187,22 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 		public boolean isSolid() {
 			return this != NONE;
 		}
-		
-	}
 
+		private static PostSideType get(LevelAccessor world, BlockPos pos, Direction d) {
+			BlockState sideState = world.getBlockState(pos.relative(d));
+
+			if((sideState.getBlock() instanceof ChainBlock && sideState.getValue(BlockStateProperties.AXIS) == d.getAxis())
+					|| (d == Direction.DOWN && sideState.getBlock() instanceof LanternBlock && sideState.getValue(LanternBlock.HANGING))
+					|| (d == Direction.DOWN && sideState.getBlock() instanceof CeilingHangingSignBlock)) {
+
+				return PostSideType.CHAIN;
+			}
+
+			if(sideState.getBlock() instanceof WoodPostBlock && sideState.getValue(AXIS) == d.getAxis()) {
+				return  PostSideType.OTHER_POST;
+			}
+			return PostSideType.NONE;
+		}
+	}
 
 }

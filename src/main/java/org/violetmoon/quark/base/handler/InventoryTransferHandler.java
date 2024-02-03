@@ -1,5 +1,18 @@
 package org.violetmoon.quark.base.handler;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiPredicate;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.violetmoon.quark.api.IQuarkButtonAllowed;
+import org.violetmoon.quark.api.ITransferManager;
+import org.violetmoon.quark.api.QuarkCapabilities;
+import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.config.QuarkGeneralConfig;
+import org.violetmoon.quark.content.management.module.EasyTransferingModule;
+
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -11,19 +24,6 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-
-import org.violetmoon.quark.api.IQuarkButtonAllowed;
-import org.violetmoon.quark.api.ITransferManager;
-import org.violetmoon.quark.api.QuarkCapabilities;
-import org.violetmoon.quark.base.Quark;
-import org.violetmoon.quark.content.management.module.EasyTransferingModule;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiPredicate;
 
 public class InventoryTransferHandler {
 
@@ -81,7 +81,7 @@ public class InventoryTransferHandler {
 		if(hasProvider(container))
 			return getProvider(container).acceptsTransfer(player);
 
-		return container instanceof IQuarkButtonAllowed || (container.slots.size() - player.getInventory().items.size() >= 27);
+		return container instanceof IQuarkButtonAllowed || (container.slots.size() - player.getInventory().items.size() >= QuarkGeneralConfig.chestButtonSlotTarget);
 	}
 
 	public static class Transfer {
