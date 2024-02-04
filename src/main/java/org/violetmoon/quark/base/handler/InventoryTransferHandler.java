@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
 
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.world.inventory.CraftingMenu;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.violetmoon.quark.api.IQuarkButtonAllowed;
@@ -78,6 +80,10 @@ public class InventoryTransferHandler {
 	}
 
 	public static boolean accepts(AbstractContainerMenu container, Player player) {
+		//extracting from the crafting table with the button dups items
+		if (container instanceof CraftingMenu || container instanceof CreativeModeInventoryScreen.ItemPickerMenu)
+			return false;
+
 		if(hasProvider(container))
 			return getProvider(container).acceptsTransfer(player);
 
