@@ -19,11 +19,11 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
-
 import org.jetbrains.annotations.NotNull;
-
 import org.violetmoon.quark.addons.oddities.item.BackpackItem;
 import org.violetmoon.quark.addons.oddities.module.TotemOfHoldingModule;
+import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.tweaks.compat.TotemOfHoldingCuriosCompat;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +34,7 @@ import java.util.List;
  */
 public class TotemOfHoldingEntity extends Entity {
 	private static final String TAG_ITEMS = "storedItems";
+	private static final String TAG_CURIOS = "curiosList";
 	private static final String TAG_DYING = "dying";
 	private static final String TAG_OWNER = "owner";
 
@@ -44,6 +45,7 @@ public class TotemOfHoldingEntity extends Entity {
 	private int deathTicks = 0;
 	private String owner;
 	private List<ItemStack> storedItems = new LinkedList<>();
+	private List<ItemStack> equipedCurios = new LinkedList<>();
 
 	public TotemOfHoldingEntity(EntityType<? extends TotemOfHoldingEntity> entityType, Level worldIn) {
 		super(entityType, worldIn);
@@ -56,6 +58,10 @@ public class TotemOfHoldingEntity extends Entity {
 
 	public void addItem(ItemStack stack) {
 		storedItems.add(stack);
+	}
+
+	public void addCurios(ItemStack stack) {
+		equipedCurios.add(stack);
 	}
 
 	public void setOwner(Player player) {
@@ -106,6 +112,8 @@ public class TotemOfHoldingEntity extends Entity {
 						player.setItemSlot(EquipmentSlot.OFFHAND, stack);
 						stack = null;
 					}
+				} else if (Quark.ZETA.isModLoaded("curios")) {
+					stack = TotemOfHoldingCuriosCompat.equipCurios(player, equipedCurios, stack);
 				}
 
 				if(stack != null)
@@ -163,6 +171,7 @@ public class TotemOfHoldingEntity extends Entity {
 				spawnAtLocation(storedItem, 0);
 
 		storedItems.clear();
+		equipedCurios.clear();
 
 		discard();
 	}
@@ -178,12 +187,20 @@ public class TotemOfHoldingEntity extends Entity {
 	@Override
 	public void readAdditionalSaveData(@NotNull CompoundTag compound) {
 		ListTag list = compound.getList(TAG_ITEMS, 10);
+		ListTag curiosList = compound.getList(TAG_CURIOS, 10);
 		storedItems = new LinkedList<>();
+		equipedCurios = new LinkedList<>();
 
 		for(int i = 0; i < list.size(); i++) {
 			CompoundTag cmp = list.getCompound(i);
 			ItemStack stack = ItemStack.of(cmp);
 			storedItems.add(stack);
+		}
+
+		for (int i = 0; i < curiosList.size(); i++) {
+			CompoundTag cmp = curiosList.getCompound(i);
+			ItemStack stack = ItemStack.of(cmp);
+			equipedCurios.add(stack);
 		}
 
 		boolean dying = compound.getBoolean(TAG_DYING);
@@ -195,11 +212,18 @@ public class TotemOfHoldingEntity extends Entity {
 	@Override
 	protected void addAdditionalSaveData(@NotNull CompoundTag compound) {
 		ListTag list = new ListTag();
+		ListTag curiosList = new ListTag();
+
 		for(ItemStack stack : storedItems) {
 			list.add(stack.serializeNBT());
 		}
 
+		for (ItemStack equipedCurio : equipedCurios) {
+			curiosList.add(equipedCurio.serializeNBT());
+		}
+
 		compound.put(TAG_ITEMS, list);
+		compound.put(TAG_CURIOS, curiosList);
 		compound.putBoolean(TAG_DYING, isDying());
 		if(owner != null)
 			compound.putString(TAG_OWNER, owner);
