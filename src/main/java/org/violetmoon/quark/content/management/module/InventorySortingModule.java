@@ -73,7 +73,7 @@ public class InventorySortingModule extends ZetaModule {
 		}
 
 		private InventoryButtonHandler.ButtonProvider provider(String tooltip, boolean forcePlayer, BooleanSupplier condition) {
-			return (parent, x, y) -> !condition.getAsBoolean() ? null : new MiniInventoryButton(parent, 0, x, y, "quark.gui.button." + tooltip, (b) -> QuarkClient.ZETA_CLIENT.sendToServer(new SortInventoryMessage(forcePlayer)));
+			return (parent, x, y) -> !condition.getAsBoolean() ? null : new MiniInventoryButton(parent, 0, tooltip.equals("sort_container") ? parent.getXSize() - 18 : x, tooltip.equals("sort_container") ? 5 : y, "quark.gui.button." + tooltip, (b) -> QuarkClient.ZETA_CLIENT.sendToServer(new SortInventoryMessage(forcePlayer)));
 		}
 
 		private void click() {
