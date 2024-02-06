@@ -15,15 +15,17 @@ import org.violetmoon.zeta.module.ZetaModule;
 
 @ZetaLoadModule(category = "tweaks")
 public class BetterElytraRocketModule extends ZetaModule {
-
 	@PlayEvent
 	public void onUseRocket(ZRightClickItem event) {
 		Player player = event.getEntity();
 		ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
 
-		boolean curiosCheck = zeta.isModLoaded("curios") && BetterElytraRocketCuriosCompat.hasCuriosElytra(player);
+		boolean curiosCheck = false;
+		if (zeta.isModLoaded("curios")) {
+			curiosCheck = BetterElytraRocketCuriosCompat.hasCuriosElytra(player);
+		}
 
-		if (curiosCheck || !player.isFallFlying() && zeta.itemExtensions.get(chest).canElytraFlyZeta(chest, player)) {
+		if (!player.isFallFlying() && (zeta.itemExtensions.get(chest).canElytraFlyZeta(chest, player) || curiosCheck)) {
 			Level world = player.level();
 			ItemStack itemstack = event.getItemStack();
 
@@ -40,9 +42,6 @@ public class BetterElytraRocketModule extends ZetaModule {
 				event.setCanceled(true);
 				event.setCancellationResult(InteractionResult.sidedSuccess(world.isClientSide));
 			}
-
 		}
-
 	}
-
 }
