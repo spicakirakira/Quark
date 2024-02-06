@@ -88,7 +88,7 @@ public class ChestSearchingModule extends ZetaModule {
 
 		@LoadEvent
 		public final void clientSetup(ZClientSetup event) {
-			InventoryButtonHandler.addButtonProvider(this, ButtonTargetType.CONTAINER_INVENTORY, 1, (parent, x, y) -> new MiniInventoryButton(parent, 3, x, y, "quark.gui.button.filter", (b) -> {
+			InventoryButtonHandler.addButtonProvider(this, ButtonTargetType.CONTAINER_INVENTORY, 1, (parent, x, y) -> new MiniInventoryButton(parent, 3, parent.getXSize() - 30, 5, "quark.gui.button.filter", (b) -> {
 				if(searchBar != null) {
 					searchEnabled = !searchEnabled;
 					updateSearchStatus();

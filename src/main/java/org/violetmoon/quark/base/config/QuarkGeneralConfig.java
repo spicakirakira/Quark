@@ -24,6 +24,7 @@ public class QuarkGeneralConfig {
 			"appeng.client.gui.implementations.SkyChestScreen",
 			"com.progwml6.ironchest.client.screen.IronChestScreen",
 			"net.mehvahdjukaar.supplementaries.client.screens.SackScreen",
+			"top.theillusivec4.curios.client.gui.CuriosScreen",
 			"org.violetmoon.quark.addons.oddities.client.screen.CrateScreen",
 			"org.violetmoon.quark.addons.oddities.client.screen.BackpackInventoryScreen"
 	);
