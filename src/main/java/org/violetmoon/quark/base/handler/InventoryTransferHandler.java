@@ -81,7 +81,7 @@ public class InventoryTransferHandler {
 
 	public static boolean accepts(AbstractContainerMenu container, Player player) {
 		//extracting from the crafting table with the button dups items
-		if (container instanceof CraftingMenu || container instanceof CreativeModeInventoryScreen.ItemPickerMenu)
+		if (container instanceof CraftingMenu || (player.level().isClientSide() && container instanceof CreativeModeInventoryScreen.ItemPickerMenu))
 			return false;
 
 		if(hasProvider(container))
