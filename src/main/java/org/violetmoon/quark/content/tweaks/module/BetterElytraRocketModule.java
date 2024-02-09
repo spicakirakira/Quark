@@ -20,7 +20,7 @@ public class BetterElytraRocketModule extends ZetaModule {
 		Player player = event.getEntity();
 		ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
 
-		boolean curiosCheck = zeta.isModLoaded("curios") || BetterElytraRocketCuriosCompat.hasCuriosElytra(player);
+		boolean curiosCheck = zeta.isModLoaded("curios") && BetterElytraRocketCuriosCompat.hasCuriosElytra(player);
 
 		if (!player.isFallFlying() && (zeta.itemExtensions.get(chest).canElytraFlyZeta(chest, player) || curiosCheck)) {
 			Level world = player.level();
