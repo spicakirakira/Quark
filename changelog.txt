@@ -1,5 +1,1 @@
-- Fix crash when curios-api isn't installed
-- Add curios compat to the totem of holding (Thanks Leo! #4638)
-- Prevent extracting item with the extract button from containers that can "lock" their slots (Thanks Leo! #4632)
-- Make top buttons be in the top right on containers that doesn't use full chest rows (Thanks Leo! #4633)
-- Remove chest buttons from crafting table & creative inventory (Thanks Leo! #4631)
+- Fix crash when using transfer button on a server
