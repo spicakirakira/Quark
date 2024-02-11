@@ -433,7 +433,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 			if(isEmpty())
 				return other.is(SeedPouchModule.seedPouchHoldableTag);
 			else
-				return this.count < SeedPouchModule.maxItems && ItemStack.isSameItem(seed, other);
+				return this.count < SeedPouchModule.maxItems && ItemStack.isSameItemSameTags(seed, other);
 		}
 
 	}
