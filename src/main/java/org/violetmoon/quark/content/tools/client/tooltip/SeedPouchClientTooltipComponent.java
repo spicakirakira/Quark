@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.world.item.ItemStack;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import org.violetmoon.quark.content.tools.item.SeedPouchItem;
@@ -19,10 +18,10 @@ public class SeedPouchClientTooltipComponent implements ClientTooltipComponent {
 	public SeedPouchClientTooltipComponent(ItemStack stack) {
 		this.stack = stack;
 
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(stack);
-		if(contents != null) {
-			ItemStack seed = contents.getLeft().copy();
-			int count = contents.getRight();
+		SeedPouchItem.PouchContents contents = SeedPouchItem.getContents(stack);
+		if(!contents.isEmpty()) {
+			ItemStack seed = contents.getSeed().copy();
+			int count = contents.getCount();
 			int stacks = Math.max(1, (count - 1) / seed.getMaxStackSize() + 1);
 
 			width = stacks * 8 + 8;
@@ -31,13 +30,13 @@ public class SeedPouchClientTooltipComponent implements ClientTooltipComponent {
 
 	@Override
 	public void renderImage(@NotNull Font font, int tooltipX, int tooltipY, @NotNull GuiGraphics guiGraphics) {
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(stack);
-		if(contents != null) {
-			ItemStack seed = contents.getLeft().copy();
+		SeedPouchItem.PouchContents contents = SeedPouchItem.getContents(stack);
+		if(!contents.isEmpty()) {
+			ItemStack seed = contents.getSeed().copy();
 
 			Minecraft mc = Minecraft.getInstance();
 
-			int count = contents.getRight();
+			int count = contents.getCount();
 			int stacks = Math.max(1, (count - 1) / seed.getMaxStackSize() + 1);
 
 			for(int i = 0; i < stacks; i++) {

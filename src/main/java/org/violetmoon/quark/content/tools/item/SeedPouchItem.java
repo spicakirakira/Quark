@@ -1,6 +1,5 @@
 package org.violetmoon.quark.content.tools.item;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -10,10 +9,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -24,12 +21,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.api.ITrowelable;
 import org.violetmoon.quark.api.IUsageTickerOverride;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.management.module.ItemSharingModule;
 import org.violetmoon.quark.content.tools.module.SeedPouchModule;
 import org.violetmoon.zeta.item.ZetaItem;
 import org.violetmoon.zeta.module.IDisableable;
@@ -41,12 +39,11 @@ import org.violetmoon.zeta.util.RegistryUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITrowelable, CreativeTabManager.AppendsUniquely {
 
-	public static final String TAG_STORED_ITEM = "storedItem";
-	public static final String TAG_COUNT = "itemCount";
 
 	private static final int BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
 
@@ -66,7 +63,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 		if(incoming.isEmpty())
 			//right click pouch with an empty cursor -> take items out of the pouch and put them on the cursor
-			return dropOntoCursor(player, pouch, carriedSlotAccessor);
+			return dropOntoEmptyCursor(player, pouch, carriedSlotAccessor);
 		else
 			//right click pouch while holding something on cursor -> take items from the cursor and try to put them into the pouch
 			return absorbFromCursor(player, pouch, carriedSlotAccessor);
@@ -80,96 +77,56 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		ItemStack droppedOnto = slot.getItem();
 		if(droppedOnto.isEmpty())
 			//right click an empty slot with a pouch -> take items from the pouch and drop them into the empty slot
-			return dropIntoSlot(player, pouch, slot);
+			return dropIntoEmptySlot(player, pouch, slot);
 		else
 			//right click on something with a pouch -> take items from the slot and try to put them in the pouch
 			return absorbFromSlot(player, pouch, slot);
 	}
 
 	private boolean absorbFromCursor(Player player, ItemStack pouch, SlotAccess cursorAccess) {
-		if(!canTakeItem(pouch, cursorAccess.get()))
-			return false;
+		return mutateContents(pouch, contents -> {
+			ItemStack onCursor = cursorAccess.get();
 
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
-		if(contents == null) {
-			setItemStack(pouch, cursorAccess.get());
-			cursorAccess.set(ItemStack.EMPTY);
-		} else {
-			int curr = contents.getRight();
-			int missing = SeedPouchModule.maxItems - curr;
-			int incCount = cursorAccess.get().getCount();
-			int toAbsorb = Math.min(incCount, missing);
+			if(!contents.absorb(onCursor))
+				return false;
 
-			ItemStack absorbed = cursorAccess.get().split(toAbsorb);
-			setCount(pouch, curr + absorbed.getCount());
-		}
-
-		playInsertSound(player);
-		return true;
+			cursorAccess.set(onCursor); //IDK if you need to call "set" on the SlotAccess here but it doesn't hurt
+			playInsertSound(player);
+			return true;
+		});
 	}
 
 	private boolean absorbFromSlot(Player player, ItemStack pouch, Slot pickupFrom) {
-		if(!canTakeItem(pouch, pickupFrom.getItem()))
-			return false;
+		return mutateContents(pouch, contents -> {
+			if(!contents.absorb(pickupFrom.getItem()))
+				return false;
 
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
-		if(contents == null) {
-			setItemStack(pouch, pickupFrom.getItem());
-			pickupFrom.set(ItemStack.EMPTY);
-		} else {
-			int curr = contents.getRight();
-			int missing = SeedPouchModule.maxItems - curr;
-			int incCount = pickupFrom.getItem().getCount();
-			int toAbsorb = Math.min(incCount, missing);
-
-			ItemStack absorbed = pickupFrom.getItem().split(toAbsorb);
-			setCount(pouch, curr + absorbed.getCount());
-		}
-
-		playInsertSound(player);
-		return true;
+			pickupFrom.setChanged();
+			playInsertSound(player);
+			return true;
+		});
 	}
 
-	private boolean dropOntoCursor(Player player, ItemStack pouch, SlotAccess cursorAccess) {
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
-		if(contents == null)
-			return false;
+	private boolean dropOntoEmptyCursor(Player player, ItemStack pouch, SlotAccess cursorAccess) {
+		return mutateContents(pouch, contents -> {
+			if(contents.isEmpty())
+				return false;
 
-		ItemStack seed = contents.getLeft();
-		int pouchCount = contents.getRight();
-		if(seed.isEmpty() || pouchCount <= 0)
-			return false;
-
-		int takeOut = seed.getMaxStackSize();
-
-		ItemStack result = seed.copy();
-		result.setCount(takeOut);
-		cursorAccess.set(result);
-		SeedPouchItem.setCount(pouch, pouchCount - takeOut);
-
-		playRemoveOneSound(player);
-		return true;
+			cursorAccess.set(contents.splitOneStack());
+			playRemoveOneSound(player);
+			return true;
+		});
 	}
 
-	private boolean dropIntoSlot(Player player, ItemStack pouch, Slot depositInto) {
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
-		if(contents == null)
-			return false;
+	private boolean dropIntoEmptySlot(Player player, ItemStack pouch, Slot depositInto) {
+		return mutateContents(pouch, contents -> {
+			if(contents.isEmpty())
+				return false;
 
-		ItemStack seed = contents.getLeft();
-		int pouchCount = contents.getRight();
-		if(seed.isEmpty() || pouchCount <= 0)
-			return false;
-
-		int takeOut = Math.min(seed.getMaxStackSize(), pouchCount);
-
-		ItemStack result = seed.copy();
-		result.setCount(takeOut);
-		depositInto.set(result);
-		SeedPouchItem.setCount(pouch, pouchCount - takeOut);
-
-		playRemoveOneSound(player);
-		return true;
+			depositInto.set(contents.splitOneStack());
+			playRemoveOneSound(player);
+			return true;
+		});
 	}
 
 	@Override
@@ -193,8 +150,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 	@Override
 	public int getBarWidth(@NotNull ItemStack stack) {
-		var contents = getContents(stack);
-		int count = contents == null ? 0 : contents.getRight();
+		int count = getCount(stack);
 		return Math.round(count * 13.0F / SeedPouchModule.maxItems);
 	}
 
@@ -203,66 +159,16 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		return BAR_COLOR;
 	}
 
-	public static float itemFraction(ItemStack stack, ClientLevel world, LivingEntity entityIn, int i) {
-		if(entityIn instanceof Player player) {
-			if(player.containerMenu != null) {
-				ItemStack held = player.containerMenu.getCarried();
-
-				if(canTakeItem(stack, held))
-					return 0F;
-			}
-		}
-
-		Pair<ItemStack, Integer> contents = getContents(stack);
-		if(contents == null)
-			return 0F;
-
-		return (float) contents.getRight() / (float) SeedPouchModule.maxItems;
+	public static SeedPouchItem.PouchContents getContents(ItemStack stack) {
+		return PouchContents.readFromStack(stack);
 	}
 
-	//TODO: Probably should return (EMPTY, 0) instead of `null` when the pouch is empty.
-	// Some parts of the code nullcheck this, though
-	public static Pair<ItemStack, Integer> getContents(ItemStack stack) {
-		CompoundTag nbt = ItemNBTHelper.getCompound(stack, TAG_STORED_ITEM, true);
-		if(nbt == null)
-			return null;
-
-		ItemStack contained = ItemStack.of(nbt);
-		int count = ItemNBTHelper.getInt(stack, TAG_COUNT, 0);
-		return Pair.of(contained, count);
+	public static int getCount(ItemStack stack) {
+		return PouchContents.readCountOnlyFromStack(stack);
 	}
 
-	public static boolean canTakeItem(ItemStack stack, ItemStack incoming) {
-		Pair<ItemStack, Integer> contents = getContents(stack);
-
-		if(contents == null)
-			return incoming.is(SeedPouchModule.seedPouchHoldableTag);
-
-		return contents.getRight() < SeedPouchModule.maxItems && ItemStack.isSameItem(incoming, contents.getLeft());
-	}
-
-	public static void setItemStack(ItemStack stack, ItemStack target) {
-		ItemStack copy = target.copy();
-		copy.setCount(1);
-
-		CompoundTag nbt = new CompoundTag();
-		copy.save(nbt);
-
-		ItemNBTHelper.setCompound(stack, TAG_STORED_ITEM, nbt);
-		setCount(stack, target.getCount());
-	}
-
-	public static void setCount(ItemStack stack, int count) {
-		if(count <= 0) {
-			CompoundTag tag = stack.getTag();
-			if(tag != null) {
-				tag.remove(TAG_STORED_ITEM);
-				tag.remove(TAG_COUNT);
-			}
-			return;
-		}
-
-		ItemNBTHelper.setInt(stack, TAG_COUNT, count);
+	public static <T> T mutateContents(ItemStack pouch, Function<PouchContents, T> func) {
+		return PouchContents.mutate(pouch, func);
 	}
 
 	@NotNull
@@ -270,13 +176,13 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 	public Component getName(@NotNull ItemStack stack) {
 		Component base = super.getName(stack);
 
-		Pair<ItemStack, Integer> contents = getContents(stack);
-		if(contents == null)
+		PouchContents contents = getContents(stack);
+		if(contents.isEmpty())
 			return base;
 
 		MutableComponent comp = base.copy();
 		comp.append(Component.literal(" ("));
-		comp.append(contents.getLeft().getHoverName());
+		comp.append(contents.getSeed().getHoverName());
 		comp.append(Component.literal(")"));
 		return comp;
 	}
@@ -284,60 +190,60 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 	@NotNull
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
-		ItemStack stack = context.getItemInHand();
-		Pair<ItemStack, Integer> contents = getContents(stack);
-		if(contents != null) {
-			ItemStack target = contents.getLeft().copy();
-			int total = contents.getRight();
+		ItemStack pouch = context.getItemInHand();
 
-			target.setCount(Math.min(target.getMaxStackSize(), total));
+		return mutateContents(pouch, contents -> {
+			if(contents.isEmpty())
+				return super.useOn(context);
+
+			ItemStack seed = contents.getSeed().copy();
+			int total = contents.count;
+			seed.setCount(Math.min(seed.getMaxStackSize(), total));
 
 			Player player = context.getPlayer();
-			if(!player.isShiftKeyDown())
-				return placeSeed(context, target, context.getClickedPos(), total);
+			if(player == null || !player.isShiftKeyDown())
+				return placeSeed(contents, context, seed, context.getClickedPos());
 
-			else {
-				InteractionResult bestRes = InteractionResult.FAIL;
+			InteractionResult bestRes = InteractionResult.FAIL;
+			int range = SeedPouchModule.shiftRange;
+			int blocks = range * range;
+			int shift = -((int) Math.floor(range / 2f));
 
-				int range = SeedPouchModule.shiftRange;
-				int blocks = range * range;
-				int shift = -((int) Math.floor(range / 2f));
+			for(int i = 0; i < blocks; i++) {
+				int x = shift + i % range;
+				int z = shift + i / range;
 
-				for(int i = 0; i < blocks; i++) {
-					int x = shift + i % range;
-					int z = shift + i / range;
+				InteractionResult res = placeSeed(contents, context, seed, context.getClickedPos().offset(x, 0, z));
 
-					InteractionResult res = placeSeed(context, target, context.getClickedPos().offset(x, 0, z), total);
-					contents = getContents(stack);
-					if(contents == null)
-						break;
-					total = contents.getRight();
+				if(contents.isEmpty())
+					break;
 
-					if(!bestRes.consumesAction())
-						bestRes = res;
-				}
-
-				return bestRes;
+				if(!bestRes.consumesAction())
+					bestRes = res;
 			}
-		}
 
-		return super.useOn(context);
+			return bestRes;
+		});
 	}
 
-	private InteractionResult placeSeed(UseOnContext context, ItemStack target, BlockPos pos, int total) {
-		Player player = context.getPlayer();
-		ItemStack restore = target;
-		if(player != null) {
-			restore = player.getItemInHand(context.getHand());
-			player.setItemInHand(context.getHand(), target);
-		}
-		InteractionResult res = target.getItem().useOn(new PouchItemUseContext(context, target, pos));
-		if(player != null) {
+	private InteractionResult placeSeed(PouchContents mutableContents, UseOnContext context, ItemStack seed, BlockPos pos) {
+		@Nullable Player player = context.getPlayer();
+
+		InteractionResult res;
+		if(player == null) {
+			res = seed.getItem().useOn(new PouchItemUseContext(context, seed, pos));
+		} else {
+			//Do a little switcheroo, so the player actually holds the seed they're about to place.
+			ItemStack restore = player.getItemInHand(context.getHand()); //the seed pouch
+			player.setItemInHand(context.getHand(), seed);
+			res = seed.getItem().useOn(new PouchItemUseContext(context, seed, pos));
 			player.setItemInHand(context.getHand(), restore);
 		}
-		int diff = res == InteractionResult.CONSUME ? 1 : 0;
-		if(diff > 0 && (context.getPlayer() == null || !context.getPlayer().getAbilities().instabuild))
-			setCount(context.getItemInHand(), total - diff);
+
+		int itemsToTake = res == InteractionResult.CONSUME ? 1 : 0;
+
+		if(itemsToTake != 0 && (player == null || !player.getAbilities().instabuild))
+			mutableContents.shrink(itemsToTake);
 
 		return res;
 	}
@@ -357,10 +263,10 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 					if(!IDisableable.isEnabled(seed))
 						continue;
 
-					ItemStack pouch = new ItemStack(this);
-					setItemStack(pouch, new ItemStack(seed));
-					setCount(pouch, SeedPouchModule.maxItems);
-					list.add(pouch);
+					PouchContents contents = new PouchContents();
+					contents.setSeed(new ItemStack(seed));
+					contents.setCount(SeedPouchModule.maxItems);
+					list.add(contents.writeToStack(new ItemStack(this)));
 				}
 			}
 
@@ -371,27 +277,23 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 	@Override
 	public ItemStack getUsageTickerItem(ItemStack stack) {
-		Pair<ItemStack, Integer> contents = getContents(stack);
-		if(contents != null)
-			return contents.getLeft();
-
-		return stack;
+		PouchContents contents = getContents(stack);
+		return contents.isEmpty() ? stack : contents.getSeed();
 	}
 
 	@Override
 	public int getUsageTickerCountForItem(ItemStack stack, Predicate<ItemStack> target) {
-		Pair<ItemStack, Integer> contents = getContents(stack);
-		if(contents != null && target.test(contents.getLeft()))
-			return contents.getRight();
-
-		return 0;
+		PouchContents contents = getContents(stack);
+		return !contents.isEmpty() && target.test(contents.getSeed()) ? contents.getCount() : 0;
 	}
 
 	@NotNull
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(@NotNull ItemStack stack) {
-		return getContents(stack) == null ? Optional.empty() : Optional.of(new Tooltip(stack));
+		return getCount(stack) == 0 ? Optional.empty() : Optional.of(new Tooltip(stack));
 	}
+
+	public record Tooltip(ItemStack stack) implements TooltipComponent {}
 
 	public static class PouchItemUseContext extends UseOnContext {
 
@@ -402,22 +304,138 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 	}
 
-	public record Tooltip(ItemStack stack) implements TooltipComponent {
+	public static class PouchContents {
 
-	}
+		public static final String TAG_STORED_ITEM = "storedItem";
+		public static final String TAG_COUNT = "itemCount";
 
-	//TODO: Copy of AbstractContainerMenu.createCarriedSlotAccess, just didn't want to make it public tbh
-	public record CarriedSlotAccess(AbstractContainerMenu menu) implements SlotAccess {
-		@Override
-		public ItemStack get() {
-			return menu.getCarried();
+		private ItemStack seed = ItemStack.EMPTY; //Always has 0x count (empty) or 1x count (nonempty).
+		private int count = 0;
+
+		public ItemStack writeToStack(ItemStack target) {
+			CompoundTag tag = target.getTag();
+
+			if(isEmpty()) {
+				//If we are empty, and the target doesn't have any NBT tag, that's cool. Nothing to do.
+				//If the target *does* have an NBT tag, ensure we remove our tags.
+				if(tag != null) {
+					tag.remove(TAG_STORED_ITEM);
+					tag.remove(TAG_COUNT);
+
+					//And, if we just removed *all* the tags on the target, erase its NBT tag entirely.
+					if(tag.isEmpty())
+						target.setTag(null);
+				}
+			} else {
+				ItemNBTHelper.setCompound(target, TAG_STORED_ITEM, seed.save(new CompoundTag()));
+				ItemNBTHelper.setInt(target, TAG_COUNT, count);
+			}
+
+			return target;
 		}
 
-		@Override
-		public boolean set(ItemStack pCarried) {
-			menu.setCarried(pCarried);
+		public static PouchContents readFromStack(ItemStack target) {
+			CompoundTag tag = target.getTag();
+			PouchContents contents = new PouchContents();
+
+			if(tag != null && tag.contains(TAG_STORED_ITEM) && tag.contains(TAG_COUNT)) {
+				contents.seed = ItemStack.of(tag.getCompound(TAG_STORED_ITEM));
+				contents.count = tag.getInt(TAG_COUNT);
+			}
+
+			return contents;
+		}
+
+		//Invariant: readFromStack(target).getCount() == readCountOnlyFromStack().
+		//Reading itemstacks is expensive, often times we don't care about them.
+		public static int readCountOnlyFromStack(ItemStack target) {
+			return ItemNBTHelper.getInt(target, TAG_COUNT, 0);
+		}
+
+		//Ensures you can't read a PouchContents, mutate it, then forget to write it back to the stack.
+		public static <T> T mutate(ItemStack pouch, Function<PouchContents, T> action) {
+			PouchContents contents = readFromStack(pouch);
+			T result = action.apply(contents);
+			contents.writeToStack(pouch);
+
+			return result;
+		}
+
+		public boolean isEmpty() {
+			return seed.isEmpty() || count == 0;
+		}
+
+		public ItemStack getSeed() {
+			return seed;
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setSeed(ItemStack seed) {
+			this.seed = seed.copy();
+			this.seed.setCount(1);
+		}
+
+		public void setCount(int newCount) {
+			this.count = newCount;
+			if(this.count <= 0) {
+				this.count = 0;
+				this.seed = ItemStack.EMPTY;
+			}
+		}
+
+		public void grow(int more) {
+			setCount(count + more);
+		}
+
+		public void shrink(int less) {
+			setCount(count - less);
+		}
+
+		//Moves items from 'other' into self (mutating both). returns whether it moved any items
+		public boolean absorb(ItemStack other) {
+			if(!canFit(other))
+				return false;
+
+			int toMove = Math.min(SeedPouchModule.maxItems - count, other.getCount());
+			if(toMove == 0)
+				return false;
+
+			if(this.isEmpty()) {
+				setSeed(other);
+				setCount(toMove);
+			} else
+				grow(toMove);
+
+			other.shrink(toMove);
 			return true;
 		}
+
+		//Mutates self
+		public ItemStack split(int request) {
+			int howMany = Math.min(count, request);
+
+			ItemStack result = seed.copy();
+			result.setCount(howMany);
+
+			shrink(howMany);
+			return result;
+		}
+
+		//Mutates self
+		public ItemStack splitOneStack() {
+			return split(seed.getMaxStackSize());
+		}
+
+		public boolean canFit(ItemStack other) {
+			if(isEmpty())
+				return other.is(SeedPouchModule.seedPouchHoldableTag);
+			else
+				return this.count < SeedPouchModule.maxItems && ItemStack.isSameItem(seed, other);
+		}
+
 	}
 
 }

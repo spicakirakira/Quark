@@ -1,7 +1,9 @@
 package org.violetmoon.quark.content.tools.module;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -9,12 +11,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import org.apache.commons.lang3.tuple.Pair;
-
+import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.content.tools.client.tooltip.SeedPouchClientTooltipComponent;
 import org.violetmoon.quark.content.tools.item.SeedPouchItem;
@@ -58,42 +60,38 @@ public class SeedPouchModule extends ZetaModule {
 	@PlayEvent
 	public void onItemPickup(ZEntityItemPickup event) {
 		Player player = event.getPlayer();
-		ItemStack stack = event.getItem().getItem();
+		ItemStack toPickup = event.getItem().getItem();
 
-		ItemStack main = player.getMainHandItem();
-		ItemStack off = player.getOffhandItem();
+		for(ItemStack pouch : List.of(player.getMainHandItem(), player.getOffhandItem())) {
+			if(pouch.getItem() != seed_pouch || pouch.getCount() != 1)
+				continue;
 
-		ImmutableSet<ItemStack> stacks = ImmutableSet.of(main, off);
-		for(ItemStack heldStack : stacks)
-			if(heldStack.getItem() == seed_pouch && heldStack.getCount() == 1) {
-				Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(heldStack);
-				if(contents != null) {
-					ItemStack pouchStack = contents.getLeft();
-					if(ItemStack.isSameItem(pouchStack, stack)) {
-						int curr = contents.getRight();
-						int missing = maxItems - curr;
-
-						int count = stack.getCount();
-						int toAdd = Math.min(missing, count);
-
-						stack.setCount(count - toAdd);
-						SeedPouchItem.setCount(heldStack, curr + toAdd);
-
-						if(player.level() instanceof ServerLevel)
-							player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS, 0.2F, (player.level().random.nextFloat() - player.level().random.nextFloat()) * 1.4F + 2.0F);
-
-						if(stack.getCount() == 0)
-							break;
-					}
-				}
+			if(SeedPouchItem.mutateContents(pouch, contents ->
+				!contents.isEmpty() &&
+				contents.absorb(toPickup) // <- mutates 'toPickup' if the items fit
+			)) {
+				if(player.level() instanceof ServerLevel slevel)
+					slevel.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BUNDLE_INSERT,
+						SoundSource.PLAYERS, 0.2F, (slevel.random.nextFloat() - slevel.random.nextFloat()) * 1.4F + 2.0F);
+				break;
 			}
+		}
 	}
 
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends SeedPouchModule {
 		@LoadEvent
 		public void clientSetup(ZClientSetup e) {
-			e.enqueueWork(() -> ItemProperties.register(seed_pouch, new ResourceLocation("pouch_items"), SeedPouchItem::itemFraction));
+			e.enqueueWork(() ->
+				ItemProperties.register(seed_pouch, new ResourceLocation("pouch_items"), (ClampedItemPropertyFunction) (pouch, level, entityIn, pSeed) -> {
+					SeedPouchItem.PouchContents contents = SeedPouchItem.getContents(pouch);
+
+					if(entityIn instanceof Player player && contents.canFit(player.containerMenu.getCarried()))
+						return 0F; //Ensure the pouch appears open
+
+					int count = contents.getCount();
+					return count == 0 ? 0F : count / (float) SeedPouchModule.maxItems;
+				}));
 		}
 
 		@LoadEvent
