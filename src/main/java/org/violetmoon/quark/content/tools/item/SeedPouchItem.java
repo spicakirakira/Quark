@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -57,79 +58,122 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 	}
 
 	@Override
-	public boolean overrideOtherStackedOnMe(@NotNull ItemStack stack, @NotNull ItemStack incoming, @NotNull Slot slot, @NotNull ClickAction action, @NotNull Player player, @NotNull SlotAccess accessor) {
-		if(action == ClickAction.SECONDARY) {
-			if(!incoming.isEmpty())
-				return addItemToMe(player, stack, incoming, slot);
-			else
-				return removeItemFromMe(player, stack, slot, accessor);
-		}
+	public boolean overrideOtherStackedOnMe(@NotNull ItemStack pouch, @NotNull ItemStack incoming, @NotNull Slot slot, @NotNull ClickAction action, @NotNull Player player, @NotNull SlotAccess carriedSlotAccessor) {
+		if(pouch.getCount() != 1 || action != ClickAction.SECONDARY || !slot.allowModification(player))
+			return false;
 
-		return false;
+		//quick note: incoming == carriedSlotAccessor.get(). in all cases i've observed they are the same object -quat
+
+		if(incoming.isEmpty())
+			//right click pouch with an empty cursor -> take items out of the pouch and put them on the cursor
+			return dropOntoCursor(player, pouch, carriedSlotAccessor);
+		else
+			//right click pouch while holding something on cursor -> take items from the cursor and try to put them into the pouch
+			return absorbFromCursor(player, pouch, carriedSlotAccessor);
 	}
 
 	@Override
-	public boolean overrideStackedOnOther(@NotNull ItemStack stack, @NotNull Slot slot, @NotNull ClickAction action, @NotNull Player player) {
-		if(action == ClickAction.SECONDARY) {
-			ItemStack incoming = slot.getItem();
-			if(!incoming.isEmpty())
-				return addItemToMe(player, stack, incoming, slot);
+	public boolean overrideStackedOnOther(@NotNull ItemStack pouch, @NotNull Slot slot, @NotNull ClickAction action, @NotNull Player player) {
+		if(pouch.getCount() != 1 || action != ClickAction.SECONDARY || !slot.allowModification(player))
+			return false;
+
+		ItemStack droppedOnto = slot.getItem();
+		if(droppedOnto.isEmpty())
+			//right click an empty slot with a pouch -> take items from the pouch and drop them into the empty slot
+			return dropIntoSlot(player, pouch, slot);
+		else
+			//right click on something with a pouch -> take items from the slot and try to put them in the pouch
+			return absorbFromSlot(player, pouch, slot);
+	}
+
+	private boolean absorbFromCursor(Player player, ItemStack pouch, SlotAccess cursorAccess) {
+		if(!canTakeItem(pouch, cursorAccess.get()))
+			return false;
+
+		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
+		if(contents == null) {
+			setItemStack(pouch, cursorAccess.get());
+			cursorAccess.set(ItemStack.EMPTY);
+		} else {
+			int curr = contents.getRight();
+			int missing = SeedPouchModule.maxItems - curr;
+			int incCount = cursorAccess.get().getCount();
+			int toAbsorb = Math.min(incCount, missing);
+
+			ItemStack absorbed = cursorAccess.get().split(toAbsorb);
+			setCount(pouch, curr + absorbed.getCount());
 		}
 
-		return false;
+		playInsertSound(player);
+		return true;
+	}
+
+	private boolean absorbFromSlot(Player player, ItemStack pouch, Slot pickupFrom) {
+		if(!canTakeItem(pouch, pickupFrom.getItem()))
+			return false;
+
+		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
+		if(contents == null) {
+			setItemStack(pouch, pickupFrom.getItem());
+			pickupFrom.set(ItemStack.EMPTY);
+		} else {
+			int curr = contents.getRight();
+			int missing = SeedPouchModule.maxItems - curr;
+			int incCount = pickupFrom.getItem().getCount();
+			int toAbsorb = Math.min(incCount, missing);
+
+			ItemStack absorbed = pickupFrom.getItem().split(toAbsorb);
+			setCount(pouch, curr + absorbed.getCount());
+		}
+
+		playInsertSound(player);
+		return true;
+	}
+
+	private boolean dropOntoCursor(Player player, ItemStack pouch, SlotAccess cursorAccess) {
+		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
+		if(contents == null)
+			return false;
+
+		ItemStack seed = contents.getLeft();
+		int pouchCount = contents.getRight();
+		if(seed.isEmpty() || pouchCount <= 0)
+			return false;
+
+		int takeOut = seed.getMaxStackSize();
+
+		ItemStack result = seed.copy();
+		result.setCount(takeOut);
+		cursorAccess.set(result);
+		SeedPouchItem.setCount(pouch, pouchCount - takeOut);
+
+		playRemoveOneSound(player);
+		return true;
+	}
+
+	private boolean dropIntoSlot(Player player, ItemStack pouch, Slot depositInto) {
+		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(pouch);
+		if(contents == null)
+			return false;
+
+		ItemStack seed = contents.getLeft();
+		int pouchCount = contents.getRight();
+		if(seed.isEmpty() || pouchCount <= 0)
+			return false;
+
+		int takeOut = Math.min(seed.getMaxStackSize(), pouchCount);
+
+		ItemStack result = seed.copy();
+		result.setCount(takeOut);
+		depositInto.set(result);
+		SeedPouchItem.setCount(pouch, pouchCount - takeOut);
+
+		playRemoveOneSound(player);
+		return true;
 	}
 
 	@Override
 	public boolean isEnchantable(@NotNull ItemStack stack) {
-		return false;
-	}
-
-	public static boolean addItemToMe(Player player, ItemStack stack, ItemStack incoming, Slot slot) {
-		if(slot.mayPickup(player) && slot.mayPlace(stack) && canTakeItem(stack, incoming) && stack.getCount() == 1) {
-			Pair<ItemStack, Integer> contents = getContents(stack);
-
-			if(contents == null) {
-				setItemStack(stack, incoming);
-				incoming.setCount(0);
-			} else {
-				int curr = contents.getRight();
-				int missing = SeedPouchModule.maxItems - curr;
-				int incCount = incoming.getCount();
-				int toDrop = Math.min(incCount, missing);
-
-				setCount(stack, curr + toDrop);
-				incoming.setCount(incCount - toDrop);
-			}
-
-			playInsertSound(player);
-			return true;
-		}
-
-		return false;
-	}
-
-	private static boolean removeItemFromMe(Player player, ItemStack stack, Slot slot, SlotAccess accessor) {
-		Pair<ItemStack, Integer> contents = SeedPouchItem.getContents(stack);
-
-		if(contents != null && slot.allowModification(player) && stack.getCount() == 1) {
-			ItemStack held = accessor.get();
-			ItemStack seed = contents.getLeft();
-			int pouchCount = contents.getRight();
-
-			if(held.isEmpty()) {
-				int takeOut = Math.min(seed.getMaxStackSize(), contents.getRight());
-
-				ItemStack result = seed.copy();
-				result.setCount(takeOut);
-				accessor.set(result);
-
-				SeedPouchItem.setCount(stack, pouchCount - takeOut);
-
-				playRemoveOneSound(player);
-				return true;
-			}
-		}
-
 		return false;
 	}
 
@@ -176,6 +220,8 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		return (float) contents.getRight() / (float) SeedPouchModule.maxItems;
 	}
 
+	//TODO: Probably should return (EMPTY, 0) instead of `null` when the pouch is empty.
+	// Some parts of the code nullcheck this, though
 	public static Pair<ItemStack, Integer> getContents(ItemStack stack) {
 		CompoundTag nbt = ItemNBTHelper.getCompound(stack, TAG_STORED_ITEM, true);
 		if(nbt == null)
@@ -358,6 +404,20 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 	public record Tooltip(ItemStack stack) implements TooltipComponent {
 
+	}
+
+	//TODO: Copy of AbstractContainerMenu.createCarriedSlotAccess, just didn't want to make it public tbh
+	public record CarriedSlotAccess(AbstractContainerMenu menu) implements SlotAccess {
+		@Override
+		public ItemStack get() {
+			return menu.getCarried();
+		}
+
+		@Override
+		public boolean set(ItemStack pCarried) {
+			menu.setCarried(pCarried);
+			return true;
+		}
 	}
 
 }
