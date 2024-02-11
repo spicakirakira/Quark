@@ -30,7 +30,7 @@ public class ContributorRewardHandler {
 			"458391f5-6303-4649-b416-e4c0d18f837a", // yrsegal
 			"75c298f9-27c8-415b-9a16-329e3884054b", // minecraftvinnyq
 			"6c175d10-198a-49f9-8e2b-c74f1f0178f3", // MilkBringer / Sully
-			"873dea16-d058-4343-861c-f62c21da124b", // quaternary
+//			"873dea16-d058-4343-861c-f62c21da124b", // quaternary     (no thanks -quat)
 			"07cb3dfd-ee1d-4ecf-b5b5-f70d317a82eb", // Siuolplex
 			"e67eb09a-b5af-4822-b756-9065cdc49913"  // IThundxr
 	);
