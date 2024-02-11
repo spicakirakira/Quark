@@ -161,6 +161,7 @@ public class VariantSelectorModule extends ZetaModule {
 				if(otherBlock != block) {
 					ItemStack clone = new ItemStack(otherBlock.asItem());
 					clone.setTag(stack.getTag());
+					clone.setCount(stack.getCount()); //TODO: maybe this leads to double slab dupes lol
 					ie.setItem(clone);
 				}
 			}
