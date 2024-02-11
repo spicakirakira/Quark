@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -27,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.api.ITrowelable;
 import org.violetmoon.quark.api.IUsageTickerOverride;
 import org.violetmoon.quark.base.Quark;
-import org.violetmoon.quark.content.management.module.ItemSharingModule;
 import org.violetmoon.quark.content.tools.module.SeedPouchModule;
 import org.violetmoon.zeta.item.ZetaItem;
 import org.violetmoon.zeta.module.IDisableable;
@@ -41,11 +41,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITrowelable, CreativeTabManager.AppendsUniquely {
 
-
-	private static final int BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
+	private static final int SEED_BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
+	private static final int FERTILIZER_BAR_COLOR = Mth.color(0.85F, 0.85F, 0.85F);
 
 	public SeedPouchItem(ZetaModule module) {
 		super("seed_pouch", module,
@@ -156,7 +157,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 	@Override
 	public int getBarColor(@NotNull ItemStack stack) {
-		return BAR_COLOR;
+		return getContents(stack).isFertilizer() ? FERTILIZER_BAR_COLOR : SEED_BAR_COLOR;
 	}
 
 	public static SeedPouchItem.PouchContents getContents(ItemStack stack) {
@@ -182,7 +183,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 		MutableComponent comp = base.copy();
 		comp.append(Component.literal(" ("));
-		comp.append(contents.getSeed().getHoverName());
+		comp.append(contents.getContents().getHoverName());
 		comp.append(Component.literal(")"));
 		return comp;
 	}
@@ -196,7 +197,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 			if(contents.isEmpty())
 				return super.useOn(context);
 
-			ItemStack seed = contents.getSeed().copy();
+			ItemStack seed = contents.getContents().copy(); //seed or bone meal, really
 			int total = contents.count;
 			seed.setCount(Math.min(seed.getMaxStackSize(), total));
 
@@ -205,7 +206,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 				return placeSeed(contents, context, seed, context.getClickedPos());
 
 			InteractionResult bestRes = InteractionResult.FAIL;
-			int range = SeedPouchModule.shiftRange;
+			int range = contents.isSeed() ? SeedPouchModule.shiftRange : SeedPouchModule.fertilizerShiftRange;
 			int blocks = range * range;
 			int shift = -((int) Math.floor(range / 2f));
 
@@ -226,6 +227,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		});
 	}
 
+	//also works on bone meal (it uses useOn)
 	private InteractionResult placeSeed(PouchContents mutableContents, UseOnContext context, ItemStack seed, BlockPos pos) {
 		@Nullable Player player = context.getPlayer();
 
@@ -259,15 +261,17 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		if(SeedPouchModule.showAllVariantsInCreative) {
 			RegistryAccess access = Quark.proxy.hackilyGetCurrentClientLevelRegistryAccess();
 			if(access != null) {
-				for(Item seed : RegistryUtil.getTagValues(access, SeedPouchModule.seedPouchHoldableTag)) {
-					if(!IDisableable.isEnabled(seed))
-						continue;
-
-					PouchContents contents = new PouchContents();
-					contents.setSeed(new ItemStack(seed));
-					contents.setCount(SeedPouchModule.maxItems);
-					list.add(contents.writeToStack(new ItemStack(this)));
-				}
+				(SeedPouchModule.allowFertilizer ?
+					Stream.of(SeedPouchModule.seedPouchHoldableTag, SeedPouchModule.seedPouchFertilizersTag) :
+					Stream.of(SeedPouchModule.seedPouchHoldableTag))
+					.flatMap(tag -> RegistryUtil.getTagValues(access, tag).stream())
+					.filter(IDisableable::isEnabled)
+					.map(seed -> {
+						PouchContents contents = new PouchContents();
+						contents.setContents(new ItemStack(seed));
+						contents.setCount(SeedPouchModule.maxItems);
+						return contents.writeToStack(new ItemStack(this));
+					}).forEach(list::add);
 			}
 
 		}
@@ -278,13 +282,13 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 	@Override
 	public ItemStack getUsageTickerItem(ItemStack stack) {
 		PouchContents contents = getContents(stack);
-		return contents.isEmpty() ? stack : contents.getSeed();
+		return contents.isEmpty() ? stack : contents.getContents();
 	}
 
 	@Override
 	public int getUsageTickerCountForItem(ItemStack stack, Predicate<ItemStack> target) {
 		PouchContents contents = getContents(stack);
-		return !contents.isEmpty() && target.test(contents.getSeed()) ? contents.getCount() : 0;
+		return !contents.isEmpty() && target.test(contents.getContents()) ? contents.getCount() : 0;
 	}
 
 	@NotNull
@@ -309,7 +313,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		public static final String TAG_STORED_ITEM = "storedItem";
 		public static final String TAG_COUNT = "itemCount";
 
-		private ItemStack seed = ItemStack.EMPTY; //Always has 0x count (empty) or 1x count (nonempty).
+		private ItemStack contents = ItemStack.EMPTY; //Always has 0x count (empty) or 1x count (nonempty).
 		private int count = 0;
 
 		public ItemStack writeToStack(ItemStack target) {
@@ -327,7 +331,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 						target.setTag(null);
 				}
 			} else {
-				ItemNBTHelper.setCompound(target, TAG_STORED_ITEM, seed.save(new CompoundTag()));
+				ItemNBTHelper.setCompound(target, TAG_STORED_ITEM, contents.save(new CompoundTag()));
 				ItemNBTHelper.setInt(target, TAG_COUNT, count);
 			}
 
@@ -339,7 +343,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 			PouchContents contents = new PouchContents();
 
 			if(tag != null && tag.contains(TAG_STORED_ITEM) && tag.contains(TAG_COUNT)) {
-				contents.seed = ItemStack.of(tag.getCompound(TAG_STORED_ITEM));
+				contents.contents = ItemStack.of(tag.getCompound(TAG_STORED_ITEM));
 				contents.count = tag.getInt(TAG_COUNT);
 			}
 
@@ -362,27 +366,35 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		}
 
 		public boolean isEmpty() {
-			return seed.isEmpty() || count == 0;
+			return contents.isEmpty() || count == 0;
 		}
 
-		public ItemStack getSeed() {
-			return seed;
+		public ItemStack getContents() {
+			return contents;
 		}
 
 		public int getCount() {
 			return count;
 		}
 
-		public void setSeed(ItemStack seed) {
-			this.seed = seed.copy();
-			this.seed.setCount(1);
+		public boolean isSeed() {
+			return !isEmpty() && contents.is(SeedPouchModule.seedPouchHoldableTag);
+		}
+
+		public boolean isFertilizer() {
+			return !isEmpty() && contents.is(SeedPouchModule.seedPouchFertilizersTag);
+		}
+
+		public void setContents(ItemStack contents) {
+			this.contents = contents.copy();
+			this.contents.setCount(1);
 		}
 
 		public void setCount(int newCount) {
 			this.count = newCount;
 			if(this.count <= 0) {
 				this.count = 0;
-				this.seed = ItemStack.EMPTY;
+				this.contents = ItemStack.EMPTY;
 			}
 		}
 
@@ -404,7 +416,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 				return false;
 
 			if(this.isEmpty()) {
-				setSeed(other);
+				setContents(other);
 				setCount(toMove);
 			} else
 				grow(toMove);
@@ -417,7 +429,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 		public ItemStack split(int request) {
 			int howMany = Math.min(count, request);
 
-			ItemStack result = seed.copy();
+			ItemStack result = contents.copy();
 			result.setCount(howMany);
 
 			shrink(howMany);
@@ -426,14 +438,14 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 		//Mutates self
 		public ItemStack splitOneStack() {
-			return split(seed.getMaxStackSize());
+			return split(contents.getMaxStackSize());
 		}
 
 		public boolean canFit(ItemStack other) {
 			if(isEmpty())
-				return other.is(SeedPouchModule.seedPouchHoldableTag);
+				return other.is(SeedPouchModule.seedPouchHoldableTag) || (SeedPouchModule.allowFertilizer && other.is(SeedPouchModule.seedPouchFertilizersTag));
 			else
-				return this.count < SeedPouchModule.maxItems && ItemStack.isSameItemSameTags(seed, other);
+				return this.count < SeedPouchModule.maxItems && ItemStack.isSameItemSameTags(contents, other);
 		}
 
 	}

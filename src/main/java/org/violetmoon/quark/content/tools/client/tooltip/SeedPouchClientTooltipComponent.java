@@ -20,7 +20,7 @@ public class SeedPouchClientTooltipComponent implements ClientTooltipComponent {
 
 		SeedPouchItem.PouchContents contents = SeedPouchItem.getContents(stack);
 		if(!contents.isEmpty()) {
-			ItemStack seed = contents.getSeed().copy();
+			ItemStack seed = contents.getContents().copy();
 			int count = contents.getCount();
 			int stacks = Math.max(1, (count - 1) / seed.getMaxStackSize() + 1);
 
@@ -32,7 +32,7 @@ public class SeedPouchClientTooltipComponent implements ClientTooltipComponent {
 	public void renderImage(@NotNull Font font, int tooltipX, int tooltipY, @NotNull GuiGraphics guiGraphics) {
 		SeedPouchItem.PouchContents contents = SeedPouchItem.getContents(stack);
 		if(!contents.isEmpty()) {
-			ItemStack seed = contents.getSeed().copy();
+			ItemStack seed = contents.getContents().copy();
 
 			Minecraft mc = Minecraft.getInstance();
 

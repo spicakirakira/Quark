@@ -2,7 +2,6 @@ package org.violetmoon.quark.content.tools.module;
 
 import java.util.List;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
@@ -11,12 +10,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.content.tools.client.tooltip.SeedPouchClientTooltipComponent;
 import org.violetmoon.quark.content.tools.item.SeedPouchItem;
@@ -25,7 +22,6 @@ import org.violetmoon.zeta.client.event.load.ZTooltipComponents;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.load.ZCommonSetup;
 import org.violetmoon.zeta.event.load.ZRegister;
 import org.violetmoon.zeta.event.play.entity.ZEntityItemPickup;
 import org.violetmoon.zeta.module.ZetaLoadModule;
@@ -38,7 +34,8 @@ public class SeedPouchModule extends ZetaModule {
 	@Hint
 	public static Item seed_pouch;
 
-	public static TagKey<Item> seedPouchHoldableTag;
+	public static final TagKey<Item> seedPouchHoldableTag = ItemTags.create(Quark.asResource("seed_pouch_holdable"));
+	public static final TagKey<Item> seedPouchFertilizersTag = ItemTags.create(Quark.asResource("seed_pouch_fertilizers"));
 
 	@Config
 	public static int maxItems = 640;
@@ -47,14 +44,14 @@ public class SeedPouchModule extends ZetaModule {
 	@Config
 	public static int shiftRange = 3;
 
+	@Config(description = "Allow putting bone meal into the Seed Pouch (or anything else in the tag 'quark:seed_pouch_fertilizers')")
+	public static boolean allowFertilizer = true;
+	@Config
+	public static int fertilizerShiftRange = 3;
+
 	@LoadEvent
 	public final void register(ZRegister event) {
 		seed_pouch = new SeedPouchItem(this);
-	}
-
-	@LoadEvent
-	public final void setup(ZCommonSetup event) {
-		seedPouchHoldableTag = ItemTags.create(new ResourceLocation(Quark.MOD_ID, "seed_pouch_holdable"));
 	}
 
 	@PlayEvent
