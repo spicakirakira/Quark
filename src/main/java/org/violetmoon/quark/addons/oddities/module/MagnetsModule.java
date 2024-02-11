@@ -36,9 +36,10 @@ public class MagnetsModule extends ZetaModule {
 	@Config(description = "Any items you place in this list will be derived so that any block made of it will become magnetizable")
 	public static List<String> magneticDerivationList = Lists.newArrayList("minecraft:iron_ingot", "minecraft:copper_ingot", "minecraft:exposed_copper", "minecraft:weathered_copper", "minecraft:oxidized_copper", "minecraft:raw_iron", "minecraft:raw_copper", "minecraft:iron_ore", "minecraft:deepslate_iron_ore", "minecraft:copper_ore", "minecraft:deepslate_copper_ore", "quark:gravisand");
 
-	@Config
+	@Config(description = "Block IDs to force-allow magnetism on, regardless of their crafting recipe")
 	public static List<String> magneticWhitelist = Lists.newArrayList("minecraft:chipped_anvil", "minecraft:damaged_anvil");
-	@Config
+
+	@Config(description = "Block IDs to force-disable magnetism on, regardless of their crafting recipe")
 	public static List<String> magneticBlacklist = Lists.newArrayList("minecraft:tripwire_hook");
 
 	@Config(flag = "magnet_pre_end")

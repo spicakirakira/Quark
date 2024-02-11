@@ -1,8 +1,12 @@
 package org.violetmoon.quark.addons.oddities.magnetsystem;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
@@ -10,6 +14,7 @@ import org.violetmoon.quark.api.IMagnetMoveAction;
 import org.violetmoon.quark.api.IMagnetTracker;
 import org.violetmoon.quark.api.QuarkCapabilities;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.zeta.util.RegistryUtil;
 import org.violetmoon.zeta.util.handler.RecipeCrawlHandler;
 
 import net.minecraft.core.BlockPos;
@@ -57,10 +62,18 @@ public class MagnetSystem {
 	}
 
 	public static void onDigest() {
-		RecipeCrawlHandler.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, MagnetsModule.magneticWhitelist, MagnetsModule.magneticBlacklist, i -> {
+		//TODO(Zeta): Eschew the built-in whitelist/blacklist system... (https://github.com/VazkiiMods/Zeta/issues/2)
+		RecipeCrawlHandler.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
 			if(i instanceof BlockItem bi)
 				magnetizableBlocks.add(bi.getBlock());
 		});
+
+		//...in favor of manual fixup
+		List<Block> magneticWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.BLOCK);
+		List<Block> magneticBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.BLOCK);
+
+		magnetizableBlocks.addAll(magneticWhitelist);
+		magneticBlacklist.forEach(magnetizableBlocks::remove);
 	}
 
 	public static void applyForce(Level world, BlockPos pos, int magnitude, boolean pushing, Direction dir, int distance, BlockPos origin) {
