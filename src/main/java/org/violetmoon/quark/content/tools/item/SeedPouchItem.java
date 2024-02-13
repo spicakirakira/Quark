@@ -1,12 +1,13 @@
 package org.violetmoon.quark.content.tools.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -20,10 +21,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
-
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.api.ITrowelable;
 import org.violetmoon.quark.api.IUsageTickerOverride;
@@ -202,6 +206,35 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 			seed.setCount(Math.min(seed.getMaxStackSize(), total));
 
 			Player player = context.getPlayer();
+
+			// For inserting stuff into chests easily
+			// Check if they are shifting, and it isn't on the client
+			if (player.isShiftKeyDown() && !context.getLevel().isClientSide()) {
+				BlockEntity targetedBE = context.getLevel().getBlockEntity(BlockPos.containing(context.getClickLocation()));
+				if (targetedBE instanceof ChestBlockEntity chest) {
+					Optional<IItemHandler> optionalItemHandler = chest.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).resolve();
+					if (optionalItemHandler.isPresent()) {
+						// Copy stack and set it to the amount in the pouch
+						ItemStack toInsert = seed.copy();
+						toInsert.setCount(total);
+
+						// Insert item into chest
+						ItemStack inserted = ItemHandlerHelper.insertItem(optionalItemHandler.get(), toInsert, false);
+						int amountInserted = total - inserted.getCount();
+
+						// If its 0 items inserted show a small message, otherwise shrink the stack
+						if (amountInserted == 0) {
+							Component component = Component.literal("The inventory you are trying to insert into is full...")
+									.withStyle(ChatFormatting.RED);
+							player.displayClientMessage(component, true);
+						} else {
+							// Shrink by how many seeds we added (total - how many were added) (640 - 10) etc etc
+							contents.shrink(amountInserted);
+						}
+					}
+				}
+			}
+
 			if(player == null || !player.isShiftKeyDown())
 				return placeSeed(contents, context, seed, context.getClickedPos());
 
