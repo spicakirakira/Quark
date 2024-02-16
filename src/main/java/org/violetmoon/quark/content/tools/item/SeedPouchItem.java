@@ -209,7 +209,7 @@ public class SeedPouchItem extends ZetaItem implements IUsageTickerOverride, ITr
 
 			// For inserting stuff into chests easily
 			// Check if they are shifting, and it isn't on the client
-			if (player.isShiftKeyDown() && !context.getLevel().isClientSide()) {
+			if (player != null && player.isShiftKeyDown() && !context.getLevel().isClientSide()) {
 				BlockEntity targetedBE = context.getLevel().getBlockEntity(BlockPos.containing(context.getClickLocation()));
 				if (targetedBE instanceof ChestBlockEntity chest) {
 					Optional<IItemHandler> optionalItemHandler = chest.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).resolve();

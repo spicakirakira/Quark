@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Behold my perfect creation, grabs the latest version of zeta and the zeta entry in dependencies.properties to said version
+# Behold my perfect creation, grabs the latest version of zeta and updates the zeta entry in dependencies.properties to said version
 
 # Zeta's XML from Jared's Maven
 xml_url="https://maven.blamejared.com/org/violetmoon/zeta/Zeta/maven-metadata.xml"

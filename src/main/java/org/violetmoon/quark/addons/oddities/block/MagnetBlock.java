@@ -35,10 +35,12 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+	public static final BooleanProperty WAXED = BooleanProperty.create("waxed");
+	public boolean waxed = false;
 
 	public MagnetBlock(@Nullable ZetaModule module) {
 		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK));
-		registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(POWERED, false));
+		registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(POWERED, false).setValue(WAXED, false));
 
 		if(module == null) //auto registration below this line
 			return;
@@ -53,7 +55,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-		builder.add(FACING, POWERED);
+		builder.add(FACING, POWERED, WAXED);
 	}
 
 	@Override

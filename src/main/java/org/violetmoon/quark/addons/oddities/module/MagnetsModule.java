@@ -1,12 +1,10 @@
 package org.violetmoon.quark.addons.oddities.module;
 
 import com.google.common.collect.Lists;
-
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.block.MovingMagnetizedBlock;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
@@ -24,6 +22,7 @@ import org.violetmoon.zeta.event.play.ZRecipeCrawl;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.util.Hint;
+import org.violetmoon.zeta.util.handler.ToolInteractionHandler;
 
 import java.util.List;
 
@@ -53,6 +52,8 @@ public class MagnetsModule extends ZetaModule {
 	public final void register(ZRegister event) {
 		magnet = new MagnetBlock(this);
 		magnetized_block = new MovingMagnetizedBlock(this);
+
+		ToolInteractionHandler.registerWaxedBlockBooleanProperty(this, magnet, MagnetBlock.WAXED);
 
 		magnetType = BlockEntityType.Builder.of(MagnetBlockEntity::new, magnet).build(null);
 		Quark.ZETA.registry.register(magnetType, "magnet", Registries.BLOCK_ENTITY_TYPE);
