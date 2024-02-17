@@ -70,7 +70,7 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 					newPos = througPos.add(direction.normalize().scale(-1));
 				}
 
-				foodHolder.moveTo(newPos.x, newPos.y, newPos.z, angles.x, angles.y);
+				foodHolder.moveTo(newPos.x, newPos.y, newPos.z, angles.y, angles.x);
 				return;
 			}
 		}
