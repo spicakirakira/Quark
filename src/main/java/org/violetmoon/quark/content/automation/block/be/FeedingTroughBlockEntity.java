@@ -1,13 +1,5 @@
 package org.violetmoon.quark.content.automation.block.be;
 
-import java.util.List;
-import java.util.Random;
-
-import org.jetbrains.annotations.NotNull;
-import org.violetmoon.quark.content.automation.block.FeedingTroughBlock;
-import org.violetmoon.quark.content.automation.module.FeedingTroughModule;
-import org.violetmoon.zeta.util.MiscUtil;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -30,6 +22,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import org.jetbrains.annotations.NotNull;
+import org.violetmoon.quark.content.automation.block.FeedingTroughBlock;
+import org.violetmoon.quark.content.automation.module.FeedingTroughModule;
+import org.violetmoon.zeta.util.MiscUtil;
+
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author WireSegal
@@ -56,7 +55,9 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 						.add(0.5, -1, 0.5);
 				Vec3 mobPosition = mob.position();
 				Vec3 direction = mobPosition.subtract(througPos);
-				Vec2 angles = MiscUtil.getMinecraftAngles(direction);
+				// Yes, this is lossy, however; it runs so frequently that is losses are fine
+				// This ends up getting expensive quickly if we use the non-lossy version
+				Vec2 angles = MiscUtil.getMinecraftAnglesLossy(direction);
 
 				Vec3 newPos = Vec3.ZERO;
 				// Fake player will always be at most maxDist blocks away from animal.

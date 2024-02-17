@@ -257,7 +257,7 @@ public class FeedingTroughModule extends ZetaModule {
         static TroughPointer find(ServerLevel level, Animal animal, Ingredient temptations) {
             // this is an expensive part
             BlockPos position = animal.getOnPos();
-            var opt = level.getPoiManager().findClosest(
+            Optional<BlockPos> opt = level.getPoiManager().findClosest(
                     holder -> holder.is(FEEDING_TROUGH_POI_KEY), p -> p.distSqr(position) <= range * range,
                     position, (int) range, PoiManager.Occupancy.ANY);
             if (opt.isPresent()) {
