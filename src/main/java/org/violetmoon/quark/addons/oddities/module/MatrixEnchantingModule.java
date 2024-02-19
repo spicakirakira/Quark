@@ -237,8 +237,8 @@ public class MatrixEnchantingModule extends ZetaModule {
 	}
 
 	private void parseInfluences() {
-		candleInfluences = new HashMap<>();
-		customInfluences = new HashMap<>();
+		candleInfluences.clear();
+		customInfluences.clear();
 
 		for(String influence : statesToInfluences) {
 			String[] split = influence.split(";");
