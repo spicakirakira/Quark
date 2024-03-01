@@ -2,6 +2,7 @@ package org.violetmoon.quark.content.tweaks.compat;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import org.violetmoon.quark.addons.oddities.entity.TotemOfHoldingEntity;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
@@ -18,7 +19,10 @@ public class TotemOfHoldingCuriosCompat {
             for (int j = 0; j < equipedCurios.size(); j++) {
                 ItemStack curiosItem = equipedCurios.get(j);
                 if (stack.is(curiosItem.getItem())) {
-                    curiosApi.get().getEquippedCurios().setStackInSlot(j, stack);
+                    IItemHandlerModifiable curiosSlot = curiosApi.get().getEquippedCurios();
+                    if (!curiosSlot.getStackInSlot(j).isEmpty()) continue;
+
+                    curiosSlot.setStackInSlot(j, stack);
                     return null;
                 }
             }
