@@ -1,7 +1,6 @@
 package org.violetmoon.quark.addons.oddities.block.be;
 
 import com.google.common.collect.Lists;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,10 +29,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import org.violetmoon.quark.addons.oddities.inventory.EnchantmentMatrix;
 import org.violetmoon.quark.addons.oddities.inventory.EnchantmentMatrix.Piece;
 import org.violetmoon.quark.addons.oddities.inventory.MatrixEnchantingMenu;
@@ -236,6 +233,11 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 	}
 
 	public void updateEnchantPower() {
+		ItemStack item = getItem(0);
+		influences.clear();
+		if(!item.isEmpty())
+			enchantability = Quark.ZETA.itemExtensions.get(item).getEnchantmentValueZeta(item);
+
 		boolean allowWater = MatrixEnchantingModule.allowUnderwaterEnchanting;
 		boolean allowShort = MatrixEnchantingModule.allowShortBlockEnchanting;
 
@@ -256,11 +258,6 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 		}
 
 		bookshelfPower = Math.min((int) power, MatrixEnchantingModule.maxBookshelves);
-		
-		ItemStack item = getItem(0);
-		influences.clear();
-		if(!item.isEmpty())
-			enchantability = Quark.ZETA.itemExtensions.get(item).getEnchantmentValueZeta(item);
 	}
 
 	private boolean isAirGap(int j, int k, boolean allowWater, boolean allowShortBlock) {
