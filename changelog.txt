@@ -1,1 +1,13 @@
-- Fix crash when using transfer button on a server
+- Fix possible crash when not using curios
+- Make gravisand react to magenets
+- Fix magnets not affecting blocks without BlockItems
+- Fix variant selector turning stacks into single blocks/items
+- Allow clicking empty slots with seed pouch to deposit items
+- Allow putting bonemeal in seed pouch to bonemeal large areas quickly
+- Allow seed pouches to be shift clicked onto chests to dump their inventory
+- Add Bumblezone's special items to Quark's enchanting tooltip config (Thanks TelepathicGrunt!)
+- Allow waxing magnets to turn off their particles
+- Improve trough performance a bit more
+- Fix matrix enchanting table crash (#4678)
+- Fix Oddities totem overriding curios when it shouldn't
+- Fix null list crash when disabling fairy rings module
