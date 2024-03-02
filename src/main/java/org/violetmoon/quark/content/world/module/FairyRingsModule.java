@@ -1,8 +1,12 @@
 package org.violetmoon.quark.content.world.module;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import org.violetmoon.quark.base.util.QuarkWorldGenWeights;
 import org.violetmoon.quark.content.world.gen.FairyRingGenerator;
 import org.violetmoon.zeta.config.Config;
@@ -14,14 +18,8 @@ import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.world.WorldGenHandler;
 
-import com.google.common.collect.Lists;
-
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
+import java.util.ArrayList;
+import java.util.List;
 
 @ZetaLoadModule(category = "world")
 public class FairyRingsModule extends ZetaModule {
@@ -36,7 +34,7 @@ public class FairyRingsModule extends ZetaModule {
 	@Config(name = "Ores")
 	public static List<String> oresRaw = Lists.newArrayList("minecraft:emerald_ore", "minecraft:diamond_ore");
 
-	public static List<BlockState> ores;
+	public static List<BlockState> ores = new ArrayList<>();
 
 	@LoadEvent
 	public final void setup(ZCommonSetup event) {
@@ -45,7 +43,7 @@ public class FairyRingsModule extends ZetaModule {
 
 	@LoadEvent
 	public final void configChanged(ZConfigChanged event) {
-		ores = new ArrayList<>();
+		ores.clear();
 		for(String s : oresRaw) {
 			Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation(s));
 			if(b != Blocks.AIR) {
