@@ -160,10 +160,12 @@ processResources {
 
     // Formats 1.0-13.58 to 1.0-13 (removes the build number)
     String zetaVer = deps.zeta.substring(0, deps.zeta.lastIndexOf('.'))
+    String curiosVer = deps.curios;
 
     Map<String, String> properties = Map.of(
             "version", version as String,
-            "zeta_ver", zetaVer
+            "zeta_ver", zetaVer,
+            "curios_ver", curiosVer
     )
 
     properties.forEach((k, v) -> inputs.property(k, v))

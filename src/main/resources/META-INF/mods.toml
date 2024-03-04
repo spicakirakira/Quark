@@ -27,7 +27,7 @@ description='''Small things, improving Minecraft bit by bit.'''
 [[dependencies.quark]]
     modId="curios"
     mandatory=false
-    versionRange="[5.6.1+1.20.1,)"
+    versionRange="[${curios_ver},)"
     ordering="AFTER"
     side="BOTH"
 
