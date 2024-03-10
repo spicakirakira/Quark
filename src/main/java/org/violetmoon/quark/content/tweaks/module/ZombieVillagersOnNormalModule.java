@@ -26,6 +26,9 @@ public class ZombieVillagersOnNormalModule extends ZetaModule {
 
 			if(level instanceof ServerLevelAccessor serverLevel) {
 				ZombieVillager zombievillager = villager.convertTo(EntityType.ZOMBIE_VILLAGER, false);
+
+				if (zombievillager == null) return;
+
 				zombievillager.finalizeSpawn(serverLevel, level.getCurrentDifficultyAt(zombievillager.blockPosition()), MobSpawnType.CONVERSION, new Zombie.ZombieGroupData(false, true), null);
 				zombievillager.setVillagerData(villager.getVillagerData());
 				zombievillager.setGossips(villager.getGossips().store(NbtOps.INSTANCE));
