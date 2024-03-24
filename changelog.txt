@@ -1,1 +1,2 @@
 - Fix crash with optifine
+- Fix crash with Dye Depot

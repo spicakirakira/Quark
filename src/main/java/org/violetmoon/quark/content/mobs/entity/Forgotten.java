@@ -152,7 +152,7 @@ public class Forgotten extends Skeleton {
 	}
 
 	@Override
-	protected void populateDefaultEquipmentSlots(RandomSource rand, @NotNull DifficultyInstance difficulty) {
+	protected void populateDefaultEquipmentSlots(@NotNull RandomSource rand, @NotNull DifficultyInstance difficulty) {
 		super.populateDefaultEquipmentSlots(rand, difficulty);
 
 		prepareEquipment();
@@ -169,8 +169,10 @@ public class Forgotten extends Skeleton {
 			DyeColor color = DyeColor.values()[random.nextInt(DyeColor.values().length)];
 			RuneColor rune = RuneColor.byDyeColor(color);
 
-			ColorRunesModule.withRune(bow, rune);
-			ColorRunesModule.withRune(sheathed, rune);
+			if (rune != null) {
+				ColorRunesModule.withRune(bow, rune);
+				ColorRunesModule.withRune(sheathed, rune);
+			}
 		}
 
 		setItemSlot(EquipmentSlot.MAINHAND, bow);
