@@ -126,7 +126,7 @@ public class GoldToolsHaveFortuneModule extends ZetaModule {
 	public static void addEnchantmentsIfMissing(ItemStack stack, Map<Enchantment, Integer> map) {
 		Item item = stack.getItem();
 
-		if(staticEnabled && wellBakedEnchantments.containsKey(item) && displayBakedEnchantmentsInTooltip) {
+		if(staticEnabled && wellBakedEnchantments.containsKey(item)) {
 			var pastry = wellBakedEnchantments.get(item);
 			for(Enchantment enchantment : pastry.keySet()) {
 				int level = map.getOrDefault(enchantment, 0);
@@ -153,20 +153,21 @@ public class GoldToolsHaveFortuneModule extends ZetaModule {
 	}
 
 	public static void fakeEnchantmentTooltip(ItemStack stack, List<Component> components) {
-		for(Map.Entry<Enchantment, Integer> entry : Quark.ZETA.itemExtensions.get(stack).getAllEnchantmentsZeta(stack).entrySet()) {
-			int actualLevel = EnchantmentHelper.getTagEnchantmentLevel(entry.getKey(), stack);
-			if(actualLevel != entry.getValue()) {
-				Component comp = entry.getKey().getFullname(entry.getValue());
-				if(italicTooltip)
-					comp = comp.copy().withStyle(ChatFormatting.ITALIC);
+		if(staticEnabled && displayBakedEnchantmentsInTooltip)
+			for(Map.Entry<Enchantment, Integer> entry : Quark.ZETA.itemExtensions.get(stack).getAllEnchantmentsZeta(stack).entrySet()) {
+				int actualLevel = EnchantmentHelper.getTagEnchantmentLevel(entry.getKey(), stack);
+				if(actualLevel != entry.getValue()) {
+					Component comp = entry.getKey().getFullname(entry.getValue());
+					if(italicTooltip)
+						comp = comp.copy().withStyle(ChatFormatting.ITALIC);
 
-				if(actualLevel != 0)
-					comp = Component.translatable("quark.misc.enchantment_with_actual_level", comp,
-							Component.translatable("enchantment.level." + actualLevel)).withStyle(ChatFormatting.GRAY);
+					if(actualLevel != 0)
+						comp = Component.translatable("quark.misc.enchantment_with_actual_level", comp,
+								Component.translatable("enchantment.level." + actualLevel)).withStyle(ChatFormatting.GRAY);
 
-				components.add(comp);
+					components.add(comp);
+				}
 			}
-		}
 	}
 
 	public static ListTag hideSmallerEnchantments(ItemStack stack, ListTag tag) {
