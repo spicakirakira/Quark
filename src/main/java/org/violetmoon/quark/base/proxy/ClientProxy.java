@@ -1,9 +1,5 @@
 package org.violetmoon.quark.base.proxy;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.Month;
 
@@ -15,20 +11,15 @@ import org.violetmoon.quark.base.client.config.QuarkConfigHomeScreen;
 import org.violetmoon.quark.base.client.handler.ClientUtil;
 import org.violetmoon.quark.base.client.handler.InventoryButtonHandler;
 import org.violetmoon.quark.base.client.handler.ModelHandler;
+import org.violetmoon.quark.base.client.handler.QuarkProgrammerArtHandler;
 import org.violetmoon.quark.base.handler.ContributorRewardHandler;
 import org.violetmoon.quark.base.handler.WoodSetHandler;
 import org.violetmoon.quark.mixin.mixins.client.accessor.AccessorMultiPlayerGameMode;
-import org.violetmoon.zeta.client.TopLayerTooltipHandler;
-import org.violetmoon.zeta.event.load.ZConfigChanged;
-import org.violetmoon.zeta.network.message.C2SUpdateFlag;
-import org.violetmoon.zeta.util.handler.RequiredModTooltipHandler;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -54,6 +45,7 @@ public class ClientProxy extends CommonProxy {
 				.subscribe(ModelHandler.class) //TODO: Make this especially not a singleton, move it into respective modules
 				.subscribe(ContributorRewardHandler.Client.class)
 				.subscribe(WoodSetHandler.Client.class)
+				.subscribe(QuarkProgrammerArtHandler.class)
 				.subscribe(ClientUtil.class);
 		
 		Quark.ZETA.playBus
@@ -65,8 +57,6 @@ public class ClientProxy extends CommonProxy {
 		super.start(); //<- loads and initializes modules
 
 		ModLoadingContext.get().registerExtensionPoint(ConfigScreenFactory.class, () -> new ConfigScreenFactory((minecraft, screen) -> new QuarkConfigHomeScreen(screen)));
-
-		copyProgrammerArtIfMissing();
 	}
 
 	@Override
@@ -97,28 +87,6 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public @Nullable RegistryAccess hackilyGetCurrentClientLevelRegistryAccess() {
 		return QuarkClient.ZETA_CLIENT.hackilyGetCurrentClientLevelRegistryAccess();
-	}
-
-	private static void copyProgrammerArtIfMissing() {
-		File dir = new File(".", "resourcepacks");
-		File target = new File(dir, "Quark Programmer Art.zip");
-
-		if(!target.exists())
-			try {
-				dir.mkdirs();
-				InputStream in = Quark.class.getResourceAsStream("/assets/quark/programmer_art.zip");
-				FileOutputStream out = new FileOutputStream(target);
-
-				byte[] buf = new byte[16384];
-				int len;
-				while((len = in.read(buf)) > 0)
-					out.write(buf, 0, len);
-
-				in.close();
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 	}
 
 }

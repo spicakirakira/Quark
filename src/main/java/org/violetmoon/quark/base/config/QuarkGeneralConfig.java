@@ -93,6 +93,9 @@ public class QuarkGeneralConfig {
 	@Config(description = "The amount of slots the chest button system should seek when trying to figure out if a container should be eligible for them.")
 	public static int chestButtonSlotTarget = 27;
 
+	@Config(description = "Set this to false to not generate the Quark Programmer Art resource pack")
+	public static boolean generateProgrammerArt = true;
+	
 	private QuarkGeneralConfig() {
 		// NO-OP
 	}
