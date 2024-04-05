@@ -277,6 +277,9 @@ public class PistonsMoveTileEntitiesModule extends ZetaModule {
 
 		@Override
 		public boolean canConnectIndirectly(Level world, BlockPos ourPos, BlockPos sourcePos, BlockState ourState, BlockState sourceState) {
+			if(sourceState.isStickyBlock())
+				return true;
+			
 			ChestType ourType = ourState.getValue(ChestBlock.TYPE);
 
 			Direction baseDirection = ourState.getValue(ChestBlock.FACING);
