@@ -92,13 +92,13 @@ public class FoodTooltips {
 		@Override
 		public void renderImage(@NotNull Font font, int tooltipX, int tooltipY, @NotNull GuiGraphics guiGraphics) {
 			PoseStack pose = guiGraphics.pose();
+			Minecraft mc = Minecraft.getInstance();
 
 			if(stack.isEdible()) {
-				FoodProperties food = stack.getItem().getFoodProperties();
+				FoodProperties food = stack.getItem().getFoodProperties(stack, mc.player);
 				if(food != null) {
 					RenderSystem.setShader(GameRenderer::getPositionTexShader);
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-					Minecraft mc = Minecraft.getInstance();
 
 					int pips = food.getNutrition();
 					if(pips == 0)
