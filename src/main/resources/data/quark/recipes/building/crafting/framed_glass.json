@@ -1,9 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "GIG",
-    "I I",
-    "GIG"
+    "IGI",
+    "G G",
+    "IGI"
   ],
   "key": {
     "G": {
@@ -15,7 +15,7 @@
   },
   "result": {
     "item": "quark:framed_glass",
-    "count": 4
+    "count": 8
   },
   "conditions": [
     {
