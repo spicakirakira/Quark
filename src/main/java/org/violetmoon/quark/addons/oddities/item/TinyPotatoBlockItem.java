@@ -1,5 +1,17 @@
 package org.violetmoon.quark.addons.oddities.item;
 
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.violetmoon.quark.addons.oddities.block.TinyPotatoBlock;
+import org.violetmoon.quark.addons.oddities.block.be.TinyPotatoBlockEntity;
+import org.violetmoon.quark.addons.oddities.util.TinyPotatoInfo;
+import org.violetmoon.quark.api.IRuneColorProvider;
+import org.violetmoon.quark.base.handler.ContributorRewardHandler;
+import org.violetmoon.quark.content.tools.base.RuneColor;
+import org.violetmoon.zeta.item.ZetaBlockItem;
+import org.violetmoon.zeta.util.ItemNBTHelper;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -8,24 +20,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-
-import org.jetbrains.annotations.NotNull;
-
-import org.violetmoon.quark.addons.oddities.block.TinyPotatoBlock;
-import org.violetmoon.quark.addons.oddities.block.be.TinyPotatoBlockEntity;
-import org.violetmoon.quark.addons.oddities.util.TinyPotatoInfo;
-import org.violetmoon.quark.api.IRuneColorProvider;
-import org.violetmoon.quark.base.handler.ContributorRewardHandler;
-import org.violetmoon.quark.content.tools.base.RuneColor;
-import org.violetmoon.zeta.item.ZetaBlockItem;
-import org.violetmoon.zeta.registry.CreativeTabManager;
-import org.violetmoon.zeta.util.ItemNBTHelper;
-
-import java.util.List;
 
 public class TinyPotatoBlockItem extends ZetaBlockItem implements IRuneColorProvider {
 	private static final int NOT_MY_NAME = 17;
@@ -35,7 +32,6 @@ public class TinyPotatoBlockItem extends ZetaBlockItem implements IRuneColorProv
 
 	public TinyPotatoBlockItem(Block block, Properties properties) {
 		super(block, properties);
-		CreativeTabManager.addToCreativeTab(CreativeModeTabs.OP_BLOCKS, this);
 	}
 
 	@Override
