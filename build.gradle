@@ -163,7 +163,6 @@ processResources {
     String curiosVer = deps.curios;
 
     Map<String, String> properties = Map.of(
-            "version", version as String,
             "zeta_ver", zetaVer,
             "curios_ver", curiosVer
     )
