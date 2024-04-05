@@ -33,7 +33,7 @@ import org.violetmoon.zeta.module.ZetaModule;
 
 import java.util.*;
 
-@ZetaLoadModule(category = "tweaks")
+@ZetaLoadModule(category = "tweaks", antiOverlap = "nerb")
 public class AutomaticRecipeUnlockModule extends ZetaModule {
 
 	@Config(description = "A list of recipe names that should NOT be added in by default")
