@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "GIG",
-    "IGI",
+    "I I",
     "GIG"
   ],
   "key": {
