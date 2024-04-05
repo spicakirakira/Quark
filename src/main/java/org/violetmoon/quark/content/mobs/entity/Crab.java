@@ -151,11 +151,6 @@ public class Crab extends Animal implements IEntityAdditionalSpawnData, Bucketab
 	}
 
 	@Override
-	public boolean removeWhenFarAway(double dist) {
-		return !this.fromBucket() && !this.hasCustomName();
-	}
-
-	@Override
 	public void updateDynamicGameEventListener(@NotNull BiConsumer<DynamicGameEventListener<?>, ServerLevel> acceptor) {
 		Level level = this.level();
 		if(level instanceof ServerLevel serverlevel)
