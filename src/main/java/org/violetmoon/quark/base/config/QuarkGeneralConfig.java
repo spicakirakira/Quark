@@ -2,10 +2,9 @@ package org.violetmoon.quark.base.config;
 
 import java.util.List;
 
-import org.violetmoon.quark.addons.oddities.client.screen.BackpackInventoryScreen;
-import org.violetmoon.quark.addons.oddities.client.screen.CrateScreen;
 import org.violetmoon.quark.base.handler.SimilarBlockTypeHandler;
 import org.violetmoon.zeta.config.Config;
+import org.violetmoon.zeta.config.type.IConfigType;
 
 import com.google.common.collect.Lists;
 
@@ -96,6 +95,9 @@ public class QuarkGeneralConfig {
 	@Config(description = "Set this to false to not generate the Quark Programmer Art resource pack")
 	public static boolean generateProgrammerArt = true;
 	
+	@Config
+	public static ChestOffsets chestButtonOffsets = new ChestOffsets();
+	
 	private QuarkGeneralConfig() {
 		// NO-OP
 	}
@@ -111,6 +113,15 @@ public class QuarkGeneralConfig {
 			return false;
 
 		return allowedScreens.contains(clazz) != useScreenListBlacklist;
+	}
+	
+	public static class ChestOffsets implements IConfigType {
+		@Config public int playerX = 0;
+		@Config public int playerY = 0;
+		@Config public int topX = 0;
+		@Config public int topY = 0;
+		@Config public int middleX = 0;
+		@Config public int middleY = 0;
 	}
 
 }

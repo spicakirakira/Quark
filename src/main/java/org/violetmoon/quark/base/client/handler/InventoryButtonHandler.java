@@ -1,5 +1,29 @@
 package org.violetmoon.quark.base.client.handler;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.NotNull;
+import org.violetmoon.quark.addons.oddities.client.screen.BackpackInventoryScreen;
+import org.violetmoon.quark.api.IQuarkButtonAllowed;
+import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.QuarkClient;
+import org.violetmoon.quark.base.config.QuarkGeneralConfig;
+import org.violetmoon.quark.base.handler.InventoryTransferHandler;
+import org.violetmoon.quark.content.management.client.screen.widgets.MiniInventoryButton;
+import org.violetmoon.zeta.client.event.load.ZKeyMapping;
+import org.violetmoon.zeta.client.event.play.ZScreen;
+import org.violetmoon.zeta.event.bus.PlayEvent;
+import org.violetmoon.zeta.module.ZetaModule;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -15,24 +39,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
-
-import org.jetbrains.annotations.NotNull;
-
-import org.violetmoon.quark.addons.oddities.client.screen.BackpackInventoryScreen;
-import org.violetmoon.quark.api.IQuarkButtonAllowed;
-import org.violetmoon.quark.base.Quark;
-import org.violetmoon.quark.base.QuarkClient;
-import org.violetmoon.quark.base.config.QuarkGeneralConfig;
-import org.violetmoon.quark.base.handler.InventoryTransferHandler;
-import org.violetmoon.zeta.client.event.load.ZKeyMapping;
-import org.violetmoon.zeta.client.event.play.ZScreen;
-import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.module.ZetaModule;
-
-import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public final class InventoryButtonHandler {
 
@@ -155,7 +161,7 @@ public final class InventoryButtonHandler {
 	}
 
 	public static void addButtonProvider(ZetaModule module, ButtonTargetType type, int priority, KeyMapping binding, Consumer<AbstractContainerScreen<?>> onKeybind, ButtonProvider provider, BooleanSupplier enableCond) {
-		providers.put(type, new ButtonProviderHolder(module, priority, provider, binding, onKeybind, enableCond));
+		providers.put(type, new ButtonProviderHolder(module, priority, type, provider, binding, onKeybind, enableCond));
 	}
 
 	public static void addButtonProvider(ZKeyMapping event, ZetaModule module, ButtonTargetType type, int priority, String keybindName, Consumer<AbstractContainerScreen<?>> onKeybind, ButtonProvider provider, BooleanSupplier enableCond) {
@@ -165,40 +171,49 @@ public final class InventoryButtonHandler {
 	}
 
 	public static void addButtonProvider(ZetaModule module, ButtonTargetType type, int priority, ButtonProvider provider, BooleanSupplier enableCond) {
-		providers.put(type, new ButtonProviderHolder(module, priority, provider, enableCond));
+		providers.put(type, new ButtonProviderHolder(module, priority, type, provider, enableCond));
 	}
 
 	public enum ButtonTargetType {
-		PLAYER_INVENTORY,
-		CONTAINER_INVENTORY,
-		CONTAINER_PLAYER_INVENTORY
+		PLAYER_INVENTORY(()->QuarkGeneralConfig.chestButtonOffsets.playerX, ()->QuarkGeneralConfig.chestButtonOffsets.playerY),
+		CONTAINER_INVENTORY(()->QuarkGeneralConfig.chestButtonOffsets.topX, ()->QuarkGeneralConfig.chestButtonOffsets.topY),
+		CONTAINER_PLAYER_INVENTORY(()->QuarkGeneralConfig.chestButtonOffsets.middleX, ()->QuarkGeneralConfig.chestButtonOffsets.middleY);
+		
+		public final Supplier<Integer> offX, offY;
+		
+		private ButtonTargetType(Supplier<Integer> offX, Supplier<Integer> offY) {
+			this.offX = offX;
+			this.offY = offY;
+		}
 	}
 
 	public interface ButtonProvider {
-		Button provide(AbstractContainerScreen<?> parent, int x, int y);
+		MiniInventoryButton provide(AbstractContainerScreen<?> parent, int x, int y);
 	}
 
 	private static class ButtonProviderHolder implements Comparable<ButtonProviderHolder> {
 
 		private final int priority;
 		private final ZetaModule module;
+		private final ButtonTargetType type;
 		private final ButtonProvider provider;
 
 		private final KeyMapping keybind;
 		private final Consumer<AbstractContainerScreen<?>> pressed;
 		private final BooleanSupplier enableCond;
 
-		public ButtonProviderHolder(ZetaModule module, int priority, ButtonProvider provider, KeyMapping keybind, Consumer<AbstractContainerScreen<?>> onPressed, BooleanSupplier enableCond) {
+		public ButtonProviderHolder(ZetaModule module, int priority, ButtonTargetType type, ButtonProvider provider, KeyMapping keybind, Consumer<AbstractContainerScreen<?>> onPressed, BooleanSupplier enableCond) {
 			this.module = module;
 			this.priority = priority;
+			this.type = type;
 			this.provider = provider;
 			this.keybind = keybind;
 			this.pressed = onPressed;
 			this.enableCond = enableCond;
 		}
 
-		public ButtonProviderHolder(ZetaModule module, int priority, ButtonProvider provider, BooleanSupplier enableCond) {
-			this(module, priority, provider, null, (screen) -> {}, enableCond);
+		public ButtonProviderHolder(ZetaModule module, int priority, ButtonTargetType type, ButtonProvider provider, BooleanSupplier enableCond) {
+			this(module, priority, type, provider, null, (screen) -> {}, enableCond);
 		}
 
 		@Override
@@ -206,9 +221,13 @@ public final class InventoryButtonHandler {
 			return priority - o.priority;
 		}
 
-		public Button getButton(AbstractContainerScreen<?> parent, int x, int y) {
-			return (module.enabled && (enableCond == null || enableCond.getAsBoolean()))
+		public MiniInventoryButton getButton(AbstractContainerScreen<?> parent, int x, int y) {
+			MiniInventoryButton b = (module.enabled && (enableCond == null || enableCond.getAsBoolean()))
 					? provider.provide(parent, x, y) : null;
+			
+			b.setType(type);
+			
+			return b;
 		}
 
 	}
