@@ -28,6 +28,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.PatrollingMonster;
+import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -90,7 +91,7 @@ public class SkullPikesModule extends ZetaModule {
 	@PlayEvent
 	public void onMonsterAppear(ZEntityJoinLevel event) {
 		Entity e = event.getEntity();
-		if(e instanceof Monster monster && !(e instanceof PatrollingMonster) && e.canChangeDimensions() && e.isAlive()) {
+		if(e instanceof Monster monster && !(e instanceof PatrollingMonster) && !(e instanceof Warden) && e.canChangeDimensions() && e.isAlive()) {
 			boolean alreadySetUp = monster.goalSelector.getAvailableGoals().stream().anyMatch((goal) -> goal.getGoal() instanceof RunAwayFromPikesGoal);
 
 			if(!alreadySetUp)
