@@ -154,7 +154,7 @@ public class MicrocraftingHelperModule extends ZetaModule {
 						guiGraphics.renderItemDecorations(mc.font, drawStack, x, y);
 
 						if(index > 0)
-							guiGraphics.drawString(mc.font, "<", x - 6, y + 4, 0x3f3f3f);
+							guiGraphics.drawString(mc.font, "<", x - 6, y + 4, 0x3f3f3f, false);
 					}
 				}
 
@@ -163,7 +163,7 @@ public class MicrocraftingHelperModule extends ZetaModule {
 					GhostIngredient ingr = pair.getRight();
 					if(ingr != null)
 						//TODO: Don't use TopLayerTooltipHandler, it's hacky. But just calling GuiGraphics.renderTooltip from here has Z-ordering issues.
-						QuarkClient.ZETA_CLIENT.topLayerTooltipHandler.setTooltip(List.of(I18n.get("quark.misc.rightclick_to_craft")), event.getMouseX(), event.getMouseY() - 15);
+						QuarkClient.ZETA_CLIENT.topLayerTooltipHandler.setTooltip(List.of(I18n.get("quark.misc.rightclick_to_craft")), event.getMouseX(), event.getMouseY() - 17);
 				}
 			}
 		}
