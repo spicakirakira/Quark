@@ -69,6 +69,9 @@ public class FoodTooltips {
 				Component saturationText = Component.translatable(prefix + saturationSimplified).withStyle(ChatFormatting.GRAY);
 				List<Either<FormattedText, TooltipComponent>> tooltip = event.getTooltipElements();
 
+				// adapt len to be the actual pixel size of the element
+				len *= 9;
+				
 				if(tooltip.isEmpty()) {
 					if(showFood)
 						tooltip.add(Either.right(new FoodComponent(stack, len, 10)));
