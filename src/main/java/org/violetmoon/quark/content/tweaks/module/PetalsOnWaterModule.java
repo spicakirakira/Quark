@@ -11,6 +11,8 @@ import org.violetmoon.zeta.module.ZetaModule;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -79,9 +81,14 @@ public class PetalsOnWaterModule extends ZetaModule {
 			pos = pos.above();
 			state = level.getBlockState(pos);
 		}
-
-		// TODO ensure item is removed and do sfx
-		return tryPlacePetal(player, level, pos, state, direction, hand, stack);
+		
+		boolean ret = tryPlacePetal(player, level, pos, state, direction, hand, stack);
+		if(ret) {
+			stack.shrink(1);
+			level.playSound(player, pos, SoundEvents.PINK_PETALS_PLACE, SoundSource.PLAYERS);
+		}
+		
+		return ret;
 	}
 
 	private boolean tryPlacePetal(Player player, Level level, BlockPos pos, BlockState state, Direction direction, InteractionHand hand, ItemStack stack) {
