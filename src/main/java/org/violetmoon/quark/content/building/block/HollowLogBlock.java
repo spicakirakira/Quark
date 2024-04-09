@@ -2,6 +2,7 @@ package org.violetmoon.quark.content.building.block;
 
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.building.module.HollowLogsModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.RenderLayerRegistry;
 import org.violetmoon.zeta.util.MiscUtil;
@@ -27,7 +28,8 @@ public class HollowLogBlock extends HollowPillarBlock {
 						.isSuffocating((s, g, p) -> false));
 
 		this.flammable = flammable;
-
+		HollowLogsModule.logMap.put(sourceLog, this);
+		
 		if(module == null) //auto registration below this line
 			return;
 

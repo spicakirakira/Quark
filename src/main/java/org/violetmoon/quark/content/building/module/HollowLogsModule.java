@@ -1,5 +1,25 @@
 package org.violetmoon.quark.content.building.module;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.violetmoon.quark.api.ICrawlSpaceBlock;
+import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.building.block.HollowLogBlock;
+import org.violetmoon.zeta.advancement.ManualTrigger;
+import org.violetmoon.zeta.config.Config;
+import org.violetmoon.zeta.event.bus.LoadEvent;
+import org.violetmoon.zeta.event.bus.PlayEvent;
+import org.violetmoon.zeta.event.load.ZCommonSetup;
+import org.violetmoon.zeta.event.load.ZConfigChanged;
+import org.violetmoon.zeta.event.load.ZRegister;
+import org.violetmoon.zeta.event.play.entity.player.ZPlayerTick;
+import org.violetmoon.zeta.module.ZetaLoadModule;
+import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.util.Hint;
+import org.violetmoon.zeta.util.VanillaWoods;
+import org.violetmoon.zeta.util.VanillaWoods.Wood;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -11,22 +31,6 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import org.violetmoon.quark.api.ICrawlSpaceBlock;
-import org.violetmoon.quark.base.Quark;
-import org.violetmoon.zeta.util.VanillaWoods;
-import org.violetmoon.zeta.util.VanillaWoods.Wood;
-import org.violetmoon.quark.content.building.block.HollowLogBlock;
-import org.violetmoon.zeta.advancement.ManualTrigger;
-import org.violetmoon.zeta.config.Config;
-import org.violetmoon.zeta.event.bus.LoadEvent;
-import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.load.ZCommonSetup;
-import org.violetmoon.zeta.event.load.ZRegister;
-import org.violetmoon.zeta.event.play.entity.player.ZPlayerTick;
-import org.violetmoon.zeta.module.ZetaLoadModule;
-import org.violetmoon.zeta.module.ZetaModule;
-import org.violetmoon.zeta.util.Hint;
 
 @ZetaLoadModule(category = "building")
 public class HollowLogsModule extends ZetaModule {
@@ -41,6 +45,14 @@ public class HollowLogsModule extends ZetaModule {
 	@Hint(key = "hollow_logs", value = "hollow_log_auto_crawl")
 	public static TagKey<Block> hollowLogsTag;
 
+	public static boolean staticEnabled;
+	public static Map<Block, Block> logMap = new HashMap<>();
+	
+	@LoadEvent
+	public final void configChanged(ZConfigChanged event) {
+		staticEnabled = enabled;
+	}
+	
 	@LoadEvent
 	public final void register(ZRegister event) {
 		for(Wood wood : VanillaWoods.ALL_WITH_LOGS) {
