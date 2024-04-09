@@ -188,7 +188,7 @@ public class RopeBlock extends ZetaBlock implements IZetaBlockItemProvider, Simp
 		if(ropePos.equals(basePos))
 			return false;
 
-		world.setBlockAndUpdate(ropePos, world.getBlockState(pos).getFluidState().createLegacyBlock());
+		world.setBlockAndUpdate(ropePos, world.getBlockState(ropePos).getFluidState().createLegacyBlock());
 		moveBlock(world, pos, ropePos);
 
 		return true;
