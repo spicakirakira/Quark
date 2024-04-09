@@ -20,6 +20,7 @@
     "BoatMixin",
     "CeilingHangingSignBlockMixin",
     "ClimateParameterPointMixin",
+    "ConcretePowderBlockMixin",
     "CreativeModeTabsMixin",
     "CrossbowMultishotMixin",
     "DamageEnchantmentMixin",
