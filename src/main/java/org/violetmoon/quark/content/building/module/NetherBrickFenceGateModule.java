@@ -26,7 +26,8 @@ public class NetherBrickFenceGateModule extends ZetaModule {
 						.mapColor(MapColor.NETHER)
 						.requiresCorrectToolForDrops()
 						.sound(SoundType.NETHER_BRICKS)
-						.strength(2.0F, 6.0F))
+						.strength(2.0F, 6.0F)
+						.forceSolidOn())
 				.setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS, Blocks.NETHER_BRICK_FENCE, false);;
 	}
 }

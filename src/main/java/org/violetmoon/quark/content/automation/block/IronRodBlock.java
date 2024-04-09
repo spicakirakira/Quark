@@ -38,7 +38,8 @@ public class IronRodBlock extends EndRodBlock implements ICollateralMover, IZeta
 				.mapColor(DyeColor.GRAY)
 				.strength(5F, 10F)
 				.sound(SoundType.METAL)
-				.noOcclusion());
+				.noOcclusion()
+				.forceSolidOn());
 
 		module.zeta.registry.registerBlock(this, "iron_rod", true);
 		CreativeTabManager.addToCreativeTab(CreativeModeTabs.REDSTONE_BLOCKS, this);
