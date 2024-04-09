@@ -1,5 +1,15 @@
 package org.violetmoon.quark.content.building.block;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.violetmoon.quark.content.automation.module.PistonsMoveTileEntitiesModule;
+import org.violetmoon.quark.content.building.module.RopeModule;
+import org.violetmoon.zeta.block.ZetaBlock;
+import org.violetmoon.zeta.item.ZetaBlockItem;
+import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.registry.IZetaBlockItemProvider;
+import org.violetmoon.zeta.registry.RenderLayerRegistry;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -40,18 +50,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidUtil;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import org.violetmoon.quark.content.automation.module.PistonsMoveTileEntitiesModule;
-import org.violetmoon.quark.content.building.module.RopeModule;
-import org.violetmoon.zeta.block.ZetaBlock;
-import org.violetmoon.zeta.item.ZetaBlockItem;
-import org.violetmoon.zeta.module.ZetaModule;
-import org.violetmoon.zeta.registry.IZetaBlockItemProvider;
-import org.violetmoon.zeta.registry.RenderLayerRegistry;
 
 public class RopeBlock extends ZetaBlock implements IZetaBlockItemProvider, SimpleWaterloggedBlock {
 
@@ -131,7 +131,14 @@ public class RopeBlock extends ZetaBlock implements IZetaBlockItemProvider, Simp
 					return InteractionResult.sidedSuccess(worldIn.isClientSide);
 				}
 			} else if(stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()) { //TODO: Forge extension
-				return FluidUtil.interactWithFluidHandler(player, hand, worldIn, getBottomPos(worldIn, pos), Direction.UP) ? InteractionResult.sidedSuccess(worldIn.isClientSide) : InteractionResult.PASS;
+				FluidActionResult interact = FluidUtil.tryPickUpFluid(stack, player, worldIn, getBottomPos(worldIn, pos), Direction.UP);
+				if(interact.success) {
+					stack.shrink(1);
+					if(!player.addItem(interact.result))
+						player.drop(interact.result, false);
+				}
+				
+				return interact.success ? InteractionResult.sidedSuccess(worldIn.isClientSide) : InteractionResult.PASS;
 			} else if(stack.getItem() == Items.GLASS_BOTTLE) {
 				BlockPos bottomPos = getBottomPos(worldIn, pos);
 				BlockState stateAt = worldIn.getBlockState(bottomPos);
@@ -144,7 +151,7 @@ public class RopeBlock extends ZetaBlock implements IZetaBlockItemProvider, Simp
 
 					if(stack.isEmpty())
 						player.setItemInHand(hand, bottleStack);
-					else if(!player.getInventory().add(bottleStack))
+					else if(!player.addItem(bottleStack))
 						player.drop(bottleStack, false);
 
 					return InteractionResult.sidedSuccess(worldIn.isClientSide);
