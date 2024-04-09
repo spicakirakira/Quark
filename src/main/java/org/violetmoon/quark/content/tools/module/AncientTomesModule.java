@@ -212,7 +212,7 @@ public class AncientTomesModule extends ZetaModule {
 		ItemStack right = event.getRight();
 		String name = event.getName();
 
-		if(!left.isEmpty() && !right.isEmpty()) {
+		if(!left.isEmpty() && !right.isEmpty() && left.getCount() == 1 && right.getCount() == 1) {
 
 			// Apply tome to book or item
 			if(right.is(ancient_tome)) {
