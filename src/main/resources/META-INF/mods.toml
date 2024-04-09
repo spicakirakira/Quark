@@ -1,7 +1,7 @@
 modLoader="javafml"
 loaderVersion="[41,)"
 issueTrackerURL="https://github.com/VazkiiMods/Quark"
-license="https://github.com/Vazkii/QuarkMods/blob/master/LICENSE.md"
+license="https://github.com/VazkiiMods/Quark/blob/master/LICENSE.md"
 
 [[mods]]
 modId="quark"
