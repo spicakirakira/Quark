@@ -35,10 +35,10 @@ public class FallenLogsModule extends ZetaModule {
 	public static boolean useHollowLogs = true;
 	
 	@Config
-	public static int rarity = 3;
+	public static int rarity = 5;
 	
 	@Config
-	public static int sparseBiomeRarity = 8;
+	public static int sparseBiomeRarity = 12;
 	
 	@Config(description = "Tags that define which biomes can have which wood types")
 	public static List<String> biomeTags = Arrays.asList(new String[] {
