@@ -15,7 +15,7 @@ import net.minecraft.world.level.material.FluidState;
 @Mixin(ConcretePowderBlock.class)
 public class ConcretePowderBlockMixin {
 	
-	@Inject(method = "touchesLiquid", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "touchesLiquid", at = @At("HEAD"), cancellable = true, remap = false)
 	private static void touchesLiquid(BlockGetter pLevel, BlockPos pPos, BlockState state, CallbackInfoReturnable<Boolean> cbi) {
 		if(MagmaKeepsConcretePowderModule.preventSolidify(pLevel, pPos, state)) {
 			cbi.setReturnValue(false);
@@ -23,7 +23,7 @@ public class ConcretePowderBlockMixin {
 		}
 	}
 	
-	@Inject(method = "shouldSolidify", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldSolidify", at = @At("HEAD"), cancellable = true, remap = false)
 	private static void shouldSolidify(BlockGetter pLevel, BlockPos pPos, BlockState pState, FluidState fluidState, CallbackInfoReturnable<Boolean> cbi) {
 		if(MagmaKeepsConcretePowderModule.preventSolidify(pLevel, pPos, pState)) {
 			cbi.setReturnValue(false);
