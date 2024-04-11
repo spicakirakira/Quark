@@ -1,34 +1,21 @@
-package org.violetmoon.quark.content.experimental.module;
+package org.violetmoon.quark.content.world.gen;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.content.building.module.HollowLogsModule;
-import org.violetmoon.zeta.config.Config;
-import org.violetmoon.zeta.event.bus.LoadEvent;
-import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.load.ZCommonSetup;
-import org.violetmoon.zeta.event.load.ZConfigChanged;
-import org.violetmoon.zeta.event.play.entity.player.ZRightClickBlock;
-import org.violetmoon.zeta.module.ZetaLoadModule;
-import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.quark.content.world.module.FallenLogsModule;
+import org.violetmoon.zeta.config.type.DimensionConfig;
 import org.violetmoon.zeta.util.MiscUtil;
+import org.violetmoon.zeta.world.generator.Generator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -36,64 +23,27 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap.Types;
 
-@ZetaLoadModule(category = "experimental", enabledByDefault = false, description = "For testing purposes, do not enable yet")
-public class FallenLogsModule extends ZetaModule {
-
-	@Config(description = "Requires the Hollow Logs module to be enabled too")
-	public static boolean useHollowLogs = true;
+public class FallenLogGenerator extends Generator {
 	
-	@Config
-	public static int rarity = 3;
-	
-	@Config
-	public static int sparseBiomeRarity = 8;
-	
-	@Config(description = "Tags that define which biomes can have which wood types")
-	public static List<String> biomeTags = Arrays.asList(new String[] {
-			"quark:has_fallen_acacia=minecraft:acacia_log",
-			"quark:has_fallen_birch=minecraft:birch_log",
-			"quark:has_fallen_cherry=minecraft:cherry_log",
-			"quark:has_fallen_dark_oak=minecraft:dark_oak_log",
-			"quark:has_fallen_jungle=minecraft:jungle_log",
-			"quark:has_fallen_mangrove=minecraft:mangrove_log",
-			"quark:has_fallen_oak=minecraft:oak_log",
-			"quark:has_fallen_spruce=minecraft:spruce_log"
-	});
-
-	public static Map<TagKey<Biome>, Block> blocksPerTag = new HashMap<>();
-	
-	public static TagKey<Biome> reducedLogsTag;
-
-	@LoadEvent
-	public final void setup(ZCommonSetup event) {
-		reducedLogsTag = TagKey.create(Registries.BIOME, new ResourceLocation(Quark.MOD_ID, "has_lower_fallen_tree_density"));
+	public FallenLogGenerator(DimensionConfig dimConfig) {
+		super(dimConfig);
 	}
-	
-	@LoadEvent
-	public final void configChanged(ZConfigChanged event) {
-		blocksPerTag.clear();
-		for(String s : biomeTags) {
-			String[] toks = s.split("=");
-			
-			String k = toks[0];
-			String v = toks[1];
-			
-			TagKey<Biome> tag = TagKey.create(Registries.BIOME, new ResourceLocation(k));
-			Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(v));
-			
-			if(block == null)
-				throw new IllegalArgumentException("Block " + v + " doesn't exist");
-			blocksPerTag.put(tag, block);
-		}
-	}
-	
-	@PlayEvent
-	public void onUseOnBlock(ZRightClickBlock event) {
-		ItemStack stack = event.getItemStack();
 
-		if(stack.is(Items.QUARTZ) && !event.getLevel().isClientSide && event.getHand() == InteractionHand.MAIN_HAND) {
-			placeFallenLogAt(event.getLevel(), event.getPos().above());
+	@Override
+	public void generateChunk(WorldGenRegion worldIn, ChunkGenerator generator, RandomSource rand, BlockPos corner) {
+		int x = corner.getX() + rand.nextInt(16);
+		int z = corner.getZ() + rand.nextInt(16);
+		BlockPos center = new BlockPos(x, 128, z);
+
+		Holder<Biome> biome = getBiome(worldIn, center, false);
+
+		int chance = biome.is(FallenLogsModule.reducedLogsTag) ? FallenLogsModule.sparseBiomeRarity : FallenLogsModule.rarity;
+		if(rand.nextInt(chance) == 0) {
+			BlockPos pos = worldIn.getHeightmapPos(Types.WORLD_SURFACE_WG, center);
+			placeFallenLogAt(worldIn, pos);
 		}
 	}
 
@@ -123,7 +73,7 @@ public class FallenLogsModule extends ZetaModule {
 				BlockPos testPos = pos.relative(dir, i);
 				BlockState testState = level.getBlockState(testPos);
 
-				if(!testState.isAir() && !testState.canBeReplaced()) {
+				if(!testState.isAir() && !testState.canBeReplaced() && !testState.is(BlockTags.FLOWERS)) {
 					errored = true;
 					break;
 				}
@@ -193,7 +143,7 @@ public class FallenLogsModule extends ZetaModule {
 	private static Block getLogBLockForPos(LevelAccessor level, BlockPos pos) {
 		Block base = getBaseLogBlockForPos(level, pos);
 
-		if(useHollowLogs && HollowLogsModule.staticEnabled) {
+		if(FallenLogsModule.useHollowLogs && HollowLogsModule.staticEnabled) {
 			Block hollow = HollowLogsModule.logMap.get(base);
 			if(hollow != null)
 				return hollow;
@@ -206,14 +156,14 @@ public class FallenLogsModule extends ZetaModule {
 		Holder<Biome> biome = level.getBiome(pos);
 		List<Block> matched = new ArrayList<>();
 		
-		for(TagKey<Biome> tag : blocksPerTag.keySet())
+		for(TagKey<Biome> tag : FallenLogsModule.blocksPerTag.keySet())
 			if(biome.is(tag))
-				matched.add(blocksPerTag.get(tag));
+				matched.add(FallenLogsModule.blocksPerTag.get(tag));
 		
 		if(matched.size() == 0)
 			return Blocks.AIR;
 		
 		return matched.get(level.getRandom().nextInt(matched.size()));
 	}
-
+	
 }

@@ -16,7 +16,8 @@ public class QuarkWorldGenWeights {
 
 	// TOP_LAYER_MODIFICATION
 	public static final int FAIRY_RINGS = 0;
-	public static final int BLOSSOM_TREES = 1;
+	public static final int FALLEN_LOGS = 1;
+	public static final int BLOSSOM_TREES = 2;
 
 	// SURFACE_STRUCTURES (end)
 	public static final int SPIRAL_SPIRES = 0;
