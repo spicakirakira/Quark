@@ -1,2 +1,24 @@
-- Fix crash with optifine
-- Fix crash with Dye Depot
+- New Feature: Fallen Logs - Uncommon horizontal logs in worldgen, will spawn with folliage and use Hollow Logs if enabled
+- New Feature: Magma Keeps Concrete Powder - Concrete Powder will not solidify if there's Magma below it
+- New Feature: Petals on Water - Pink Petals can now be placed on top of water like Lily Pads
+- Added a config to toggle off the programmer art generation
+- Added chest/inventory button offset options to the general config
+- Automatic Recipe Unlock now has anti-overlap with NERB
+- Fixed Ancient Tomes being able to apply to stacks bigger than 1
+- Fixed crabs despawning when not bucketed
+- Fixed crash when binding chat to a mouse button
+- Fixed disabling the recipes for stone tools with any stone reverting the vanilla recipe to an older one
+- Fixed double chests not sticking to slime
+- Fixed food tooltips not properly recognizing custom item food values
+- Fixed gold tool fortune and other baked enchantments not working if the tooltip is turned off
+- Fixed hunger tooltip width being incorrectly set on smaller item names
+- Fixed incorrect font in the microcrafting helper queue
+- Fixed incorrect license URL in mod list
+- Fixed Iron Rods and Fence Gates being breakable by water
+- Fixed missing recipe for Vertical Bamboo Planks
+- Fixed rope being able to dupe fluids
+- Fixed Skull Pikes scaring Wardens despite them being blind
+- Fixed stripped ashen logs not being tagged properly
+- Framed glass recipe is now 4-to-8 rather than 5-to-4
+- Removed Tiny Potato from Operator Utilities (it was fun while it lasted)
+- Right clicking a Rope with water below it with an empty bucket will drain the water into the bucket like a well
