@@ -22,3 +22,4 @@
 - Framed glass recipe is now 4-to-8 rather than 5-to-4
 - Removed Tiny Potato from Operator Utilities (it was fun while it lasted)
 - Right clicking a Rope with water below it with an empty bucket will drain the water into the bucket like a well
+- Updated textures for Trumpet Leaves and Cobblestone Bricks
