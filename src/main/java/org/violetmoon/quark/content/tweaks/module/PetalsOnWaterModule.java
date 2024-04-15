@@ -84,7 +84,9 @@ public class PetalsOnWaterModule extends ZetaModule {
 		
 		boolean ret = tryPlacePetal(player, level, pos, state, direction, hand, stack);
 		if(ret) {
-			stack.shrink(1);
+			if(!player.isCreative())
+				stack.shrink(1);
+			
 			level.playSound(player, pos, SoundEvents.PINK_PETALS_PLACE, SoundSource.PLAYERS);
 		}
 		
