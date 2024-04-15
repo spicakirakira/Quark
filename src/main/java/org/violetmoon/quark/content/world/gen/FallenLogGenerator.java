@@ -81,7 +81,7 @@ public class FallenLogGenerator extends Generator {
 				BlockPos belowPos = testPos.below();
 				BlockState belowState = level.getBlockState(belowPos);
 
-				if(belowState.isAir()) {
+				if(!belowState.isSolid()) {
 					errored = true;
 					break;
 				}
