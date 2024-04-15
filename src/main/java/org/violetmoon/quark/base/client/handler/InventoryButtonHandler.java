@@ -225,7 +225,8 @@ public final class InventoryButtonHandler {
 			MiniInventoryButton b = (module.enabled && (enableCond == null || enableCond.getAsBoolean()))
 					? provider.provide(parent, x, y) : null;
 			
-			b.setType(type);
+			if(b != null)
+				b.setType(type);
 			
 			return b;
 		}
