@@ -14,7 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.enchantment.Enchantments;
 
+import net.minecraftforge.common.MinecraftForge;
 import org.violetmoon.quark.api.IUsageTickerOverride;
+import org.violetmoon.quark.api.event.UsageTickerEvent;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.zeta.client.event.play.ZClientTick;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
@@ -209,10 +211,9 @@ public class UsageTickerModule extends ZetaModule {
 				}
 
 				//TODO ZETA: readd this
-				//UsageTickerEvent.GetStack event = new GetStack(slot, returnStack, stack, count, renderPass, player);
-				//MinecraftForge.EVENT_BUS.post(event);
-				//return event.isCanceled() ? ItemStack.EMPTY : event.getResultStack();
-				return returnStack;
+				UsageTickerEvent.GetStack event = new UsageTickerEvent.GetStack(slot, returnStack, stack, count, renderPass, player);
+				MinecraftForge.EVENT_BUS.post(event);
+				return event.isCanceled() ? ItemStack.EMPTY : event.getResultStack();
 			}
 
 			public int getStackCount(Player player, ItemStack displayStack, ItemStack original, boolean renderPass) {
@@ -237,10 +238,9 @@ public class UsageTickerModule extends ZetaModule {
 				}
 
 				//TODO ZETA: readd this
-				//UsageTickerEvent.GetCount event = new GetCount(slot, displayStack, original, val, renderPass, player);
-				//MinecraftForge.EVENT_BUS.post(event);
-				//return event.isCanceled() ? 0 : event.getResultCount();
-				return val;
+				UsageTickerEvent.GetCount event = new UsageTickerEvent.GetCount(slot, displayStack, original, val, renderPass, player);
+				MinecraftForge.EVENT_BUS.post(event);
+				return event.isCanceled() ? 0 : event.getResultCount();
 			}
 
 			private static boolean isProjectileWeapon(ItemStack stack) {
