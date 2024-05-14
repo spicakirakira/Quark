@@ -31,8 +31,7 @@ public class ShibaModel extends EntityModel<Shiba> {
 	private final ModelPart lFrontLeg;
 	private final ModelPart rBackLeg;
 	private final ModelPart lBackLeg;
-
-	private Shiba entity;
+	private boolean sleeping = false;
 
 	public ShibaModel(ModelPart root) {
 		main = root.getChild("main");
@@ -128,7 +127,8 @@ public class ShibaModel extends EntityModel<Shiba> {
 
 	@Override
 	public void prepareMobModel(@NotNull Shiba shiba, float limbSwing, float limbSwingAmount, float partialTickTime) {
-		this.entity = shiba;
+		BlockState state = shiba.getFeetBlockState();
+		this.sleeping = state.is(BlockTags.BEDS);
 
 		setRotationAngle(rFrontLeg, Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount, 0, 0);
 		setRotationAngle(lFrontLeg, Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount, 0, 0);
@@ -195,10 +195,7 @@ public class ShibaModel extends EntityModel<Shiba> {
 	public void renderToBuffer(PoseStack matrixStack, @NotNull VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
 		matrixStack.pushPose();
 
-		BlockState state = entity.getFeetBlockState();
-		boolean sleep = state.is(BlockTags.BEDS);
-		if(sleep)
-			matrixStack.translate(0, 0.12, 0);
+		if(sleeping) matrixStack.translate(0, 0.12, 0);
 
 		main.translateAndRotate(matrixStack);
 
