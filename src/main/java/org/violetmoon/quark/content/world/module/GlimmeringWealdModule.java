@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.client.module.UsageTickerModule;
+import org.violetmoon.quark.content.mobs.client.model.ShibaModel;
 import org.violetmoon.quark.content.world.block.GlowLichenGrowthBlock;
 import org.violetmoon.quark.content.world.block.GlowShroomBlock;
 import org.violetmoon.quark.content.world.block.GlowShroomRingBlock;
@@ -106,6 +108,7 @@ public class GlimmeringWealdModule extends ZetaModule {
 				Climate.Parameter.span(1.03f, 1.1f), //depth. A bit lower depth to accommodate for erosion being a bit higher
 				FULL_RANGE, //weirdness
 				0F);
+
 		Quark.TERRABLENDER_INTEGRATION.registerUndergroundBiome(this, BIOME_NAME, climatePoint);
 
         Quark.ZETA.advancementModifierRegistry.addModifier(new AdventuringTimeModifier(this, ImmutableSet.of(BIOME_KEY)));

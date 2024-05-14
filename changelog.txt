@@ -1,4 +1,5 @@
-- Fixed fallen logs spawning on water
-- Fixed crash when disabling specific inventory buttons
-- Fixed petals placed in water shrinking the item stack in creative
-- Fixed cut vines missing tags and not breaking fast with shears
+- New unique Climate Parameter Point for Glimmering Weald biome. This means that it won't overlap with deep dark anymore
+- Fixed missing posts and stripped posts tags on cherry post
+- Fixed missing boat tags on quark boats
+- Fixed a crash with Shiba model
+- Added back UsageTickerEvent
