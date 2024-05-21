@@ -70,6 +70,7 @@
     "TemptingSensorMixin",
     "TripWireHookBlockMixin",
     "VillagerMixin",
+    "VillagerTradesMixin",
     "WallBlockMixin",
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
