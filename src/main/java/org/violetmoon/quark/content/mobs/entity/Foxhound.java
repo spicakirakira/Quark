@@ -142,12 +142,14 @@ public class Foxhound extends Wolf implements Enemy {
 		} else if(pose == Pose.SLEEPING)
 			setPose(Pose.STANDING);
 
-		if(!level().isClientSide && level().getDifficulty() == Difficulty.PEACEFUL && !isTame()) {
+
+		Level level = level();
+		if(!level.isClientSide && level.getDifficulty() == Difficulty.PEACEFUL && !isTame()) {
 			discard();
 			return;
 		}
 
-		if(!level().isClientSide && timeUntilPotatoEmerges > 0) {
+		if(!level.isClientSide && timeUntilPotatoEmerges > 0) {
 			if(--timeUntilPotatoEmerges == 0) {
 				setTatering(false);
 				ItemStack stack = new ItemStack(TinyPotatoModule.tiny_potato);
@@ -178,36 +180,36 @@ public class Foxhound extends Wolf implements Enemy {
 		}
 
 		Vec3 pos = position();
-		if(level().isClientSide) {
+		if(level.isClientSide && (!this.isBaby() ^ random.nextBoolean())) {
 			SimpleParticleType particle = ParticleTypes.FLAME;
 			if(isSleeping())
 				particle = ParticleTypes.SMOKE;
 			else if(isBlue())
 				particle = ParticleTypes.SOUL_FIRE_FLAME;
 
-			level().addParticle(particle, pos.x + (this.random.nextDouble() - 0.5D) * this.getBbWidth(), pos.y + (this.random.nextDouble() - 0.5D) * this.getBbHeight(), pos.z + (this.random.nextDouble() - 0.5D) * this.getBbWidth(), 0.0D, 0.0D, 0.0D);
+
+			level.addParticle(particle, this.getRandomX(0.5f), getRandomY(), getRandomZ(0.5f), 0.0D, 0.0D, 0.0D);
 
 			if(isTatering() && random.nextDouble() < 0.1) {
-				level().addParticle(ParticleTypes.LARGE_SMOKE, pos.x + (this.random.nextDouble() - 0.5D) * this.getBbWidth(), pos.y + (this.random.nextDouble() - 0.5D) * this.getBbHeight(), pos.z + (this.random.nextDouble() - 0.5D) * this.getBbWidth(), 0.0D, 0.0D, 0.0D);
+				level.addParticle(ParticleTypes.LARGE_SMOKE, getRandomX(0.5f), getRandomY(),  getRandomZ(0.5f), 0.0D, 0.0D, 0.0D);
 
-				level().playLocalSound(pos.x, pos.y, pos.z, QuarkSounds.ENTITY_FOXHOUND_CRACKLE, getSoundSource(), 1.0F, 1.0F, false);
+				level.playLocalSound(pos.x, pos.y, pos.z, QuarkSounds.ENTITY_FOXHOUND_CRACKLE, getSoundSource(), 1.0F, 1.0F, false);
 			}
 
 		}
 
 		if(isTame() && FoxhoundModule.foxhoundsSpeedUpFurnaces) {
 			BlockPos below = blockPosition().below();
-			BlockEntity tile = level().getBlockEntity(below);
+			BlockEntity tile = level.getBlockEntity(below);
 			if(tile instanceof AbstractFurnaceBlockEntity furnace) {
 				int cookTime = furnace.cookingProgress;
 				if(cookTime > 0 && cookTime % 3 == 0) {
-					List<Foxhound> foxhounds = level().getEntitiesOfClass(Foxhound.class, new AABB(blockPosition()),
+					List<Foxhound> foxhounds = level.getEntitiesOfClass(Foxhound.class, new AABB(blockPosition()),
 							(fox) -> fox != null && fox.isTame());
 					if(!foxhounds.isEmpty() && foxhounds.get(0) == this) {
 						furnace.cookingProgress = furnace.cookingProgress == 3 ? 5 : Math.min(furnace.cookingTotalTime - 1, cookTime + 1);
 
-						LivingEntity owner = getOwner();
-						if(owner != null && owner instanceof ServerPlayer sp)
+						if(getOwner() instanceof ServerPlayer sp)
 							FoxhoundModule.foxhoundFurnaceTrigger.trigger(sp);
 					}
 				}
