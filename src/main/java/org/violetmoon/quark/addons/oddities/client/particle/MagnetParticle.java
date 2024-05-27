@@ -24,6 +24,7 @@ public class MagnetParticle extends TextureSheetParticle {
     private float xWobbleO = 0;
     private float yWobble = 0;
     private float yWobbleO = 0;
+    private float alphaO = 0;
 
 
     public MagnetParticle(ClientLevel pLevel, double pX, double pY, double pZ, double pXSpeed, double pYSpeed, double pZSpeed) {
@@ -34,11 +35,13 @@ public class MagnetParticle extends TextureSheetParticle {
         this.lifetime = 40;
         this.friction = 1;
         this.setSize(0.01f, 0.01f);
+        this.alpha = 0;
         this.updateAlpha();
     }
 
     private void updateAlpha() {
-        int offset = 3;
+        this.alphaO = this.alpha;
+        int offset = 1;
         //alpha with fade in and fade out. No lepr. Other particles never lerp colors for some reason...
         float t = (this.age + offset) / (float) (this.lifetime + 1 + offset);
         this.setAlpha(0.6f * (1 - Mth.square(2 * t - 1)));
@@ -47,7 +50,7 @@ public class MagnetParticle extends TextureSheetParticle {
     @Override
     public float getQuadSize(float partialTicks) {
         float t = (this.age + partialTicks) / (float) (this.lifetime + 1);
-        return this.quadSize * (1 - Mth.square(2 * t - 1));
+        return this.quadSize * (0.6f + (1 - Mth.square(2 * t - 1)) * 0.4f);
     }
 
     //same as render function just witn jitter
@@ -83,11 +86,12 @@ public class MagnetParticle extends TextureSheetParticle {
         float f7 = this.getU1();
         float f4 = this.getV0();
         float f5 = this.getV1();
+        float al = Mth.lerp(pPartialTicks, this.alphaO, this.alpha);
         int j = this.getLightColor(pPartialTicks);
-        pBuffer.vertex(avector3f[0].x(), avector3f[0].y(), avector3f[0].z()).uv(f7, f5).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-        pBuffer.vertex(avector3f[1].x(), avector3f[1].y(), avector3f[1].z()).uv(f7, f4).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-        pBuffer.vertex(avector3f[2].x(), avector3f[2].y(), avector3f[2].z()).uv(f6, f4).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-        pBuffer.vertex(avector3f[3].x(), avector3f[3].y(), avector3f[3].z()).uv(f6, f5).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+        pBuffer.vertex(avector3f[0].x(), avector3f[0].y(), avector3f[0].z()).uv(f7, f5).color(this.rCol, this.gCol, this.bCol, al).uv2(j).endVertex();
+        pBuffer.vertex(avector3f[1].x(), avector3f[1].y(), avector3f[1].z()).uv(f7, f4).color(this.rCol, this.gCol, this.bCol, al).uv2(j).endVertex();
+        pBuffer.vertex(avector3f[2].x(), avector3f[2].y(), avector3f[2].z()).uv(f6, f4).color(this.rCol, this.gCol, this.bCol, al).uv2(j).endVertex();
+        pBuffer.vertex(avector3f[3].x(), avector3f[3].y(), avector3f[3].z()).uv(f6, f5).color(this.rCol, this.gCol, this.bCol, al).uv2(j).endVertex();
     }
 
     @Override
@@ -96,10 +100,11 @@ public class MagnetParticle extends TextureSheetParticle {
         updateAlpha();
 
         float wobbleAmount = 0.12f;
-        this.xWobble = random.nextFloat() * wobbleAmount;
-        this.yWobble = random.nextFloat() * wobbleAmount;
         this.xWobbleO = this.xWobble;
         this.yWobbleO = this.yWobble;
+        this.xWobble = random.nextFloat() * wobbleAmount;
+        this.yWobble = random.nextFloat() * wobbleAmount;
+
     }
 
 

@@ -3,11 +3,15 @@ package org.violetmoon.quark.addons.oddities.block.be;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
@@ -43,14 +47,14 @@ public class MagnetBlockEntity extends BlockEntity {
 
         double particleOffset = moveDir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
 
-        for (int i = 1; i <= power; i++) {
+        int i = 1;
+        for (; i <= power; i++) {
             BlockPos targetPos = worldPosition.relative(dir, i);
             BlockState targetState = level.getBlockState(targetPos);
 
-            if (targetState.getBlock() == MagnetsModule.magnetized_block)
-                break;
+            if (targetState.getBlock() == MagnetsModule.magnetized_block) break;
 
-            if (!level.isClientSide && targetState.getBlock() != Blocks.MOVING_PISTON && targetState.getBlock() != MagnetsModule.magnetized_block) {
+            if (!level.isClientSide && targetState.getBlock() != Blocks.MOVING_PISTON) {
                 PushReaction reaction = MagnetSystem.getPushAction(this, targetPos, targetState, moveDir);
                 if (reaction == PushReaction.IGNORE || reaction == PushReaction.DESTROY) {
                     BlockPos frontPos = targetPos.relative(moveDir);
@@ -62,13 +66,22 @@ public class MagnetBlockEntity extends BlockEntity {
 
             if (!canBeReplacedByMovingMagnet(targetState)) break;
 
-            if (!state.getValue(MagnetBlock.WAXED) && level.isClientSide && level.random.nextFloat() <= particleChance) {
+            if (level.isClientSide && !state.getValue(MagnetBlock.WAXED) && level.random.nextFloat() <= particleChance) {
                 RandomSource ran = level.random;
                 double x = targetPos.getX() + getParticlePos(xOff, ran, particleOffset);
                 double y = targetPos.getY() + getParticlePos(yOff, ran, particleOffset);
                 double z = targetPos.getZ() + getParticlePos(zOff, ran, particleOffset);
                 var p = dir == moveDir ? MagnetsModule.repulsorParticle : MagnetsModule.attractorParticle;
                 level.addParticle(p, x, y, z, xOff, yOff, zOff);
+            }
+        }
+        if (!level.isClientSide && MagnetsModule.affectEntities) {
+            var entities = level.getEntities((Entity) null, new AABB(worldPosition)
+                            .expandTowards(new Vec3(dir.step().mul(i))),
+                    e -> e.getType().is(MagnetsModule.magneticEntities));
+            for (Entity e : entities) {
+                Vector3f vec = dir.step().mul((float) (0.015f * magnitude));
+                e.push(vec.x(), vec.y(), vec.z());
             }
         }
     }

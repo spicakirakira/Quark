@@ -2,13 +2,12 @@ package org.violetmoon.quark.addons.oddities.module;
 
 import com.google.common.collect.Lists;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.block.MovingMagnetizedBlock;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
@@ -38,6 +37,7 @@ public class MagnetsModule extends ZetaModule {
 	public static SimpleParticleType attractorParticle;
 	public static SimpleParticleType repulsorParticle;
 
+	//TODO: make these tags? why arent they tags?
 	@Config(description = "Any items you place in this list will be derived so that any block made of it will become magnetizable")
 	public static List<String> magneticDerivationList = Lists.newArrayList("minecraft:iron_ingot", "minecraft:copper_ingot", "minecraft:exposed_copper", "minecraft:weathered_copper", "minecraft:oxidized_copper", "minecraft:raw_iron", "minecraft:raw_copper", "minecraft:iron_ore", "minecraft:deepslate_iron_ore", "minecraft:copper_ore", "minecraft:deepslate_copper_ore", "quark:gravisand");
 
@@ -50,11 +50,13 @@ public class MagnetsModule extends ZetaModule {
 	@Config(flag = "magnet_pre_end")
 	public static boolean usePreEndRecipe = false;
 
-	@Config(flag = "green_particles")
+	@Config(flag = "green_particles", description = "Makes magnet particles use the old green color")
 	public static boolean greenMagnetParticles = false;
 
-	//TODO: magnets attracted by golems
+	@Config(flag = "magnetic_entities", description = "Allows magnets to push and pull entities in the 'affected_by_magnets' tag (edit it with datapack)")
+	public static boolean affectEntities = true;
 
+	public static final TagKey<EntityType<?>> magneticEntities = TagKey.create(Registries.ENTITY_TYPE, Quark.asResource("affected_by_magnets"));
 
 	@Hint
 	public static Block magnet;

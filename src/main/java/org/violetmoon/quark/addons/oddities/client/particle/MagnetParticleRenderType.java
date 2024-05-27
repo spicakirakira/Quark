@@ -27,6 +27,7 @@ import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 @Mod.EventBusSubscriber(modid = "quark", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MagnetParticleRenderType {
 
+    //I think this just makes it so stuff with low alpha isn't cutoff
     private static Supplier<ShaderInstance> PARTICLE_SHADER = GameRenderer::getParticleShader;
 
     public static final ParticleRenderType ADDITIVE_TRANSLUCENCY = new ParticleRenderType() {
@@ -50,8 +51,7 @@ public class MagnetParticleRenderType {
         }
     };
 
-    // Good luck adding this on fabric :skull:
-    // I suggest just leaving it out on fabric and using the normal shader thats already defined above
+    // On fabric don't add this if its too much. just leave on forge. Shader just makes particles a tiny bit nicer as it doesnt cut off alpha
     @SubscribeEvent
     public static void registerShader(RegisterShadersEvent event) {
         try {
