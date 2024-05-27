@@ -31,7 +31,7 @@ import org.violetmoon.zeta.module.ZetaModule;
 
 import java.util.List;
 
-public class MagnetBlock extends ZetaBlock implements EntityBlock {
+public class MagnetBlock extends ZetaBlock implements EntityBlock{
 
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -94,17 +94,15 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 		MagnetizedBlockBlockEntity movingTile = new MagnetizedBlockBlockEntity(endPos, setState, targetState, tileData, moveDir);
 
 		if(!world.isClientSide && reaction == PushReaction.DESTROY) {
-			BlockState blockstate = world.getBlockState(endPos);
-			Block.dropResources(blockstate, world, endPos, tilePresent);
+			world.destroyBlock(endPos, true);
 		}
-
-		if(tilePresent != null)
-			tilePresent.setRemoved();
 
 		world.setBlock(endPos, setState, 68);
 		world.setBlockEntity(movingTile);
 
 		world.setBlock(targetPos, Blocks.AIR.defaultBlockState(), 67);
+
+		//TODO:push iron golems here...
 
 		return true;
 	}

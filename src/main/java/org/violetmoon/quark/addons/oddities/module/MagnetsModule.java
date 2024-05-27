@@ -2,9 +2,13 @@ package org.violetmoon.quark.addons.oddities.module;
 
 import com.google.common.collect.Lists;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.block.MovingMagnetizedBlock;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
@@ -31,6 +35,8 @@ public class MagnetsModule extends ZetaModule {
 
 	public static BlockEntityType<MagnetBlockEntity> magnetType;
 	public static BlockEntityType<MagnetizedBlockBlockEntity> magnetizedBlockType;
+	public static SimpleParticleType attractorParticle;
+	public static SimpleParticleType repulsorParticle;
 
 	@Config(description = "Any items you place in this list will be derived so that any block made of it will become magnetizable")
 	public static List<String> magneticDerivationList = Lists.newArrayList("minecraft:iron_ingot", "minecraft:copper_ingot", "minecraft:exposed_copper", "minecraft:weathered_copper", "minecraft:oxidized_copper", "minecraft:raw_iron", "minecraft:raw_copper", "minecraft:iron_ore", "minecraft:deepslate_iron_ore", "minecraft:copper_ore", "minecraft:deepslate_copper_ore", "quark:gravisand");
@@ -44,6 +50,12 @@ public class MagnetsModule extends ZetaModule {
 	@Config(flag = "magnet_pre_end")
 	public static boolean usePreEndRecipe = false;
 
+	@Config(flag = "green_particles")
+	public static boolean greenMagnetParticles = false;
+
+	//TODO: magnets attracted by golems
+
+
 	@Hint
 	public static Block magnet;
 	public static Block magnetized_block;
@@ -56,10 +68,16 @@ public class MagnetsModule extends ZetaModule {
 		ToolInteractionHandler.registerWaxedBlockBooleanProperty(this, magnet, MagnetBlock.WAXED);
 
 		magnetType = BlockEntityType.Builder.of(MagnetBlockEntity::new, magnet).build(null);
-		Quark.ZETA.registry.register(magnetType, "magnet", Registries.BLOCK_ENTITY_TYPE);
+		event.getRegistry().register(magnetType, "magnet", Registries.BLOCK_ENTITY_TYPE);
 
 		magnetizedBlockType = BlockEntityType.Builder.of(MagnetizedBlockBlockEntity::new, magnetized_block).build(null);
-		Quark.ZETA.registry.register(magnetizedBlockType, "magnetized_block", Registries.BLOCK_ENTITY_TYPE);
+		event.getRegistry().register(magnetizedBlockType, "magnetized_block", Registries.BLOCK_ENTITY_TYPE);
+
+		attractorParticle = new SimpleParticleType(false);
+		event.getRegistry().register(attractorParticle, "attractor", Registries.PARTICLE_TYPE);
+
+		repulsorParticle = new SimpleParticleType(false);
+		event.getRegistry().register(repulsorParticle, "repulsor", Registries.PARTICLE_TYPE);
 	}
 
 	@LoadEvent

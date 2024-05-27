@@ -7,8 +7,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
+import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.api.IMagnetTracker;
 
 import java.util.Collection;
@@ -52,6 +54,7 @@ public class MagnetTracker implements IMagnetTracker {
 		for(Force force : forcesActing.get(pos)) {
 			if(force.direction() == target) {
 				BlockState origin = world.getBlockState(force.origin());
+				//here it assumes that whichever block applied that force is a magnet block... or at least expects these block events
 				world.blockEvent(force.origin(), origin.getBlock(), force.pushing() ? 0 : 1, force.distance());
 			}
 		}
