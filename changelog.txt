@@ -1,4 +1,5 @@
 - Added Beach Villager Type (module)
-- Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)
 - Magnets not have shiny new particles
 - Magnets can now push and pull blocks through breakable blocks (like tall grass)
+- Magnets can now interact with iron golems
+- Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)
