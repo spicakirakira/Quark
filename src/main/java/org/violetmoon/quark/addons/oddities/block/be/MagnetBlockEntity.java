@@ -55,13 +55,12 @@ public class MagnetBlockEntity extends BlockEntity {
                 if (reaction == PushReaction.IGNORE || reaction == PushReaction.DESTROY) {
                     BlockPos frontPos = targetPos.relative(moveDir);
                     BlockState frontState = level.getBlockState(frontPos);
-                    if (frontState.isAir())
+                    if (canBeReplacedByMovingMagnet(frontState))
                         MagnetSystem.applyForce(level, targetPos, power - i + 1, dir == moveDir, moveDir, i, worldPosition);
                 }
             }
 
-            if (!targetState.isAir())
-                break;
+            if (!canBeReplacedByMovingMagnet(targetState)) break;
 
             if (!state.getValue(MagnetBlock.WAXED) && level.isClientSide && level.random.nextFloat() <= particleChance) {
                 RandomSource ran = level.random;
@@ -74,7 +73,11 @@ public class MagnetBlockEntity extends BlockEntity {
         }
     }
 
-    private static double getParticlePos(double offset, RandomSource ran, double magnitude) {
-        return (offset == 0 ? 0.5f + (ran.nextFloat() + ran.nextFloat() - 1) / 2f : (0.5f + magnitude * (ran.nextFloat() - 1)));
+    private boolean canBeReplacedByMovingMagnet(BlockState targetState) {
+        return targetState.isAir() || targetState.getPistonPushReaction() == PushReaction.DESTROY;
+    }
+
+    private double getParticlePos(double offset, RandomSource ran, double magnitude) {
+        return (offset == 0 ? 0.5f + (ran.nextFloat() + ran.nextFloat() - 1) / 2f : (0.5f + magnitude * (ran.nextFloat() - 1.25)));
     }
 }
