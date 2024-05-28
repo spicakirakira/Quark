@@ -1,3 +1,7 @@
+- Hotfix, fixing a mixin crash on world load thanks to not using fabric mixins
+
+Previous update patch incase you missed it:
+
 - Added Beach Villager Type (module)
 - Magnets have shiny new particles!
 - Iron Golems and minecarts can be pushed by magnets (plus other tagged entities)
