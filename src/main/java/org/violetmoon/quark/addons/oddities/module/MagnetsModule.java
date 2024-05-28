@@ -60,7 +60,7 @@ public class MagnetsModule extends ZetaModule {
 	public static boolean affectsArmor = true;
 
 	@Config(description = "Determines how fast entities are pulled by magnets. Still follows the inverse square law")
-	public static float entitiesPullForce = 0.15f;
+	public static double entitiesPullForce = 0.15f;
 
 	public static final TagKey<EntityType<?>> magneticEntities = TagKey.create(Registries.ENTITY_TYPE, Quark.asResource("affected_by_magnets"));
 

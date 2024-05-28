@@ -9,6 +9,7 @@ Previous update patch incase you missed it:
 - Magnetic falling blocks and item entities can also be pushed
 - Player having some iron armor are also pushable
 - Magnets can now push and pull blocks through breakable blocks (like tall grass)
+- They can also push iron rods through blocks
 - Improved trowel item logic, now works with more complex block items
 - Improved ITroweable interface and also added a blacklist and whitelist tag for it
 - Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)

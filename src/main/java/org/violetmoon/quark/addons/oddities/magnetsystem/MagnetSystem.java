@@ -95,7 +95,7 @@ public class MagnetSystem {
 			BlockPos frontPos = pos.relative(moveDir);
 			BlockState frontState = world.getBlockState(frontPos);
 
-			if(state.getBlock() instanceof ICollateralMover cm){
+			if(state.getBlock() instanceof ICollateralMover cm && cm.isCollateralMover(world, magnet.getBlockPos(), moveDir, pos)){
 				return cm.getCollateralMovement(world, magnet.getBlockPos(), moveDir, moveDir, pos);
 			}
 
