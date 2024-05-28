@@ -76,6 +76,7 @@
     "accessor.AccessorAbstractChestedHorse",
     "accessor.AccessorLivingEntity",
     "accessor.AccessorMerchantOffer",
+    "accessor.AccessorServerGamePacketListener",
     "accessor.AccessorTemptingSensor",
     "self.IZetaBlockMixin_FAKE",
     "self.IZetaItemMixin_FAKE"

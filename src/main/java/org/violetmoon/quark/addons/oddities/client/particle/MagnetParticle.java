@@ -5,6 +5,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +16,7 @@ import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 
 import java.util.List;
+import java.util.Optional;
 
 public class MagnetParticle extends TextureSheetParticle {
 
@@ -104,7 +106,6 @@ public class MagnetParticle extends TextureSheetParticle {
         this.yWobbleO = this.yWobble;
         this.xWobble = random.nextFloat() * wobbleAmount;
         this.yWobble = random.nextFloat() * wobbleAmount;
-
     }
 
 

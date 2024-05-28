@@ -6,16 +6,24 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ItemPickupParticle;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.opengl.GL13;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.base.Quark;
 
@@ -33,8 +41,12 @@ public class MagnetParticleRenderType {
     public static final ParticleRenderType ADDITIVE_TRANSLUCENCY = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager textureManager) {
-            RenderSystem.setShader(PARTICLE_SHADER);
+            Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
+            RenderSystem.activeTexture(GL13.GL_TEXTURE2);
+            RenderSystem.activeTexture(GL13.GL_TEXTURE0);
+
             RenderSystem.depthMask(false);
+            RenderSystem.setShader(PARTICLE_SHADER);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
@@ -71,5 +83,16 @@ public class MagnetParticleRenderType {
         event.registerSpriteSet(MagnetsModule.attractorParticle, MagnetParticle.Provider::new);
         event.registerSpriteSet(MagnetsModule.repulsorParticle, MagnetParticle.Provider::new);
     }
+/*
+    static{
+        MinecraftForge.EVENT_BUS.addListener(MagnetParticleRenderType::renderParticlesAfterEverything);
+    }
+
+    public static void renderParticlesAfterEverything(RenderLevelStageEvent event){
+        if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY){
+
+        }
+
+    }*/
 
 }

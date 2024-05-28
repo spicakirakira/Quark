@@ -76,11 +76,18 @@ public class MagnetSystem {
 		});
 
 		//...in favor of manual fixup
-		List<Block> magneticWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.BLOCK);
-		List<Block> magneticBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.BLOCK);
+		List<Block> magneticBlockWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.BLOCK);
+		List<Block> magneticBlockBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.BLOCK);
 
-		magnetizableBlocks.addAll(magneticWhitelist);
-		magneticBlacklist.forEach(magnetizableBlocks::remove);
+		magnetizableBlocks.addAll(magneticBlockWhitelist);
+		magneticBlockBlacklist.forEach(magnetizableBlocks::remove);
+
+		//...and manual fixup for items
+		List<Item> magneticItemWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.ITEM);
+		List<Item> magneticItemBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.ITEM);
+
+		magnetizableItems.addAll(magneticItemWhitelist);
+		magneticItemBlacklist.forEach(magnetizableItems::remove);
 	}
 
 	public static void applyForce(Level world, BlockPos pos, int magnitude, boolean pushing, Direction dir, int distance, BlockPos origin) {

@@ -2,6 +2,7 @@ package org.violetmoon.quark.addons.oddities.block.be;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
@@ -18,6 +19,7 @@ import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagneticEntity;
+import org.violetmoon.quark.mixin.mixins.accessor.AccessorServerGamePacketListener;
 import org.violetmoon.zeta.api.ICollateralMover;
 
 public class MagnetBlockEntity extends BlockEntity {
@@ -78,10 +80,10 @@ public class MagnetBlockEntity extends BlockEntity {
         }
 
         //TODO: move this into magnet system. although might not be needed as there it only serves since directions must be discrete
-        if (!level.isClientSide && MagnetsModule.affectEntities && i > 1) {
+        if (MagnetsModule.affectEntities && i > 1) {
 
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
-                            .expandTowards(new Vec3(dir.step().mul(i))), this::canPullEntity);
+                    .expandTowards(new Vec3(dir.step().mul(i))), this::canPullEntity);
             for (Entity e : entities) {
                 double distanceFromMagnetSq = e.distanceToSqr(worldPosition.getCenter());
                 double invSquared = 1 / distanceFromMagnetSq;
@@ -91,33 +93,39 @@ public class MagnetBlockEntity extends BlockEntity {
                     me.moveByMagnet(e, vec, this);
                 } else {
                     e.push(vec.x(), vec.y(), vec.z());
-                    if (e instanceof Player player) {
-                        //should probably send a packet here actually
-                        player.hurtMarked = true;
+                    if (e instanceof ServerPlayer player) {
+                        //reset flying kick time
+                        ((AccessorServerGamePacketListener) player.connection).setAboveGroundTickCount(0);
+                    } else {
+                        //hurt mark everybody but the player. its handled by client side code
+                        e.hurtMarked = true;
                     }
-                    if(e instanceof FallingBlockEntity fb){
+                    if (e instanceof FallingBlockEntity fb) {
                         fb.time--;
-                        fb.hurtMarked = true;
                         //hack.
                     }
+                    e.fallDistance = 0;
                 }
             }
         }
     }
 
-    private boolean canPullEntity(Entity e){
+    private boolean canPullEntity(Entity e) {
+        if (this.level.isClientSide) return e instanceof Player;
         if (e instanceof IMagneticEntity) return true;
-        if (e.getType().is(MagnetsModule.magneticEntities)) return true;
 
-        if (e instanceof ItemEntity ie){
+        if (e instanceof ItemEntity ie) {
             return MagnetSystem.isItemMagnetic(ie.getItem().getItem());
         }
-        if (e instanceof FallingBlockEntity fb){
+
+        if (e.getType().is(MagnetsModule.magneticEntities)) return true;
+
+        if (e instanceof FallingBlockEntity fb) {
             return MagnetSystem.isBlockMagnetic(fb.getBlockState());
         }
 
-        if (MagnetsModule.affectsArmor){
-            for (var armor : e.getArmorSlots()){
+        if (MagnetsModule.affectsArmor) {
+            for (var armor : e.getArmorSlots()) {
                 if (MagnetSystem.isItemMagnetic(armor.getItem())) return true;
             }
         }
