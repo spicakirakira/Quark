@@ -26,6 +26,7 @@ import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetizedBlockBlockEntity;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
+import org.violetmoon.zeta.api.ICollateralMover;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.module.ZetaModule;
 
@@ -80,8 +81,8 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 			return false;
 
 		BlockPos endPos = targetPos.relative(moveDir);
-		PushReaction reaction = MagnetSystem.getPushAction(be, targetPos, targetState, moveDir);
-		if(reaction != PushReaction.IGNORE && reaction != PushReaction.DESTROY)
+		var reaction = MagnetSystem.getPushAction(be, targetPos, targetState, moveDir);
+		if(reaction != ICollateralMover.MoveResult.MOVE && reaction != ICollateralMover.MoveResult.BREAK)
 			return false;
 
 		BlockEntity tilePresent = world.getBlockEntity(targetPos);
@@ -94,7 +95,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 		BlockState setState = MagnetsModule.magnetized_block.defaultBlockState().setValue(MovingMagnetizedBlock.FACING, moveDir);
 		MagnetizedBlockBlockEntity movingTile = new MagnetizedBlockBlockEntity(endPos, setState, targetState, tileData, moveDir);
 
-		if(!world.isClientSide && reaction == PushReaction.DESTROY) {
+		if(!world.isClientSide && reaction == ICollateralMover.MoveResult.BREAK) {
 			world.destroyBlock(endPos, true);
 		}
 

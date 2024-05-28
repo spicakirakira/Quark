@@ -18,6 +18,7 @@ import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagneticEntity;
+import org.violetmoon.zeta.api.ICollateralMover;
 
 public class MagnetBlockEntity extends BlockEntity {
 
@@ -58,13 +59,10 @@ public class MagnetBlockEntity extends BlockEntity {
             if (targetState.getBlock() == MagnetsModule.magnetized_block) break;
 
             if (!level.isClientSide && targetState.getBlock() != Blocks.MOVING_PISTON) {
-                PushReaction reaction = MagnetSystem.getPushAction(this, targetPos, targetState, moveDir);
-                if (reaction == PushReaction.IGNORE || reaction == PushReaction.DESTROY) {
-                    BlockPos frontPos = targetPos.relative(moveDir);
-                    BlockState frontState = level.getBlockState(frontPos);
-                    if (canBeReplacedByMovingMagnet(frontState))
-                        MagnetSystem.applyForce(level, targetPos, power - i + 1, dir == moveDir, moveDir, i, worldPosition);
-                }
+                var reaction = MagnetSystem.getPushAction(this, targetPos, targetState, moveDir);
+                if (reaction == ICollateralMover.MoveResult.MOVE || reaction == ICollateralMover.MoveResult.BREAK) {
+                    MagnetSystem.applyForce(level, targetPos, power - i + 1, dir == moveDir, moveDir, i, worldPosition);
+                } else if (reaction == ICollateralMover.MoveResult.PREVENT) break;
             }
 
             if (!canBeReplacedByMovingMagnet(targetState)) break;

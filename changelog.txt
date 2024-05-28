@@ -1,4 +1,5 @@
 - Hotfix, fixing a mixin crash on world load thanks to not using fabric mixins
+- Magnets can push iron rods
 
 Previous update patch incase you missed it:
 

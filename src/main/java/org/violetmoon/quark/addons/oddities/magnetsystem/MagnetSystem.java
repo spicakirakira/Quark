@@ -16,6 +16,7 @@ import org.violetmoon.quark.api.IMagnetMoveAction;
 import org.violetmoon.quark.api.IMagnetTracker;
 import org.violetmoon.quark.api.QuarkCapabilities;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.zeta.api.ICollateralMover;
 import org.violetmoon.zeta.util.RegistryUtil;
 import org.violetmoon.zeta.util.handler.RecipeCrawlHandler;
 
@@ -88,18 +89,23 @@ public class MagnetSystem {
 			tracker.applyForce(pos, magnitude, pushing, dir, distance, origin);
 	}
 
-	public static PushReaction getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
+	public static ICollateralMover.MoveResult getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
 		Level world = magnet.getLevel();
 		if(world != null && canBlockBeMagneticallyMoved(state, pos, world, moveDir, magnet)) {
-			BlockPos targetLocation = pos.relative(moveDir);
-			BlockState stateAtTarget = world.getBlockState(targetLocation);
-			if(stateAtTarget.isAir())
-				return PushReaction.IGNORE;
-			else if(stateAtTarget.getPistonPushReaction() == PushReaction.DESTROY)
-				return PushReaction.DESTROY;
+			BlockPos frontPos = pos.relative(moveDir);
+			BlockState frontState = world.getBlockState(frontPos);
+
+			if(state.getBlock() instanceof ICollateralMover cm){
+				return cm.getCollateralMovement(world, magnet.getBlockPos(), moveDir, moveDir, pos);
+			}
+
+			if(frontState.isAir())
+				return ICollateralMover.MoveResult.MOVE;
+			else if(frontState.getPistonPushReaction() == PushReaction.DESTROY)
+				return ICollateralMover.MoveResult.BREAK;
 		}
 
-		return PushReaction.BLOCK;
+		return ICollateralMover.MoveResult.SKIP;
 	}
 
 	public static boolean isItemMagnetic(Item item) {
