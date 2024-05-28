@@ -46,6 +46,7 @@ public class MagnetParticleRenderType {
             tesselator.end();
         }
 
+        @Override
         public String toString() {
             return "PARTICLE_SHEET_ADDITIVE_TRANSLUCENT";
         }
