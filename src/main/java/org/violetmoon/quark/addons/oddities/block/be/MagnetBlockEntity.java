@@ -4,7 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -77,7 +79,7 @@ public class MagnetBlockEntity extends BlockEntity {
             }
         }
 
-        //TODO: move this into magnet system. altho might not be needed as there it only serves since directions must be discrete
+        //TODO: move this into magnet system. although might not be needed as there it only serves since directions must be discrete
         if (!level.isClientSide && MagnetsModule.affectEntities) {
 
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
@@ -91,6 +93,15 @@ public class MagnetBlockEntity extends BlockEntity {
                     me.moveByMagnet(e, vec, this);
                 } else {
                     e.push(vec.x(), vec.y(), vec.z());
+                    if (e instanceof Player player) {
+                        //should probably send a packet here actually
+                        player.hurtMarked = true;
+                    }
+                    if(e instanceof FallingBlockEntity fb){
+                        fb.time--;
+                        fb.hurtMarked = true;
+                        //hack.
+                    }
                 }
             }
         }
@@ -100,8 +111,11 @@ public class MagnetBlockEntity extends BlockEntity {
         if (e instanceof IMagneticEntity) return true;
         if (e.getType().is(MagnetsModule.magneticEntities)) return true;
 
-        if(e instanceof ItemEntity ie){
+        if (e instanceof ItemEntity ie){
             return MagnetSystem.isItemMagnetic(ie.getItem().getItem());
+        }
+        if (e instanceof FallingBlockEntity fb){
+            return MagnetSystem.isBlockMagnetic(fb.getBlockState());
         }
 
         if (MagnetsModule.affectsArmor){

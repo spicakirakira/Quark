@@ -106,9 +106,10 @@ public class MagnetSystem {
 		return magnetizableItems.contains(item);
 	}
 
-	@Deprecated(forRemoval = true)
+	// Just checks if its magnetic. Not if it can be moved
 	public static boolean isBlockMagnetic(BlockState state) {
 		Block block = state.getBlock();
+		if (block == MagnetsModule.magnet) return false;
 		return (magnetizableBlocks.contains(block) || BLOCK_MOVE_ACTIONS.containsKey(block));
 	}
 
