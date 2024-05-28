@@ -166,7 +166,6 @@ public class UsageTickerModule extends ZetaModule {
 					if(ourSide != primary && !player.getItemInHand(InteractionHand.OFF_HAND).isEmpty())
 						barWidth += 58;
 
-					Minecraft mc = Minecraft.getInstance();
 					x += (barWidth / 2f) * mul + index * 20;
 					if(ourSide == HumanoidArm.LEFT) {
 						x -= slots * 20;
