@@ -80,7 +80,7 @@ public class MagnetBlockEntity extends BlockEntity {
         }
 
         //TODO: move this into magnet system. although might not be needed as there it only serves since directions must be discrete
-        if (!level.isClientSide && MagnetsModule.affectEntities) {
+        if (!level.isClientSide && MagnetsModule.affectEntities && i > 1) {
 
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
                             .expandTowards(new Vec3(dir.step().mul(i))), this::canPullEntity);

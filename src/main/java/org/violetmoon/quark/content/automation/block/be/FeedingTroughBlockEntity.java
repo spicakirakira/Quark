@@ -14,6 +14,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DispenserMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
@@ -199,6 +200,11 @@ public class FeedingTroughBlockEntity extends RandomizableContainerBlockEntity {
 	@Override
 	@NotNull
 	protected AbstractContainerMenu createMenu(int id, @NotNull Inventory playerInventory) {
-		return new DispenserMenu(id, playerInventory, this);
+		return new DispenserMenu(id, playerInventory, this){
+			@Override
+			public MenuType<?> getType() {
+				return FeedingTroughModule.menuType;
+			}
+		};
 	}
 }

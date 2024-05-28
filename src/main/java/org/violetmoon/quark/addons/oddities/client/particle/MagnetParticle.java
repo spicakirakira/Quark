@@ -32,7 +32,7 @@ public class MagnetParticle extends TextureSheetParticle {
         this.xd = pXSpeed;
         this.yd = pYSpeed;
         this.zd = pZSpeed;
-        this.lifetime = 40;
+        this.lifetime = 33;
         this.friction = 1;
         this.setSize(0.01f, 0.01f);
         this.alpha = 0;

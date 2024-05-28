@@ -57,6 +57,6 @@ public class CrafterModule extends ZetaModule {
 
     @LoadEvent
     public final void clientSetup(ZClientSetup event) {
-        MenuScreens.register(menuType, CrafterScreen::new);
+        event.enqueueWork(() -> MenuScreens.register(menuType, CrafterScreen::new));
     }
 }

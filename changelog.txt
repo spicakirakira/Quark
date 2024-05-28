@@ -7,3 +7,5 @@
 - Improved trowel item logic, now works with more complex block items
 - Improved ITroweable interface and also added a blacklist and whitelist tag for it
 - Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)
+- Possivly fixed some issue with magnets hopper interaction not working well
+- Feeding through GUI texture can now be customized
