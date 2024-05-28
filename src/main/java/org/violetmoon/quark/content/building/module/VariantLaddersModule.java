@@ -19,7 +19,7 @@ import org.violetmoon.zeta.util.VanillaWoods.Wood;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-@ZetaLoadModule(category = "building", antiOverlap = { "woodworks" })
+@ZetaLoadModule(category = "building", antiOverlap = { "woodworks", "woodster" })
 public class VariantLaddersModule extends ZetaModule {
 
 	@Config
