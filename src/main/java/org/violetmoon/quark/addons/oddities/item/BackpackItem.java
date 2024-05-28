@@ -176,7 +176,7 @@ public class BackpackItem extends DyeableArmorItem implements IZetaItem, IZetaIt
 		if(BackpackModule.superOpMode || entityItem.level().isClientSide)
 			return false;
 
-		if(!ItemNBTHelper.detectNBT(stack))
+		if(!stack.hasTag())
 			return false;
 
 		LazyOptional<IItemHandler> handlerOpt = stack.getCapability(ForgeCapabilities.ITEM_HANDLER, null);

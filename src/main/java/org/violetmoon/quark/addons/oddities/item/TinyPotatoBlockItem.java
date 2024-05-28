@@ -49,27 +49,27 @@ public class TinyPotatoBlockItem extends ZetaBlockItem implements IRuneColorProv
 	}
 
 	private void updateData(ItemStack stack) {
-		if(ItemNBTHelper.verifyExistence(stack, "BlockEntityTag")) {
-			CompoundTag cmp = ItemNBTHelper.getCompound(stack, "BlockEntityTag", true);
-			if(cmp != null) {
-				if(cmp.contains(TinyPotatoBlockEntity.TAG_ANGRY, Tag.TAG_ANY_NUMERIC)) {
-					boolean angry = cmp.getBoolean(TinyPotatoBlockEntity.TAG_ANGRY);
-					if(angry)
-						ItemNBTHelper.setBoolean(stack, TinyPotatoBlock.ANGRY, true);
-					else if(TinyPotatoBlock.isAngry(stack))
-						ItemNBTHelper.getNBT(stack).remove(TinyPotatoBlock.ANGRY);
-					cmp.remove(TinyPotatoBlockEntity.TAG_ANGRY);
-				}
+		CompoundTag tileTag = stack.getTagElement("BlockEntityTag");
+		if(tileTag != null) {
+			// this code seems to move angry tag out of blockEntity tag. Maybe it could be simplified
+			if(tileTag.contains(TinyPotatoBlockEntity.TAG_ANGRY, Tag.TAG_ANY_NUMERIC)) {
+				boolean angry = tileTag.getBoolean(TinyPotatoBlockEntity.TAG_ANGRY);
+				if(angry)
+					ItemNBTHelper.setBoolean(stack, TinyPotatoBlock.ANGRY, true);
+				else if(TinyPotatoBlock.isAngry(stack))
+					stack.getOrCreateTag().remove(TinyPotatoBlock.ANGRY);
+				tileTag.remove(TinyPotatoBlockEntity.TAG_ANGRY);
+			}
 
-				if(cmp.contains(TinyPotatoBlockEntity.TAG_NAME, Tag.TAG_STRING)) {
-					stack.setHoverName(Component.Serializer.fromJson(cmp.getString(TinyPotatoBlockEntity.TAG_NAME)));
-					cmp.remove(TinyPotatoBlockEntity.TAG_NAME);
-				}
+			//remove this?
+			if(tileTag.contains(TinyPotatoBlockEntity.TAG_NAME, Tag.TAG_STRING)) {
+				stack.setHoverName(Component.Serializer.fromJson(tileTag.getString(TinyPotatoBlockEntity.TAG_NAME)));
+				tileTag.remove(TinyPotatoBlockEntity.TAG_NAME);
 			}
 		}
 
 		if(!ItemNBTHelper.getBoolean(stack, TinyPotatoBlock.ANGRY, false))
-			ItemNBTHelper.getNBT(stack).remove(TinyPotatoBlock.ANGRY);
+			stack.getOrCreateTag().remove(TinyPotatoBlock.ANGRY);
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.world.InteractionResultHolder;
 import org.jetbrains.annotations.NotNull;
 import org.violetmoon.quark.api.ITrowelable;
 import org.violetmoon.quark.api.IUsageTickerOverride;
@@ -43,32 +45,40 @@ public class TrowelItem extends ZetaItem implements IUsageTickerOverride {
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
 		Player player = context.getPlayer();
+		if (player == null) return InteractionResult.PASS;
 		InteractionHand hand = context.getHand();
 
-		List<ItemStack> targets = new ArrayList<>();
+		List<Integer> targets = new ArrayList<>();
+		Inventory inventory = player.getInventory();
 		for(int i = 0; i < Inventory.getSelectionSize(); i++) {
-			ItemStack stack = player.getInventory().getItem(i);
-			if(isValidTarget(stack))
-				targets.add(stack);
+			ItemStack stack = inventory.getItem(i);
+			if(isValidTarget(stack, context))
+				targets.add(i);
 		}
 
-		ItemStack ourStack = player.getItemInHand(hand);
-		if(targets.isEmpty())
-			return InteractionResult.PASS;
+		if (targets.isEmpty()) return InteractionResult.PASS;
 
-		long seed = ItemNBTHelper.getLong(ourStack, TAG_PLACING_SEED, 0);
+		ItemStack trowel = player.getItemInHand(hand);
+
+		long seed = ItemNBTHelper.getLong(trowel, TAG_PLACING_SEED, 0);
 		Random rand = new Random(seed);
-		ItemNBTHelper.setLong(ourStack, TAG_PLACING_SEED, rand.nextLong());
+		ItemNBTHelper.setLong(trowel, TAG_PLACING_SEED, rand.nextLong());
 
-		ItemStack target = targets.get(rand.nextInt(targets.size()));
-		int count = target.getCount();
-		InteractionResult result = placeBlock(target, context);
-		if(player.getAbilities().instabuild)
-			target.setCount(count);
+		int targetSlot = targets.get(rand.nextInt(targets.size()));
+		ItemStack toPlaceStack = inventory.getItem(targetSlot);
 
-		if(result.consumesAction()) {
-			CompoundTag cmp = target.serializeNBT();
-			ItemNBTHelper.setCompound(ourStack, TAG_LAST_STACK, cmp);
+		player.setItemInHand(hand, toPlaceStack);
+		InteractionResult result = toPlaceStack.useOn(new TrowelBlockItemUseContext(context, toPlaceStack));
+		//get new item in hand
+		ItemStack newHandItem = player.getItemInHand(hand);
+
+		//reset
+		player.setItemInHand(hand, trowel);
+		inventory.setItem(targetSlot, newHandItem);
+
+		if (result.consumesAction()) {
+			CompoundTag cmp = toPlaceStack.serializeNBT();
+			ItemNBTHelper.setCompound(trowel, TAG_LAST_STACK, cmp);
 
 			if(TrowelModule.maxDamage > 0)
 				MiscUtil.damageStack(player, hand, context.getItemInHand(), 1);
@@ -77,29 +87,13 @@ public class TrowelItem extends ZetaItem implements IUsageTickerOverride {
 		return result;
 	}
 
-	private InteractionResult placeBlock(ItemStack itemstack, UseOnContext context) {
-		if(isValidTarget(itemstack)) {
-			Item item = itemstack.getItem();
-
-			Player player = context.getPlayer();
-			ItemStack restore = itemstack;
-			if(player != null) {
-				restore = player.getItemInHand(context.getHand());
-				player.setItemInHand(context.getHand(), itemstack);
-			}
-			InteractionResult res = item.useOn(new TrowelBlockItemUseContext(context, itemstack));
-			if(player != null) {
-				player.setItemInHand(context.getHand(), restore);
-			}
-			return res;
-		}
-
-		return InteractionResult.PASS;
-	}
-
-	private static boolean isValidTarget(ItemStack stack) {
+	private static boolean isValidTarget(ItemStack stack, UseOnContext context) {
 		Item item = stack.getItem();
-		return !stack.isEmpty() && (item instanceof BlockItem || item instanceof ITrowelable);
+		//tags have priority and can override these. Dont accidentally tag stuff that has the interface if you want to use it
+		if (stack.is(TrowelModule.whitelist)) return true;
+		if (stack.is(TrowelModule.blacklist)) return false;
+		if (item instanceof ITrowelable t) return t.canBeTroweled(stack, context);
+		return !stack.isEmpty() && (item instanceof BlockItem);
 	}
 
 	public static ItemStack getLastStack(ItemStack stack) {
