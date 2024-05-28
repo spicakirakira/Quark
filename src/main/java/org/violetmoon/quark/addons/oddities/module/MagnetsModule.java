@@ -53,8 +53,14 @@ public class MagnetsModule extends ZetaModule {
 	@Config(flag = "green_particles", description = "Makes magnet particles use the old green color")
 	public static boolean greenMagnetParticles = false;
 
-	@Config(flag = "magnetic_entities", description = "Allows magnets to push and pull entities in the 'affected_by_magnets' tag (edit it with datapack)")
+	@Config(flag = "magnetic_entities", description = "Allows magnets to push and pull entities in the 'affected_by_magnets' tag (edit it with datapack). Turning off can reduce lag")
 	public static boolean affectEntities = true;
+
+	@Config(flag = "magnetic_armor", description = "Allows magnets to push and pull entities having magnetic armor. Requires 'magnetic_entities' config ON")
+	public static boolean affectsArmor = true;
+
+	@Config(description = "Determines how fast entities are pulled by magnets. Still follows the inverse square law")
+	public static float entitiesPullForce = 0.15f;
 
 	public static final TagKey<EntityType<?>> magneticEntities = TagKey.create(Registries.ENTITY_TYPE, Quark.asResource("affected_by_magnets"));
 

@@ -36,7 +36,6 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 	public static final BooleanProperty WAXED = BooleanProperty.create("waxed");
-	public boolean waxed = false;
 
 	public MagnetBlock(@Nullable ZetaModule module) {
 		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK));

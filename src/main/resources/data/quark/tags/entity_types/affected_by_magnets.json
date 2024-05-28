@@ -1,6 +1,16 @@
 {
   "replace": false,
   "values": [
-    "minecraft:iron_golem"
+    "minecraft:item",
+    "minecraft:iron_golem",
+    "minecraft:minecart",
+    "minecraft:chest_minecart",
+    "minecraft:furnace_minecart",
+    "minecraft:tnt_minecart",
+    "minecraft:hopper_minecart",
+    "minecraft:command_block_minecart",
+    "minecraft:spawner_minecart",
+    {"id":"forge:minecarts","required":false},
+    {"id":"minecraft:minecarts","required":false}
   ]
 }

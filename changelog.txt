@@ -1,5 +1,7 @@
 - Added Beach Villager Type (module)
 - Magnets not have shiny new particles
+- Iron Golems and Minecarts can be pushed by magnets
 - Magnets can now push and pull blocks through breakable blocks (like tall grass)
-- Magnets can now interact with iron golems
+- Improved trowel item logic, now works with more complex block items
+- Improved ITroweable interface and also added a blacklist and whitelist tag for it
 - Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)

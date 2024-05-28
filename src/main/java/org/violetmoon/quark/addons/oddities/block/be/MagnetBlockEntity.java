@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -11,10 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
+import org.violetmoon.quark.api.IMagneticEntity;
 
 public class MagnetBlockEntity extends BlockEntity {
 
@@ -75,15 +76,40 @@ public class MagnetBlockEntity extends BlockEntity {
                 level.addParticle(p, x, y, z, xOff, yOff, zOff);
             }
         }
+
+        //TODO: move this into magnet system. altho might not be needed as there it only serves since directions must be discrete
         if (!level.isClientSide && MagnetsModule.affectEntities) {
+
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
-                            .expandTowards(new Vec3(dir.step().mul(i))),
-                    e -> e.getType().is(MagnetsModule.magneticEntities));
+                            .expandTowards(new Vec3(dir.step().mul(i))), this::canPullEntity);
             for (Entity e : entities) {
-                Vector3f vec = dir.step().mul((float) (0.015f * magnitude));
-                e.push(vec.x(), vec.y(), vec.z());
+                double distanceFromMagnetSq = e.distanceToSqr(worldPosition.getCenter());
+                double invSquared = 1 / distanceFromMagnetSq;
+                // magic number chosen. around 1 block hover height for iron golems
+                Vec3 vec = new Vec3(dir.step().mul((float) (invSquared * magnitude * MagnetsModule.entitiesPullForce)));
+                if (e instanceof IMagneticEntity me) {
+                    me.moveByMagnet(e, vec, this);
+                } else {
+                    e.push(vec.x(), vec.y(), vec.z());
+                }
             }
         }
+    }
+
+    private boolean canPullEntity(Entity e){
+        if (e instanceof IMagneticEntity) return true;
+        if (e.getType().is(MagnetsModule.magneticEntities)) return true;
+
+        if(e instanceof ItemEntity ie){
+            return MagnetSystem.isItemMagnetic(ie.getItem().getItem());
+        }
+
+        if (MagnetsModule.affectsArmor){
+            for (var armor : e.getArmorSlots()){
+                if (MagnetSystem.isItemMagnetic(armor.getItem())) return true;
+            }
+        }
+        return false;
     }
 
     private boolean canBeReplacedByMovingMagnet(BlockState targetState) {

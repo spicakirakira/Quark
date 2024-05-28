@@ -201,12 +201,8 @@ public class BackpackItem extends DyeableArmorItem implements IZetaItem, IZetaIt
 			EnchantmentHelper.setEnchantments(enchants, stack);
 		}
 		
-		CompoundTag comp = ItemNBTHelper.getNBT(stack);
-		comp.remove("Inventory");
+		stack.removeTagKey("Inventory");
 		
-		if(comp.size() == 0)
-			stack.setTag(null);
-
 		return false;
 	}
 
