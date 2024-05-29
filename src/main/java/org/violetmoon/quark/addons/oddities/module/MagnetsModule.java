@@ -60,7 +60,7 @@ public class MagnetsModule extends ZetaModule {
 	public static boolean affectsArmor = true;
 
 	@Config(description = "Determines how fast entities are pulled by magnets. Still follows the inverse square law")
-	public static double entitiesPullForce = 0.15f;
+	public static double entitiesPullForce = 0.18f;
 
 	@Config(description = "Stonecutters pulled by magnets will silk touch the blocks they cut.")
 	public static boolean stoneCutterSilkTouch = true;
