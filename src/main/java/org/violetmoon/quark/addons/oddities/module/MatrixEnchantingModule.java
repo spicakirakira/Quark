@@ -257,12 +257,14 @@ public class MatrixEnchantingModule extends ZetaModule {
 			}
 		}
 
-		if(influencesList.size() != 16) {
-			(new IllegalArgumentException("Matrix Enchanting Influences must be of size 16, please fix this in the config.")).printStackTrace();
+		if(influencesList.size() < 16) {
+			(new IllegalArgumentException("Matrix Enchanting Influences must be of at least size 16, please fix this in the config.")).printStackTrace();
 			candleInfluencingFailed = true;
 		} else {
-			for(int i = 0; i < 16; i++) {
-				candleInfluences.put(DyeColor.values()[i], parseEnchantmentList(influencesList.get(i)));
+			for(int i = 0; i < influencesList.size(); i++) {
+				if (i < DyeColor.values().length) {
+					candleInfluences.put(DyeColor.values()[i], parseEnchantmentList(influencesList.get(i)));
+				}
 			}
 		}
 	}

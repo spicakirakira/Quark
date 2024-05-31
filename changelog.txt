@@ -1,19 +1,4 @@
-- Hotfix, fixing a mixin crash on world load thanks to not using fabric mixins
-- Magnets can push iron rods
-
-Previous update patch incase you missed it:
-
-- Added Beach Villager Type (module)
-- Magnets have shiny new particles!
-- Iron Golems and minecarts can be pushed by magnets (plus other tagged entities)
-- Magnetic falling blocks and item entities can also be pushed
-- Player having some iron armor are also pushable
-- Magnets can now push and pull blocks through breakable blocks (like tall grass)
-- They can also push iron rods through blocks
-- Improved trowel item logic, now works with more complex block items
-- Improved ITroweable interface and also added a blacklist and whitelist tag for it
-- Cleaned up FoxHound model and fixed some visual inconsistencies with it (such as baby model being offset)
-- Possibly fixed some issue with magnets hopper interaction not working well
-- Feeding through GUI texture can now be customized
-- Updated flan compat
-- Added some missing gold blocks from piglin_loved and guarded_by_piglins tags
+- fixed pathfinder quill duplicating when used in offhand
+- fixed magnets only pushing armor items
+- fixed magnets pushing players regardless of whether they have armor or not
+- Rune colors are now extensible. Custom ones can be added by mods

@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.experimental.module.VariantSelectorModule;
 import org.violetmoon.quark.content.tweaks.block.DirtyGlassBlock;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.block.ZetaInheritedPaneBlock;
@@ -46,6 +47,7 @@ public class GlassShardModule extends ZetaModule {
 
 	@LoadEvent
 	public final void register(ZRegister event) {
+		VariantSelectorModule
 		dirtyGlass = new DirtyGlassBlock("dirty_glass", this,
 				Block.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.3F).sound(SoundType.GLASS));
 

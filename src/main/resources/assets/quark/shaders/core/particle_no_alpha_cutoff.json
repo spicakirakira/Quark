@@ -5,7 +5,7 @@
         "dstrgb": "1-srcalpha"
     },
     "vertex": "particle",
-    "fragment": "quark:particle_translucent",
+    "fragment": "quark:particle_no_alpha_cutoff",
     "attributes": [
         "Position",
         "UV0",

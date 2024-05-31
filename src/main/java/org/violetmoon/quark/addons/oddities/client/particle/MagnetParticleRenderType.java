@@ -69,7 +69,7 @@ public class MagnetParticleRenderType {
     public static void registerShader(RegisterShadersEvent event) {
         try {
             ShaderInstance translucentParticleShader = new ShaderInstance(event.getResourceProvider(),
-                    Quark.asResource("particle_translucent"), DefaultVertexFormat.POSITION_TEX);
+                    Quark.asResource("particle_no_alpha_cutoff"), DefaultVertexFormat.POSITION_TEX);
 
             event.registerShader(translucentParticleShader, s -> PARTICLE_SHADER = () -> s);
 
