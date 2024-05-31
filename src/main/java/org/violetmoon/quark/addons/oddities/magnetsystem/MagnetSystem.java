@@ -69,10 +69,10 @@ public class MagnetSystem {
 	public static void onDigest() {
 		//TODO(Zeta): Eschew the built-in whitelist/blacklist system... (https://github.com/VazkiiMods/Zeta/issues/2)
 		RecipeCrawlHandler.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
-			if(i instanceof BlockItem bi)
+			if(i instanceof BlockItem bi) {
 				magnetizableBlocks.add(bi.getBlock());
-			if(i instanceof ArmorItem) //this could use a better check... And whitelist
-				magnetizableItems.add(i);
+			}
+			magnetizableItems.add(i);
 		});
 
 		//...in favor of manual fixup
