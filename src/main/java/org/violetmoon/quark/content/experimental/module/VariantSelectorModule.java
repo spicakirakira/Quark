@@ -3,6 +3,8 @@ package org.violetmoon.quark.content.experimental.module;
 import java.util.List;
 import java.util.Objects;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.gui.Gui;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -96,6 +98,9 @@ public class VariantSelectorModule extends ZetaModule {
 	public static int hudOffsetX = 0;
 	@Config
 	public static int hudOffsetY = 0;
+
+	@Config(description = "When true, selector arrow will render in same style as crosshair")
+	public static boolean renderLikeCrossHair = true;
 
 	@Config
 	public static VariantsConfig variants = new VariantsConfig();
@@ -351,15 +356,19 @@ public class VariantSelectorModule extends ZetaModule {
 					int posX = x - offset - width + hudOffsetX;
 					int posY = y + hudOffsetY;
 
-					if(!showSimpleHud) {
+					if( !showSimpleHud) {
 						guiGraphics.renderFakeItem(displayLeft, posX, posY);
 
 						RenderSystem.enableBlend();
-						RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-						RenderSystem.setShader(GameRenderer::getPositionTexShader);
-						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.75F);
-
+						if(renderLikeCrossHair) {
+							RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+							RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
+						}else{
+							RenderSystem.defaultBlendFunc();
+							RenderSystem.setShaderColor(0.8f, 0.8f, 0.8f, 0.7f);
+						}
 						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY, 0, 141, 22, 15, 256, 256);
+						RenderSystem.defaultBlendFunc();
 
 						posX += width * 2;
 					} else {
@@ -368,7 +377,6 @@ public class VariantSelectorModule extends ZetaModule {
 						if(alignHudToHotbar) {
 							RenderSystem.enableBlend();
 							RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-							RenderSystem.setShader(GameRenderer::getPositionTexShader);
 							if(enableGreenTint)
 								RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
 							else

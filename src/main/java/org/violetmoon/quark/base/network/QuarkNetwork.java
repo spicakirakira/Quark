@@ -30,7 +30,8 @@ import net.minecraft.network.chat.MessageSignature;
 
 public final class QuarkNetwork {
 
-	public static final int PROTOCOL_VERSION = 3;
+	// bump when you change messages
+	public static final int PROTOCOL_VERSION = 4;
 
 	public static void init() {
 		ZetaNetworkHandler network = Quark.ZETA.createNetworkHandler(PROTOCOL_VERSION);
