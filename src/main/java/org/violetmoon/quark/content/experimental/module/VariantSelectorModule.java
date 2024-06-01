@@ -333,7 +333,7 @@ public class VariantSelectorModule extends ZetaModule {
 		}
 
 		private boolean hasTooltip(ItemStack stack) {
-			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.hasVariants(bi.getBlock());
+			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && variants.hasVariants(bi.getBlock());
 		}
 
 		@PlayEvent
