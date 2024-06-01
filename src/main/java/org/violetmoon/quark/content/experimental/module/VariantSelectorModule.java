@@ -273,7 +273,7 @@ public class VariantSelectorModule extends ZetaModule {
 					}else if(!stack.isEmpty() && stack.getItem() instanceof BlockItem bi){
 						originalBlock = bi.getBlock();
 					}
-				    if(originalBlock != null){
+				    if(originalBlock != null && variants.hasVariants(originalBlock)){
 						mc.setScreen(new VariantSelectorScreen(originalBlock, variantSelectorKey,
 								clientVariant, variants.getVisibleVariants()));
 					}
@@ -317,7 +317,7 @@ public class VariantSelectorModule extends ZetaModule {
 		}
 
 		private boolean hasTooltip(ItemStack stack) {
-			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.getAllVariants(bi.getBlock()).isEmpty();
+			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.hasVariants(bi.getBlock());
 		}
 
 		@PlayEvent

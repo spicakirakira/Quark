@@ -147,6 +147,9 @@ public class VariantsConfig implements IConfigType {
 		return null;
 	}
 
+	public boolean hasVariants(Block block) {
+		return !getVariants(block).isEmpty();
+	}
 
 	public Collection<Block> getAllVariants(Block block) {
 		Map<String, Block> map = getVariants(block).variants;
