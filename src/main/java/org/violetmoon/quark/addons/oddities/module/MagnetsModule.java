@@ -42,7 +42,7 @@ public class MagnetsModule extends ZetaModule {
 	public static List<String> magneticDerivationList = Lists.newArrayList("minecraft:iron_ingot", "minecraft:copper_ingot", "minecraft:exposed_copper", "minecraft:weathered_copper", "minecraft:oxidized_copper", "minecraft:raw_iron", "minecraft:raw_copper", "minecraft:iron_ore", "minecraft:deepslate_iron_ore", "minecraft:copper_ore", "minecraft:deepslate_copper_ore", "quark:gravisand");
 
 	@Config(description = "Block/Item IDs to force-allow magnetism on, regardless of their crafting recipe")
-	public static List<String> magneticWhitelist = Lists.newArrayList("minecraft:chipped_anvil", "minecraft:damaged_anvil", "minecraft:iron_horse_armor","minecraft:chainmail_helmet", "minecraft:chainmail_boots", "minecraft:chainmail_leggins", "minecraft:chainmail_chestplate");
+	public static List<String> magneticWhitelist = Lists.newArrayList("minecraft:chipped_anvil", "minecraft:damaged_anvil", "minecraft:iron_horse_armor","minecraft:chainmail_helmet", "minecraft:chainmail_boots", "minecraft:chainmail_leggings", "minecraft:chainmail_chestplate");
 
 	@Config(description = "Block/Item IDs to force-disable magnetism on, regardless of their crafting recipe")
 	public static List<String> magneticBlacklist = Lists.newArrayList("minecraft:tripwire_hook");
