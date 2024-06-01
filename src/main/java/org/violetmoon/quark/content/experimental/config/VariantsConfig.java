@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.zeta.config.Config;
@@ -106,18 +107,6 @@ public class VariantsConfig implements IConfigType {
 			logVariantMap();
 	}
 
-	// gets variant key for a block given its base block
-	@Nullable
-	public String getVariantForBlock(Block baseBlock, Block possibleVariant) {
-		VariantMap map = getVariants(baseBlock);
-		if(map != null){
-			for(Entry<String, Block> entry : map.variants.entrySet())
-				if(entry.getValue().equals(possibleVariant))
-					return entry.getKey();
-		}
-		return null;
-	}
-
 	@Nullable
 	public String findVariantForBlock(Block variantBlock) {
 		String name = BuiltInRegistries.BLOCK.getKey(variantBlock).getPath();
@@ -135,18 +124,29 @@ public class VariantsConfig implements IConfigType {
 		return null;
 	}
 
-	public Block getBlockForVariant(Block block, String variant) {
-		blockVariants.clear();
-		if(variant == null || !sortedSuffixes.contains(variant))
-			return block;
+	// Null if not valid string, Not an original block or block wasn't changed (variant wasnt found)
+	@Nullable
+	public Block getBlockOfVariant(Block baseBlock, @NotNull String variant) {
+		//not a valid string
+		if(!sortedSuffixes.contains(variant))
+			return null;
 
-		VariantMap map = getVariants(block);
-		Block ret = map.variants.get(variant);
-		if(ret != null)
-			return ret;
-
-		return block;
+		VariantMap map = getVariants(baseBlock);
+		return map.variants.get(variant);
 	}
+
+	// gets variant key for a block given its base block. Inverse of above
+	@Nullable
+	public String getVariantOfBlock(Block baseBlock, Block possibleVariant) {
+		VariantMap map = getVariants(baseBlock);
+		if(map != null){
+			for(Entry<String, Block> entry : map.variants.entrySet())
+				if(entry.getValue().equals(possibleVariant))
+					return entry.getKey();
+		}
+		return null;
+	}
+
 
 	public Collection<Block> getAllVariants(Block block) {
 		Map<String, Block> map = getVariants(block).variants;

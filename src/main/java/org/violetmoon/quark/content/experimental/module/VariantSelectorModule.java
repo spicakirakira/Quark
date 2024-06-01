@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Objects;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.gui.Gui;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.violetmoon.quark.base.Quark;
@@ -42,7 +42,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -57,12 +56,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.violetmoon.zetaimplforge.event.play.entity.player.ForgeZPlayer;
 
 @ZetaLoadModule(
 	category = "experimental", enabledByDefault = false,
@@ -102,6 +99,9 @@ public class VariantSelectorModule extends ZetaModule {
 	@Config(description = "When true, selector arrow will render in same style as crosshair")
 	public static boolean renderLikeCrossHair = true;
 
+	@Config(description = "Uses smaller arrow icon for variant selector overlay")
+	public static boolean smallerArrow = false;
+
 	@Config
 	public static VariantsConfig variants = new VariantsConfig();
 
@@ -118,6 +118,7 @@ public class VariantSelectorModule extends ZetaModule {
 		staticEnabled = enabled;
 	}
 
+	@NotNull
 	public static String getSavedVariant(Player player) {
 		if(player.level().isClientSide)
 			return clientVariant;
@@ -130,30 +131,31 @@ public class VariantSelectorModule extends ZetaModule {
 			player.getPersistentData().putString(TAG_CURRENT_VARIANT, variant);
 	}
 
+	@Nullable
 	private static Block getMainHandVariantBlock(Player player, String variant) {
 		ItemStack mainHand = player.getMainHandItem();
 		if(mainHand.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
-			return getVariantForBlock(block, variant);
+			return getVariantBlockFromOriginal(block, variant);
 		}
 
 		return null;
 	}
 
-	public static Block getVariantForBlock(Block block, String variant) {
-		return variants.getBlockForVariant(block, variant);
+	// returns null if block was not changed!
+	// Like below but just accepts original block
+	@Nullable
+	public static Block getVariantBlockFromOriginal(Block original, @NotNull String variant) {
+		return variants.getBlockOfVariant(original, variant);
 	}
 
-	public static Block getVariantOrOriginal(Block block, String variant) {
-		if(!variants.isVariant(block) && !variants.isOriginal(block))
-			return null;
-
-		block = variants.getOriginalBlock(block);
-
-		if(variant == null || variant.isEmpty())
-			return variants.getOriginalBlock(block);
-
-		return getVariantForBlock(block, variant);
+	// returns null if block was not changed!
+	@Nullable
+	public static Block getVariantBlockFromAny(Block block, @NotNull String variant) {
+		Block originalBlock = variants.getOriginalBlock(block);
+		Block variantBlock = getVariantBlockFromOriginal(originalBlock, variant);
+		if(variantBlock != block)return variantBlock;
+		return null;
 	}
 
 	// Restore saved variant on join
@@ -192,9 +194,11 @@ public class VariantSelectorModule extends ZetaModule {
 		Player player = ctx.getPlayer();
 		if(player != null) {
 			String variant = getSavedVariant(player);
-			if(variant != null && !variant.isEmpty()) {
-				Block target = getVariantForBlock(state.getBlock(), variant);
-				return target.getStateForPlacement(ctx);
+			if(!variant.isEmpty()) {
+				Block target = getVariantBlockFromOriginal(state.getBlock(), variant);
+				if (target != null) {
+					return target.getStateForPlacement(ctx);
+				}
 			}
 		}
 
@@ -213,7 +217,7 @@ public class VariantSelectorModule extends ZetaModule {
 			if(player == mc.player && stack.getItem() instanceof BlockItem bi) {
 				Block block = bi.getBlock();
 				if(!clientVariant.isEmpty()) {
-					Block variant = variants.getBlockForVariant(block, clientVariant);
+					Block variant = variants.getBlockOfVariant(block, clientVariant);
 					if(variant != null && variant != block)
 						return new ItemStack(variant);
 				}
@@ -235,13 +239,22 @@ public class VariantSelectorModule extends ZetaModule {
             clientVariant = variant;
 		}
 
-		public static boolean onPickBlock(Player player, ItemStack stack) {
-			ItemStack mainHand = player.getMainHandItem();
-			if(mainHand.getItem() instanceof BlockItem handItem && stack.getItem() instanceof BlockItem variant) {
-				String variantKey = variants.getVariantForBlock(handItem.getBlock(), variant.getBlock());
-				if(variantKey != null) {
-					setClientVariant(variantKey, true);
-					return true;
+		public static boolean onPickBlock(Player player, ItemStack pickResult) {
+			if(pickResult.getItem() instanceof BlockItem pickedVariant){
+				Block pickedBlock = pickedVariant.getBlock();
+				Block original = null;
+				ItemStack mainHand = player.getMainHandItem();
+				if(mainHand.getItem() instanceof BlockItem handItem) {
+					original = handItem.getBlock();
+				}else if(mainHand.is(hammer)){
+					original =  variants.getOriginalBlock(pickedBlock);
+				}
+				if(original!= null) {
+					String variantKey = variants.getVariantOfBlock(original, pickedBlock);
+					if (variantKey != null) {
+						setClientVariant(variantKey, true);
+						return true;
+					}
 				}
 			}
 			return false;
@@ -254,21 +267,29 @@ public class VariantSelectorModule extends ZetaModule {
 				if(variantSelectorKey.isDown()) {
 
 					ItemStack stack = mc.player.getMainHandItem();
+					Block originalBlock = null;
 					if(stack.is(hammer)) {
-						HitResult result = mc.hitResult;
-						if(result instanceof BlockHitResult bhr) {
-							BlockPos pos = bhr.getBlockPos();
-							Block block = mc.player.level().getBlockState(pos).getBlock();
-							stack = new ItemStack(variants.getOriginalBlock(block));
-						}
+						originalBlock = variants.getOriginalBlock(getLookedAtBlock());
+					}else if(!stack.isEmpty() && stack.getItem() instanceof BlockItem bi){
+						originalBlock = bi.getBlock();
 					}
-
-					if(!stack.isEmpty() && stack.getItem() instanceof BlockItem)
-						mc.setScreen(new VariantSelectorScreen(stack, variantSelectorKey, clientVariant, variants.getVisibleVariants()));
-
-					return;
+				    if(originalBlock != null){
+						mc.setScreen(new VariantSelectorScreen(originalBlock, variantSelectorKey,
+								clientVariant, variants.getVisibleVariants()));
+					}
 				}
 			}
+		}
+
+		private Block getLookedAtBlock() {
+			Minecraft mc = Minecraft.getInstance();
+			HitResult result = mc.hitResult;
+			if(result instanceof BlockHitResult bhr) {
+				BlockPos pos = bhr.getBlockPos();
+				Block block = mc.player.level().getBlockState(pos).getBlock();
+				return block;
+			}
+			return null;
 		}
 
 		@LoadEvent
@@ -310,84 +331,90 @@ public class VariantSelectorModule extends ZetaModule {
 			Player player = mc.player;
 			String savedVariant = getSavedVariant(player);
 
-			if(savedVariant != null) {
-				ItemStack mainHand = player.getMainHandItem();
-				ItemStack displayLeft = mainHand.copy();
+			ItemStack mainHand = player.getMainHandItem();
+			ItemStack displayLeft = mainHand.copy();
 
-				Block variantBlock = null;
+			Block variantBlock = null;
 
-				if(displayLeft.is(hammer)) {
-					HitResult result = mc.hitResult;
-					if(result instanceof BlockHitResult bhr) {
-						BlockPos pos = bhr.getBlockPos();
-						Block testBlock = player.level().getBlockState(pos).getBlock();
+			if(displayLeft.is(hammer)) {
+				HitResult result = mc.hitResult;
+				if(result instanceof BlockHitResult bhr) {
+					BlockPos pos = bhr.getBlockPos();
+					Block testBlock = player.level().getBlockState(pos).getBlock();
 
-						displayLeft = new ItemStack(testBlock);
-						variantBlock = getVariantOrOriginal(testBlock, savedVariant);
+					displayLeft = new ItemStack(testBlock);
+					variantBlock = getVariantBlockFromAny(testBlock, savedVariant);
+				}
+			} else
+				variantBlock = getMainHandVariantBlock(player, savedVariant);
+
+			if(variantBlock != null) {
+				ItemStack displayRight = new ItemStack(variantBlock);
+
+				if(displayLeft.getItem() == displayRight.getItem())
+					return;
+
+				Window window = event.getWindow();
+				int x = window.getGuiScaledWidth() / 2;
+				int y = window.getGuiScaledHeight() / 2 + 12;
+
+				if(alignHudToHotbar) {
+					HumanoidArm arm = mc.options.mainHand().get();
+					if(arm == HumanoidArm.RIGHT)
+						x += 125;
+					else
+						x -= 93;
+
+					y = window.getGuiScaledHeight() - 19;
+				}
+
+				int offset = 8;
+				int width = smallerArrow ? 13 : 16;
+
+				displayLeft.setCount(1);
+
+				int posX = x - offset - width + hudOffsetX;
+				int posY = y + hudOffsetY;
+
+				if( !showSimpleHud) {
+					guiGraphics.renderFakeItem(displayLeft, posX, posY);
+
+					RenderSystem.enableBlend();
+					if(renderLikeCrossHair) {
+						RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
+					}else{
+						RenderSystem.defaultBlendFunc();
+						RenderSystem.setShaderColor(0.8f, 0.8f, 0.8f, 0.7f);
 					}
-				} else
-					variantBlock = getMainHandVariantBlock(player, savedVariant);
+					//alternative smaller arrow
+					if(smallerArrow){
+						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY+5, 0,
+								141+17, 22, 15, 256, 256);
+					}else {
+						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY, 0,
+								141, 22, 15, 256, 256);
+					}
 
-				if(variantBlock != null) {
-					ItemStack displayRight = new ItemStack(variantBlock);
+					RenderSystem.defaultBlendFunc();
 
-					if(displayLeft.getItem() == displayRight.getItem())
-						return;
-
-					Window window = event.getWindow();
-					int x = window.getGuiScaledWidth() / 2;
-					int y = window.getGuiScaledHeight() / 2 + 12;
+					posX += width * 2;
+				} else {
+					final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widget.png");
 
 					if(alignHudToHotbar) {
-						HumanoidArm arm = mc.options.mainHand().get();
-						if(arm == HumanoidArm.RIGHT)
-							x += 125;
-						else
-							x -= 93;
-
-						y = window.getGuiScaledHeight() - 19;
-					}
-
-					int offset = 8;
-					int width = 16;
-
-					displayLeft.setCount(1);
-
-					int posX = x - offset - width + hudOffsetX;
-					int posY = y + hudOffsetY;
-
-					if( !showSimpleHud) {
-						guiGraphics.renderFakeItem(displayLeft, posX, posY);
-
 						RenderSystem.enableBlend();
-						if(renderLikeCrossHair) {
-							RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-							RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
-						}else{
-							RenderSystem.defaultBlendFunc();
-							RenderSystem.setShaderColor(0.8f, 0.8f, 0.8f, 0.7f);
-						}
-						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY, 0, 141, 22, 15, 256, 256);
-						RenderSystem.defaultBlendFunc();
-
-						posX += width * 2;
-					} else {
-						final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widget.png");
-
-						if(alignHudToHotbar) {
-							RenderSystem.enableBlend();
-							RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-							if(enableGreenTint)
-								RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
-							else
-								RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-							guiGraphics.blit(WIDGETS_LOCATION, posX - 3, posY - 3, 24, 23, 22, 22, 256, 256);
-						} else
-							posX += width;
-					}
-
-					guiGraphics.renderFakeItem(displayRight, posX, posY);
+						RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+						if(enableGreenTint)
+							RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
+						else
+							RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+						guiGraphics.blit(WIDGETS_LOCATION, posX - 3, posY - 3, 24, 23, 22, 22, 256, 256);
+					} else
+						posX += width;
 				}
+
+				guiGraphics.renderFakeItem(displayRight, posX, posY);
 			}
 		}
 	}
