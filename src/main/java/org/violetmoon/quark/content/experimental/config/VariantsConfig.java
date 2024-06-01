@@ -55,13 +55,13 @@ public class VariantsConfig implements IConfigType {
 	)
 	private List<String> blacklist = Arrays.asList("minecraft:snow", "minecraft:bamboo", "minecraft:bamboo_block");
 
-	private Map<Block, VariantMap> blockVariants = new HashMap<>();
-	private Map<Block, Block> originals = new HashMap<>();
-	private Multimap<String, String> aliasMap = HashMultimap.create();
-	private Multimap<Block, ManualVariant> manualVariantMap = HashMultimap.create();
+	private final Map<Block, VariantMap> blockVariants = new HashMap<>();
+	private final Map<Block, Block> originals = new HashMap<>();
+	private final Multimap<String, String> aliasMap = HashMultimap.create();
+	private final Multimap<Block, ManualVariant> manualVariantMap = HashMultimap.create();
 
-	private List<String> visibleVariants = new ArrayList<>();
-	private List<String> sortedSuffixes;
+	private final List<String> visibleVariants = new ArrayList<>();
+	private final List<String> sortedSuffixes = new ArrayList<>();
 
 	public VariantsConfig() {}
 
@@ -72,6 +72,7 @@ public class VariantsConfig implements IConfigType {
 		originals.clear();
 		aliasMap.clear();
 		manualVariantMap.clear();
+		sortedSuffixes.clear();
 
 		if(module != null && !module.enabled)
 			return;
@@ -79,7 +80,7 @@ public class VariantsConfig implements IConfigType {
 		for(String s : variantTypes)
 			visibleVariants.add(s.replaceAll("!", ""));
 
-		sortedSuffixes = new ArrayList<>(visibleVariants);
+		sortedSuffixes.addAll(visibleVariants);
 		sortedSuffixes.sort((s1, s2) -> { // sort by amount of _
 			int ct1 = s1.replaceAll("[^_]", "").length();
 			int ct2 = s2.replaceAll("[^_]", "").length();
