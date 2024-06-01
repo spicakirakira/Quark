@@ -61,7 +61,7 @@ public class LockRotationModule extends ZetaModule {
 
 	private static final HashMap<UUID, LockProfile> lockProfiles = new HashMap<>();
 
-	@Config(description = "When true, selector arrow will render in same style as crosshair")
+	@Config(description = "When true, lock rotation indicator in the same style as crosshair")
 	public static boolean renderLikeCrossHair = true;
 
 	@LoadEvent

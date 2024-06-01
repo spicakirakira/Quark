@@ -43,10 +43,17 @@ public class MinecraftMixin {
 	}
 
 	@Inject(method = "pickBlock", cancellable = true,  at = @At(value = "INVOKE",
+			shift = At.Shift.BEFORE,
 			target = "Lnet/minecraft/world/entity/player/Inventory;findSlotMatchingItem(Lnet/minecraft/world/item/ItemStack;)I"))
-	private void pickBlockPick(CallbackInfo ci, @Local ItemStack stack) {
-		if(VariantSelectorModule.Client.onPickBlock(player, stack)){
-			ci.cancel();
+	private void pickBlockPick(CallbackInfo ci, @Local LocalRef<ItemStack> stack) {
+		ItemStack oldPick = stack.get();
+		ItemStack newPick = VariantSelectorModule.Client.onPickBlock(player, oldPick);
+		 if(newPick == oldPick){
+			 //cancel pick. variant selector has picked
+			 ci.cancel();
+		}else if(newPick != null){
+			 //pick this instead
+			 stack.set(newPick);
 		}
 	}
 

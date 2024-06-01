@@ -240,25 +240,40 @@ public class VariantSelectorModule extends ZetaModule {
             clientVariant = variant;
 		}
 
-		public static boolean onPickBlock(Player player, ItemStack pickResult) {
+		//Null on pass, Itemstack on success
+		public static ItemStack onPickBlock(Player player, ItemStack pickResult) {
+			if(!staticEnabled)return null;
 			if(pickResult.getItem() instanceof BlockItem pickedVariant){
 				Block pickedBlock = pickedVariant.getBlock();
-				Block original = null;
+				Block baseBlock = null;
 				ItemStack mainHand = player.getMainHandItem();
 				if(mainHand.getItem() instanceof BlockItem handItem) {
-					original = handItem.getBlock();
+					baseBlock = handItem.getBlock();
 				}else if(mainHand.is(hammer)){
-					original =  variants.getOriginalBlock(pickedBlock);
+					baseBlock = variants.getOriginalBlock(pickedBlock);
 				}
-				if(original!= null) {
-					String variantKey = variants.getVariantOfBlock(original, pickedBlock);
+				if(baseBlock != pickedBlock) {
+					String variantKey = variants.getVariantOfBlock(baseBlock, pickedBlock);
 					if (variantKey != null) {
 						setClientVariant(variantKey, true);
-						return true;
+						return pickResult;
 					}
 				}
+				// swap to base instead of variant if above failed
+				baseBlock = variants.getOriginalBlock(pickedBlock);
+				if(baseBlock != pickedBlock) {
+					ItemStack baseItem = new ItemStack(baseBlock);
+					if (!baseItem.isEmpty() && player.getInventory().hasAnyMatching(i -> i.is(baseItem.getItem()))) {
+						String variantKey = variants.getVariantOfBlock(baseBlock, pickedBlock);
+						if (variantKey != null) {
+							setClientVariant(variantKey, true);
+						}
+						return baseItem;
+					}
+				}
+
 			}
-			return false;
+			return null;
 		}
 
 		@PlayEvent
