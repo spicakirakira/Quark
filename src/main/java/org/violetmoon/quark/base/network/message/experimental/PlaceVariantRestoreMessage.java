@@ -6,24 +6,24 @@ import org.violetmoon.zeta.network.IZetaNetworkEventContext;
 
 import java.io.Serial;
 
-public class PlaceVariantUpdateMessage implements IZetaMessage {
+public class PlaceVariantRestoreMessage implements IZetaMessage {
 
 	@Serial
-	private static final long serialVersionUID = -6123685825175210844L;
+	private static final long serialVersionUID = -5122685825175210844L;
 
 	public String variant;
 
-	public PlaceVariantUpdateMessage() {
+	public PlaceVariantRestoreMessage() {
 	}
 
-	public PlaceVariantUpdateMessage(String variant) {
+	public PlaceVariantRestoreMessage(String variant) {
 		this.variant = variant;
 	}
 
 	@Override
 	public boolean receive(IZetaNetworkEventContext context) {
 		context.enqueueWork(() -> {
-			VariantSelectorModule.setSavedVariant(context.getSender(), variant);
+			VariantSelectorModule.Client.setClientVariant(variant, false);
 		});
 		return true;
 	}

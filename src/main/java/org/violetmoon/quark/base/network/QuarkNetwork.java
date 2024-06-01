@@ -16,6 +16,7 @@ import org.violetmoon.quark.base.network.message.ShareItemC2SMessage;
 import org.violetmoon.quark.base.network.message.ShareItemS2CMessage;
 import org.violetmoon.quark.base.network.message.SortInventoryMessage;
 import org.violetmoon.quark.base.network.message.UpdateTridentMessage;
+import org.violetmoon.quark.base.network.message.experimental.PlaceVariantRestoreMessage;
 import org.violetmoon.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import org.violetmoon.quark.base.network.message.oddities.HandleBackpackMessage;
 import org.violetmoon.quark.base.network.message.oddities.MatrixEnchanterOperationMessage;
@@ -58,6 +59,7 @@ public final class QuarkNetwork {
 
 		// Experimental
 		network.register(PlaceVariantUpdateMessage.class, ZetaNetworkDirection.PLAY_TO_SERVER);
+		network.register(PlaceVariantRestoreMessage.class, ZetaNetworkDirection.PLAY_TO_CLIENT);
 
 		// Clientbound
 		network.register(DoEmoteMessage.class, ZetaNetworkDirection.PLAY_TO_CLIENT);

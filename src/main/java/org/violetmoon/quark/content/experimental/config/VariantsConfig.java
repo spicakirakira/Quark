@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.config.ConfigFlagManager;
@@ -105,8 +106,21 @@ public class VariantsConfig implements IConfigType {
 			logVariantMap();
 	}
 
-	public String getVariantForBlock(Block block) {
-		String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+	// gets variant key for a block given its base block
+	@Nullable
+	public String getVariantForBlock(Block baseBlock, Block possibleVariant) {
+		VariantMap map = getVariants(baseBlock);
+		if(map != null){
+			for(Entry<String, Block> entry : map.variants.entrySet())
+				if(entry.getValue().equals(possibleVariant))
+					return entry.getKey();
+		}
+		return null;
+	}
+
+	@Nullable
+	public String findVariantForBlock(Block variantBlock) {
+		String name = BuiltInRegistries.BLOCK.getKey(variantBlock).getPath();
 
 		for(String suffix : sortedSuffixes) {
 			if(name.endsWith(String.format("_%s", suffix)))
@@ -119,10 +133,6 @@ public class VariantsConfig implements IConfigType {
 		}
 
 		return null;
-	}
-
-	public Block getBlockForTarget(Block block, Block target) {
-		return getBlockForVariant(block, getVariantForBlock(target));
 	}
 
 	public Block getBlockForVariant(Block block, String variant) {
@@ -267,10 +277,10 @@ public class VariantsConfig implements IConfigType {
 			Quark.LOG.info("{} is variant of {}", entry.getKey(), entry.getValue());
 	}
 
-	private static record ManualVariant(String type, Block out) {
+	private record ManualVariant(String type, Block out) {
 	}
 
-	private static record VariantMap(Map<String, Block> variants) {
+	private record VariantMap(Map<String, Block> variants) {
 
 		private boolean isEmpty() {
 			return variants.isEmpty();

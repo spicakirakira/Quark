@@ -1,12 +1,15 @@
 package org.violetmoon.quark.content.experimental.module;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.QuarkClient;
 import org.violetmoon.quark.base.client.handler.ClientUtil;
+import org.violetmoon.quark.base.network.message.experimental.PlaceVariantRestoreMessage;
 import org.violetmoon.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import org.violetmoon.quark.content.experimental.client.screen.VariantSelectorScreen;
 import org.violetmoon.quark.content.experimental.client.tooltip.VariantsComponent;
@@ -14,17 +17,16 @@ import org.violetmoon.quark.content.experimental.config.VariantsConfig;
 import org.violetmoon.quark.content.experimental.item.HammerItem;
 import org.violetmoon.zeta.client.event.load.ZKeyMapping;
 import org.violetmoon.zeta.client.event.load.ZTooltipComponents;
-import org.violetmoon.zeta.client.event.play.ZClientTick;
 import org.violetmoon.zeta.client.event.play.ZInput;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
 import org.violetmoon.zeta.client.event.play.ZRenderTooltip;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
 import org.violetmoon.zeta.event.load.ZRegister;
 import org.violetmoon.zeta.event.play.entity.ZEntityJoinLevel;
+import org.violetmoon.zeta.event.play.entity.player.ZPlayer;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 
@@ -58,6 +60,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.violetmoon.zetaimplforge.event.play.entity.player.ForgeZPlayer;
 
 @ZetaLoadModule(
 	category = "experimental", enabledByDefault = false,
@@ -67,7 +70,8 @@ public class VariantSelectorModule extends ZetaModule {
 
 	private static final String TAG_CURRENT_VARIANT = Quark.MOD_ID + ":CurrentSelectedVariant";
 
-	private static String clientVariant = null;
+	@NotNull
+	private static String clientVariant = "";
 	private static boolean staticEnabled;
 
 	@Config(description = "Set this to true to automatically convert any dropped variant items into their originals. Do this ONLY if you intend to take control of every recipe via a data pack or equivalent, as this will introduce dupes otherwise.")
@@ -98,6 +102,7 @@ public class VariantSelectorModule extends ZetaModule {
 
 	public static Item hammer;
 
+
 	@LoadEvent
 	public final void register(ZRegister event) {
 		hammer = new HammerItem(this).setCondition(() -> enableHammer);
@@ -115,10 +120,7 @@ public class VariantSelectorModule extends ZetaModule {
 		return player.getPersistentData().getString(TAG_CURRENT_VARIANT);
 	}
 
-	public static void setSavedVariant(ServerPlayer player, String variant) {
-		if(variant == null)
-			variant = "";
-
+	public static void setSavedVariant(ServerPlayer player, @NotNull String variant) {
 		if(variant.isEmpty() || variants.isKnownVariant(variant))
 			player.getPersistentData().putString(TAG_CURRENT_VARIANT, variant);
 	}
@@ -147,6 +149,15 @@ public class VariantSelectorModule extends ZetaModule {
 			return variants.getOriginalBlock(block);
 
 		return getVariantForBlock(block, variant);
+	}
+
+	// Restore saved variant on join
+	@PlayEvent
+	public void onPlayerJoin(ZPlayer.LoggedIn event) {
+		if (event.getPlayer() instanceof ServerPlayer player) {
+			String variant = getSavedVariant(player);
+			Quark.ZETA.network.sendToPlayer(new PlaceVariantRestoreMessage(variant), player);
+		}
 	}
 
 	@PlayEvent
@@ -196,7 +207,7 @@ public class VariantSelectorModule extends ZetaModule {
 			Minecraft mc = Minecraft.getInstance();
 			if(player == mc.player && stack.getItem() instanceof BlockItem bi) {
 				Block block = bi.getBlock();
-				if(clientVariant != null && !clientVariant.isEmpty()) {
+				if(!clientVariant.isEmpty()) {
 					Block variant = variants.getBlockForVariant(block, clientVariant);
 					if(variant != null && variant != block)
 						return new ItemStack(variant);
@@ -212,13 +223,23 @@ public class VariantSelectorModule extends ZetaModule {
 		}
 
 		public static void setClientVariant(String variant, boolean sync) {
-			clientVariant = variant;
-
-			if(sync) {
-				if(variant == null)
-					variant = "";
+			if(sync && !Objects.equals(clientVariant, variant)) {
 				QuarkClient.ZETA_CLIENT.sendToServer(new PlaceVariantUpdateMessage(variant));
 			}
+
+            clientVariant = variant;
+		}
+
+		public static boolean onPickBlock(Player player, ItemStack stack) {
+			ItemStack mainHand = player.getMainHandItem();
+			if(mainHand.getItem() instanceof BlockItem handItem && stack.getItem() instanceof BlockItem variant) {
+				String variantKey = variants.getVariantForBlock(handItem.getBlock(), variant.getBlock());
+				if(variantKey != null) {
+					setClientVariant(variantKey, true);
+					return true;
+				}
+			}
+			return false;
 		}
 
 		@PlayEvent
@@ -271,21 +292,6 @@ public class VariantSelectorModule extends ZetaModule {
 
 		private boolean hasTooltip(ItemStack stack) {
 			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.getAllVariants(bi.getBlock()).isEmpty();
-		}
-
-		@PlayEvent
-		public void clientTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.END)
-				return;
-
-			Minecraft mc = Minecraft.getInstance();
-			Level level = mc.level;
-			if(level == null)
-				setClientVariant(null, false);
-			else {
-				if(clientVariant == null)
-					setClientVariant("", true);
-			}
 		}
 
 		@PlayEvent

@@ -47,7 +47,6 @@ public class GlassShardModule extends ZetaModule {
 
 	@LoadEvent
 	public final void register(ZRegister event) {
-		VariantSelectorModule
 		dirtyGlass = new DirtyGlassBlock("dirty_glass", this,
 				Block.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.3F).sound(SoundType.GLASS));
 
