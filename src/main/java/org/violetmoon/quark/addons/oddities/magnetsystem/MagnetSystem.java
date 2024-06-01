@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
@@ -116,13 +116,14 @@ public class MagnetSystem {
 	}
 
 	public static boolean isItemMagnetic(Item item) {
+		if(item == Items.AIR)return false;
 		return magnetizableItems.contains(item);
 	}
 
 	// Just checks if its magnetic. Not if it can be moved
 	public static boolean isBlockMagnetic(BlockState state) {
 		Block block = state.getBlock();
-		if (block == MagnetsModule.magnet) return false;
+		if (block == MagnetsModule.magnet || state.isAir()) return false;
 		return (magnetizableBlocks.contains(block) || BLOCK_MOVE_ACTIONS.containsKey(block));
 	}
 
@@ -133,7 +134,7 @@ public class MagnetSystem {
 			if (state.getValue(PistonBaseBlock.EXTENDED))
 				return false;
 		}
-		if (block == MagnetsModule.magnet) return false;
+		if (block == MagnetsModule.magnet || state.isAir()) return false;
 
 		IMagnetMoveAction action = getMoveAction(block);
 		if (action != null) return action.canMagnetMove(level, pos, moveDir, state, magnet);

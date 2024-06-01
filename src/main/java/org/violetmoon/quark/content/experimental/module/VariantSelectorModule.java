@@ -153,7 +153,8 @@ public class VariantSelectorModule extends ZetaModule {
 	@Nullable
 	public static Block getVariantBlockFromAny(Block block, @NotNull String variant) {
 		Block originalBlock = variants.getOriginalBlock(block);
-		Block variantBlock = getVariantBlockFromOriginal(originalBlock, variant);
+		Block variantBlock = variant.isEmpty() ? originalBlock :
+				getVariantBlockFromOriginal(originalBlock, variant);
 		if(variantBlock != block)return variantBlock;
 		return null;
 	}

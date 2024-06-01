@@ -1,4 +1,8 @@
-- fixed pathfinder quill duplicating when used in offhand
-- fixed magnets only pushing armor items
-- fixed magnets pushing players regardless of whether they have armor or not
+- Fixed pathfinder quill duplicating when used in offhand
+- Fixed magnets only pushing armor items
+- Fixed magnets pushing players regardless of whether they have armor or not
 - Rune colors are now extensible. Custom ones can be added by mods
+- Variant selector and rotation lock HUD overlays can now render similar to crosshair, Improving visibility in bright environments
+- You can now middle click a block to select it with variant selector, either when you have a variant block or a hammer in hand
+- Variant selector wheel wont appear anymore for blocks with no variants
+- Hammer won't play swing animation when it didn't change a variant
