@@ -6,3 +6,4 @@
 - You can now middle click a block to select it with variant selector, either when you have a variant block or a hammer in hand
 - Variant selector wheel wont appear anymore for blocks with no variants
 - Hammer won't play swing animation when it didn't change a variant
+- Fixed magnets not pulling certain magnetic items
