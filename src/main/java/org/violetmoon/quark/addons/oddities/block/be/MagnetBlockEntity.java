@@ -9,10 +9,8 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
@@ -45,68 +43,81 @@ public class MagnetBlockEntity extends BlockEntity {
 
         double magnitude = (dir == moveDir ? 1 : -1);
 
-        double particleMotion = 0.06 * magnitude;
-        double particleChance = 0.2;
-        double xOff = dir.getStepX() * particleMotion;
-        double yOff = dir.getStepY() * particleMotion;
-        double zOff = dir.getStepZ() * particleMotion;
-
-        double particleOffset = moveDir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
-
-        int i = 1;
-        for (; i <= power; i++) {
-            BlockPos targetPos = worldPosition.relative(dir, i);
+        int blockDist = 1;
+        for (; blockDist <= power; blockDist++) {
+            BlockPos targetPos = worldPosition.relative(dir, blockDist);
             BlockState targetState = level.getBlockState(targetPos);
 
-            if (targetState.getBlock() == MagnetsModule.magnetized_block) break;
 
-            if (!level.isClientSide && targetState.getBlock() != Blocks.MOVING_PISTON) {
+            if (!level.isClientSide) {
                 var reaction = MagnetSystem.getPushAction(this, targetPos, targetState, moveDir);
                 if (reaction == ICollateralMover.MoveResult.MOVE || reaction == ICollateralMover.MoveResult.BREAK) {
-                    MagnetSystem.applyForce(level, targetPos, power - i + 1, dir == moveDir, moveDir, i, worldPosition);
+                    MagnetSystem.applyForce(level, targetPos, power - blockDist + 1, dir == moveDir, moveDir, blockDist, worldPosition);
                 } else if (reaction == ICollateralMover.MoveResult.PREVENT) break;
             }
 
-            if (!canBeReplacedByMovingMagnet(targetState)) break;
-
-            if (level.isClientSide && !state.getValue(MagnetBlock.WAXED) && level.random.nextFloat() <= particleChance) {
-                RandomSource ran = level.random;
-                double x = targetPos.getX() + getParticlePos(xOff, ran, particleOffset);
-                double y = targetPos.getY() + getParticlePos(yOff, ran, particleOffset);
-                double z = targetPos.getZ() + getParticlePos(zOff, ran, particleOffset);
-                var p = dir == moveDir ? MagnetsModule.repulsorParticle : MagnetsModule.attractorParticle;
-                level.addParticle(p, x, y, z, xOff, yOff, zOff);
+            if (targetState.getBlock() == MagnetsModule.magnetized_block && level.getBlockEntity(targetPos) instanceof MagnetizedBlockBlockEntity mbe) {
+                targetState = mbe.blockState;
             }
+
+            if (!canFluxPenetrate(targetPos, targetState)) break;
         }
 
         //TODO: move this into magnet system. although might not be needed as there it only serves since directions must be discrete
-        if (MagnetsModule.affectEntities && i > 1) {
+        if (MagnetsModule.affectEntities && blockDist > 1) {
 
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
-                    .expandTowards(new Vec3(dir.step().mul(i))), this::canPullEntity);
+                    .expandTowards(new Vec3(dir.step().mul(blockDist))), this::canPullEntity);
             for (Entity e : entities) {
-                double distanceFromMagnetSq = e.distanceToSqr(worldPosition.getCenter());
-                double invSquared = 1 / distanceFromMagnetSq;
-                // magic number chosen. around 1 block hover height for iron golems
-                Vec3 vec = new Vec3(dir.step().mul((float) (invSquared * magnitude * MagnetsModule.entitiesPullForce)));
-                if (e instanceof IMagneticEntity me) {
-                    me.moveByMagnet(e, vec, this);
-                } else {
-                    e.push(vec.x(), vec.y(), vec.z());
-                    if (e instanceof ServerPlayer player) {
-                        //reset flying kick time
-                        ((AccessorServerGamePacketListener) player.connection).setAboveGroundTickCount(0);
-                    } else {
-                        //hurt mark everybody but the player. its handled by client side code
-                        e.hurtMarked = true;
-                    }
-                    if (e instanceof FallingBlockEntity fb) {
-                        fb.time--;
-                        //hack.
-                    }
-                    e.fallDistance = 0;
+                pushEntity(dir, magnitude, e);
+            }
+        }
+
+        //particles
+        if (level.isClientSide && !state.getValue(MagnetBlock.WAXED)){
+
+            double particleMotion = 0.06 * magnitude;
+            double particleChance = 0.2;
+            double xOff = dir.getStepX() * particleMotion;
+            double yOff = dir.getStepY() * particleMotion;
+            double zOff = dir.getStepZ() * particleMotion;
+
+            double particleOffset = moveDir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
+
+            for (int j = 1; j < blockDist; j++) {
+                if (level.random.nextFloat() <= particleChance) {
+                    BlockPos targetPos = worldPosition.relative(dir, j);
+                    double x = targetPos.getX() + getParticlePos(xOff, level.random, particleOffset);
+                    double y = targetPos.getY() + getParticlePos(yOff, level.random, particleOffset);
+                    double z = targetPos.getZ() + getParticlePos(zOff, level.random, particleOffset);
+                    var p = dir == moveDir ? MagnetsModule.repulsorParticle : MagnetsModule.attractorParticle;
+                    level.addParticle(p, x, y, z, xOff, yOff, zOff);
                 }
             }
+        }
+    }
+
+    private void pushEntity(Direction dir, double magnitude, Entity e) {
+        double distanceFromMagnetSq = e.distanceToSqr(worldPosition.getCenter());
+        double invSquared = 1 / distanceFromMagnetSq;
+        // magic number chosen. around 1 block hover height for iron golems
+        Vec3 vec = new Vec3(dir.step().mul((float) (invSquared * magnitude * MagnetsModule.entitiesPullForce)));
+        if (e instanceof IMagneticEntity me) {
+            me.moveByMagnet(e, vec, this);
+        } else {
+            e.push(vec.x(), vec.y(), vec.z());
+            if (e instanceof ServerPlayer player) {
+                //reset flying kick time
+                ((AccessorServerGamePacketListener) player.connection).setAboveGroundTickCount(0);
+            } else {
+                //hurt mark everybody but the player. its handled by client side code
+                e.hurtMarked = true;
+            }
+            if (e instanceof FallingBlockEntity fb) {
+                fb.time--;
+                //hack.
+            }
+            e.fallDistance = 0;
         }
     }
 
@@ -139,8 +150,8 @@ public class MagnetBlockEntity extends BlockEntity {
         return false;
     }
 
-    private boolean canBeReplacedByMovingMagnet(BlockState targetState) {
-        return targetState.isAir() || targetState.getPistonPushReaction() == PushReaction.DESTROY;
+    private boolean canFluxPenetrate(BlockPos targetPos, BlockState targetState) {
+        return (targetState.isAir()) || targetState.getCollisionShape(level, targetPos).isEmpty();
     }
 
     private double getParticlePos(double offset, RandomSource ran, double magnitude) {

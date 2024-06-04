@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
+import org.violetmoon.quark.addons.oddities.block.MovingMagnetizedBlock;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagnetMoveAction;
@@ -97,6 +98,7 @@ public class MagnetSystem {
 	}
 
 	public static ICollateralMover.MoveResult getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
+		if(state.getBlock() instanceof MovingMagnetizedBlock)return ICollateralMover.MoveResult.SKIP;
 		Level world = magnet.getLevel();
 		if(world != null && canBlockBeMagneticallyMoved(state, pos, world, moveDir, magnet)) {
 			BlockPos frontPos = pos.relative(moveDir);
