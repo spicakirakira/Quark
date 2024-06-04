@@ -17,6 +17,7 @@ import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagneticEntity;
+import org.violetmoon.quark.content.experimental.module.VariantSelectorModule;
 import org.violetmoon.quark.mixin.mixins.accessor.AccessorServerGamePacketListener;
 import org.violetmoon.zeta.api.ICollateralMover;
 

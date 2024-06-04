@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.world.level.block.PressurePlateBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -17,12 +18,14 @@ import org.violetmoon.quark.content.experimental.client.screen.VariantSelectorSc
 import org.violetmoon.quark.content.experimental.client.tooltip.VariantsComponent;
 import org.violetmoon.quark.content.experimental.config.VariantsConfig;
 import org.violetmoon.quark.content.experimental.item.HammerItem;
+import org.violetmoon.quark.mixin.mixins.accessor.AccessorBlockItem;
 import org.violetmoon.zeta.client.event.load.ZKeyMapping;
 import org.violetmoon.zeta.client.event.load.ZTooltipComponents;
 import org.violetmoon.zeta.client.event.play.ZInput;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
 import org.violetmoon.zeta.client.event.play.ZRenderTooltip;
 import org.violetmoon.zeta.config.Config;
+import org.violetmoon.zeta.config.ConfigManager;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
@@ -122,7 +125,6 @@ public class VariantSelectorModule extends ZetaModule {
 	public static String getSavedVariant(Player player) {
 		if(player.level().isClientSide)
 			return clientVariant;
-
 		return player.getPersistentData().getString(TAG_CURRENT_VARIANT);
 	}
 
@@ -197,8 +199,8 @@ public class VariantSelectorModule extends ZetaModule {
 			String variant = getSavedVariant(player);
 			if(!variant.isEmpty()) {
 				Block target = getVariantBlockFromOriginal(state.getBlock(), variant);
-				if (target != null) {
-					return target.getStateForPlacement(ctx);
+				if (target != null && target.asItem() instanceof AccessorBlockItem accessor) {
+					return accessor.quark$getPlacementState(ctx);
 				}
 			}
 		}

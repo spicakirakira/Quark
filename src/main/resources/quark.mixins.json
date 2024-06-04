@@ -74,6 +74,7 @@
     "WallBlockMixin",
     "accessor.AccessorAbstractArrow",
     "accessor.AccessorAbstractChestedHorse",
+    "accessor.AccessorBlockItem",
     "accessor.AccessorLivingEntity",
     "accessor.AccessorMerchantOffer",
     "accessor.AccessorServerGamePacketListener",
