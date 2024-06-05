@@ -11,7 +11,7 @@ import org.violetmoon.zeta.event.load.ZRegister;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 
-@ZetaLoadModule(category = "building", antiOverlap = { "woodworks" })
+@ZetaLoadModule(category = "building")
 public class VerticalPlanksModule extends ZetaModule {
 
 	@LoadEvent
