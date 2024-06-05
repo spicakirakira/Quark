@@ -1,2 +1,5 @@
-- Fixed a crash when middle clicking a block and having Variant Selector module off
-- Middle clicking a variant block while NOT having its parent variant in hand will now make you select the latter
+- Magnets can now push multiple blocks at once
+- Magnets can now pull blocks through semi transparent blocks, including other moveable ones like rails
+- Variant selector will properly delegate method calls to the selected block placement logic
+- Enhanced ladders features will now only be applied to blocks in the quark:ladders tag
+- Fixed an issue with NarratorReaduout module and its keybinds not being registered if module is turned off

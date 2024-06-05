@@ -18,18 +18,11 @@ import org.violetmoon.quark.content.tweaks.module.EnhancedLaddersModule;
 @Mixin(LadderBlock.class)
 public class LadderBlockMixin {
 
+
 	@Inject(method = "canSurvive", at = @At("HEAD"), cancellable = true)
 	private void canSurvive(BlockState state, LevelReader level, BlockPos pos, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
 		if(EnhancedLaddersModule.canLadderSurvive(state, level, pos)) {
 			callbackInfoReturnable.setReturnValue(true);
-			callbackInfoReturnable.cancel();
-		}
-	}
-
-	@Inject(method = "updateShape", at = @At("HEAD"), cancellable = true)
-	private void updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos currentPos, BlockPos facingPos, CallbackInfoReturnable<BlockState> callbackInfoReturnable) {
-		if(!EnhancedLaddersModule.updateLadder(state, facing, facingState, world, currentPos, facingPos)) {
-			callbackInfoReturnable.setReturnValue(Blocks.AIR.defaultBlockState());
 			callbackInfoReturnable.cancel();
 		}
 	}
