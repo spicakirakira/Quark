@@ -97,6 +97,13 @@ public class MagnetParticle extends TextureSheetParticle {
     }
 
     @Override
+    public int getLightColor(float pPartialTick) {
+        int i = super.getLightColor(pPartialTick);
+        int k = i >> 16 & 255;
+        return 240 | k << 16;
+    }
+
+    @Override
     public void tick() {
         super.tick();
         updateAlpha();
@@ -155,15 +162,6 @@ public class MagnetParticle extends TextureSheetParticle {
         public Particle createParticle(SimpleParticleType pType, ClientLevel pLevel, double pX, double pY, double pZ, double pXSpeed, double pYSpeed, double pZSpeed) {
             MagnetParticle particle = new MagnetParticle(pLevel, pX, pY, pZ, pXSpeed, pYSpeed, pZSpeed);
             particle.pickSprite(this.sprite);
-            //yes I could have also changed the texture itself...
-            if (MagnetsModule.greenMagnetParticles) {
-                //Old panda snot particle color. These are from 0 to 1. Somehow this maps to green...
-                particle.setColor(200.0F, 50.0F, 120.0F);
-            } else if (pType == MagnetsModule.attractorParticle) {
-                particle.setColor(0.1f, 0.2f, 1);
-            } else {
-                particle.setColor(1, 0.1f, 0.2f);
-            }
             return particle;
         }
     }

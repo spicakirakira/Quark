@@ -50,9 +50,6 @@ public class MagnetsModule extends ZetaModule {
 	@Config(flag = "magnet_pre_end")
 	public static boolean usePreEndRecipe = false;
 
-	@Config(flag = "green_particles", description = "Makes magnet particles use the old green color")
-	public static boolean greenMagnetParticles = false;
-
 	@Config(flag = "magnetic_entities", description = "Allows magnets to push and pull entities in the 'affected_by_magnets' tag (edit it with datapack). Turning off can reduce lag")
 	public static boolean affectEntities = true;
 

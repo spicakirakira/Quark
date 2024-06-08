@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
@@ -29,6 +28,7 @@ import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.zeta.api.ICollateralMover;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.registry.RenderLayerRegistry;
 
 import java.util.List;
 
@@ -39,12 +39,19 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 	public static final BooleanProperty WAXED = BooleanProperty.create("waxed");
 
 	public MagnetBlock(@Nullable ZetaModule module) {
-		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK));
+		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK)
+				.hasPostProcess(MagnetBlock::isPowered)
+				.lightLevel(state -> state.getValue(POWERED) ? 4 : 0));
+
 		registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(POWERED, false).setValue(WAXED, false));
+
 
 		if(module == null) //auto registration below this line
 			return;
 		setCreativeTab(CreativeModeTabs.REDSTONE_BLOCKS);
+
+		module.zeta.renderLayerRegistry.put(this, RenderLayerRegistry.Layer.CUTOUT);
+
 	}
 
 	@Override
@@ -63,7 +70,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 		super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
 
 		boolean wasPowered = state.getValue(POWERED);
-		boolean isPowered = isPowered(worldIn, pos, state.getValue(FACING));
+		boolean isPowered = hasPower(worldIn, pos, state.getValue(FACING));
 		if(isPowered != wasPowered)
 			worldIn.setBlockAndUpdate(pos, state.setValue(POWERED, isPowered));
 	}
@@ -109,7 +116,11 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 		return true;
 	}
 
-	private boolean isPowered(Level worldIn, BlockPos pos, Direction facing) {
+	private static boolean isPowered(BlockState state, BlockGetter pLevel, BlockPos pPos) {
+		return state.getValue(POWERED);
+	}
+
+	private boolean hasPower(Level worldIn, BlockPos pos, Direction facing) {
 		return worldIn.hasNeighborSignal(pos);
 	}
 
@@ -117,7 +128,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Direction facing = context.getNearestLookingDirection().getOpposite();
 		return defaultBlockState().setValue(FACING, facing)
-				.setValue(POWERED, isPowered(context.getLevel(), context.getClickedPos(), facing));
+				.setValue(POWERED, hasPower(context.getLevel(), context.getClickedPos(), facing));
 	}
 
 	@NotNull
