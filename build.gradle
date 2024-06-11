@@ -118,7 +118,7 @@ dependencies {
     annotationProcessor 'net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5'
 
 
-    runtimeOnly fg.deobf("dev.emi:emi-forge:${deps.emi}")
+    //runtimeOnly fg.deobf("dev.emi:emi-forge:${deps.emi}")
     runtimeOnly fg.deobf("curse.maven:spark-361579:${deps.spark}")
 
     //implementation fg.deobf("org.violetmoon.zeta:Zeta:${deps.zeta}")
