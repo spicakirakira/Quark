@@ -1,5 +1,6 @@
-- Magnets can now push multiple blocks at once
-- Magnets can now pull blocks through semi transparent blocks, including other moveable ones like rails
-- Variant selector will properly delegate method calls to the selected block placement logic
-- Enhanced ladders features will now only be applied to blocks in the quark:ladders tag
-- Fixed an issue with NarratorReaduout module and its keybinds not being registered if module is turned off
+- Magnet particle color is entirely determined by its texture
+- removed green magnet particles config
+- magnets emit some light when on
+- magnet models are now partially emissive when on
+- Added more mobs to magnet pull whitelist (some from alex caves)
+- improved magnet auto detection of magnetic blocks

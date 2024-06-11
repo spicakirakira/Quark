@@ -7,6 +7,7 @@ import java.util.List;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -18,8 +19,8 @@ import org.violetmoon.quark.api.IMagnetTracker;
 import org.violetmoon.quark.api.QuarkCapabilities;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.zeta.api.ICollateralMover;
+import org.violetmoon.zeta.event.play.ZRecipeCrawl;
 import org.violetmoon.zeta.util.RegistryUtil;
-import org.violetmoon.zeta.util.handler.RecipeCrawlHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -67,9 +68,9 @@ public class MagnetSystem {
 		magnetizableBlocks.clear();
 	}
 
-	public static void onDigest() {
+	public static void onDigest(ZRecipeCrawl.Digest digest) {
 		//TODO(Zeta): Eschew the built-in whitelist/blacklist system... (https://github.com/VazkiiMods/Zeta/issues/2)
-		RecipeCrawlHandler.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
+		digest.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
 			if(i instanceof BlockItem bi) {
 				magnetizableBlocks.add(bi.getBlock());
 			}

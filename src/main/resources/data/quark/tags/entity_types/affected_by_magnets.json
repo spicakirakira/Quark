@@ -12,6 +12,12 @@
     "minecraft:spawner_minecart",
     {"id":"forge:minecarts","required":false},
     {"id":"minecraft:minecarts","required":false},
-    {"id":"alexscaves:moving_metal_block","required":false}
+    {"id":"alexscaves:moving_metal_block","required":false},
+    {"id":"alexscaves:teletor","required":false},
+    {"id":"alexscaves:magnetron","required":false},
+    {"id":"alexscaves:notot","required":false},
+    {"id":"alexscaves:boundroid","required":false},
+    {"id":"alexscaves:boundroid_winch","required":false},
+    {"id":"alexscaves:ferrouslime","required":false}
   ]
 }

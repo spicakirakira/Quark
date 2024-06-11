@@ -41,7 +41,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 	public MagnetBlock(@Nullable ZetaModule module) {
 		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK)
 				.hasPostProcess(MagnetBlock::isPowered)
-				.lightLevel(state -> state.getValue(POWERED) ? 4 : 0));
+				.lightLevel(state -> state.getValue(POWERED) ? 3 : 0));
 
 		registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(POWERED, false).setValue(WAXED, false));
 
