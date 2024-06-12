@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +24,7 @@ import org.violetmoon.zeta.client.event.load.ZKeyMapping;
 import org.violetmoon.zeta.client.event.play.ZClientTick;
 import org.violetmoon.zeta.client.event.play.ZInput;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
+import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
 import org.violetmoon.zeta.event.bus.ZPhase;
@@ -33,11 +35,10 @@ import org.violetmoon.zeta.module.ZetaModule;
 public class HotbarChangerModule extends ZetaModule {
 	private static final ResourceLocation WIDGETS = new ResourceLocation("textures/gui/widgets.png");
 
-	private static final int ANIMATION_TIME = 10;
 	private static final int MAX_HEIGHT = 90;
-	private static final int ANIM_PER_TICK = MAX_HEIGHT / ANIMATION_TIME;
 
-	public static int height = 0;
+	public static float height = 0;
+	public static float oldHeight = 0;
 	public static int currentHeldItem = -1;
 	public static boolean animating;
 	public static boolean keyDown;
@@ -46,6 +47,9 @@ public class HotbarChangerModule extends ZetaModule {
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends HotbarChangerModule {
 		private static KeyMapping changeHotbarKey;
+
+		@Config
+		public double animationTime = 7; //time in ticks
 
 		@LoadEvent
 		public void registerKeybinds(ZKeyMapping event) {
@@ -90,7 +94,7 @@ public class HotbarChangerModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void hudPost(ZRenderGuiOverlay.Hotbar.Post event) {
+		public void hudPost(ZRenderGuiOverlay.Hotbar.Pre event) {
 			if(height <= 0)
 				return;
 
@@ -99,12 +103,14 @@ public class HotbarChangerModule extends ZetaModule {
 			GuiGraphics guiGraphics = event.getGuiGraphics();
 			PoseStack matrix = guiGraphics.pose();
 
+			matrix.pushPose();
+			matrix.translate(0,0, -500);
+			RenderSystem.enableDepthTest();
+
 			Window res = event.getWindow();
 			float realHeight = getRealHeight(event.getPartialTick());
 			float xStart = res.getGuiScaledWidth() / 2f - 91;
 			float yStart = res.getGuiScaledHeight() - realHeight;
-
-			ItemRenderer render = mc.getItemRenderer();
 
 			RenderSystem.enableBlend();
 			RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -140,6 +146,7 @@ public class HotbarChangerModule extends ZetaModule {
 				guiGraphics.renderItem(invStack, x, y);
 				guiGraphics.renderItemDecorations(mc.font, invStack, x, y);
 			}
+			matrix.popPose();
 		}
 
 		@PlayEvent
@@ -158,11 +165,15 @@ public class HotbarChangerModule extends ZetaModule {
 				}
 			}
 
-			if(hotbarChangeOpen && height < MAX_HEIGHT) {
-				height += ANIM_PER_TICK;
+			if(hotbarChangeOpen && oldHeight < 1) {
+				oldHeight = height;
+				height += 1/(float)animationTime;
+				height = Mth.clamp(height, 0, 1);
 				animating = true;
-			} else if(!hotbarChangeOpen && height > 0) {
-				height -= ANIM_PER_TICK;
+			} else if(!hotbarChangeOpen && oldHeight > 0) {
+				oldHeight = height;
+				height -= 1/(float)animationTime;
+				height = Mth.clamp(height, 0, 1);
 				animating = true;
 			} else
 				animating = false;
@@ -196,9 +207,7 @@ public class HotbarChangerModule extends ZetaModule {
 		}
 
 		private float getRealHeight(float part) {
-			if(!animating)
-				return height;
-			return height + part * ANIM_PER_TICK * (hotbarChangeOpen ? 1 : -1);
+			return Mth.lerp(part, oldHeight, height) * MAX_HEIGHT;
 		}
 	}
 }
