@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import org.jetbrains.annotations.Nullable;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.block.IZetaBlock;
 import org.violetmoon.zeta.block.ZetaSlabBlock;
 import org.violetmoon.zeta.module.ZetaModule;
@@ -21,7 +22,7 @@ public class QuarkVerticalSlabBlock extends VerticalSlabBlock implements IZetaBl
 	private BooleanSupplier enabledSupplier = BooleanSuppliers.TRUE;
 
 	public QuarkVerticalSlabBlock(Block parent, ZetaModule module) {
-		super(() -> parent, Block.Properties.copy(parent));
+		super(() -> parent, BlockPropertyUtil.copyPropertySafe(parent));
 		String resloc = Quark.ZETA.registryUtil.inherit(parent, s -> s.replace("_slab", "_vertical_slab"));
 		Quark.ZETA.registry.registerBlock(this, resloc, true);
 

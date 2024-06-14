@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.block.IZetaBlock;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.config.Config;
@@ -54,7 +55,7 @@ public class MoreBrickTypesModule extends ZetaModule {
 
 	private void add(ZRegister event, String name, Block parent, BooleanSupplier cond, Block placeBehind) {
 		event.getVariantRegistry().addSlabStairsWall((IZetaBlock) new ZetaBlock(name + "_bricks", this,
-				Block.Properties.copy(parent)
+				BlockPropertyUtil.copyPropertySafe(parent)
 						.requiresCorrectToolForDrops())
 				.setCondition(cond)
 				.setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS, placeBehind, true), null);

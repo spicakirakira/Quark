@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.quark.content.building.module.HedgesModule;
 import org.violetmoon.quark.content.world.block.BlossomLeavesBlock;
 import org.violetmoon.zeta.block.IZetaBlock;
@@ -54,7 +55,7 @@ public class HedgeBlock extends ZetaFenceBlock implements IZetaBlock, IZetaBlock
 	public static final BooleanProperty EXTEND = BooleanProperty.create("extend");
 
 	public HedgeBlock(String regname, @Nullable ZetaModule module, Block fence, Block leaf) {
-		super(regname, module, BlockBehaviour.Properties.copy(fence));
+		super(regname, module, BlockPropertyUtil.copyPropertySafe(fence));
 
 		this.leafState = leaf.defaultBlockState();
 

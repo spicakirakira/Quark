@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.function.BooleanSupplier;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.quark.base.util.QuarkWorldGenWeights;
 import org.violetmoon.quark.content.world.block.MyaliteBlock;
 import org.violetmoon.quark.content.world.block.MyaliteColorLogic;
@@ -111,7 +112,7 @@ public class NewStoneTypesModule extends ZetaModule {
 
 		Block.Properties props;
 		if(isVanilla)
-			props = Block.Properties.copy(raw);
+			props = BlockPropertyUtil.copyPropertySafe(raw);
 		else
 			props = Block.Properties.of()
 					.mapColor(color)
