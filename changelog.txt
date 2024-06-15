@@ -1,6 +1,3 @@
-- Magnet particle color is entirely determined by its texture
-- removed green magnet particles config
-- magnets emit some light when on
-- magnet models are now partially emissive when on
-- Added more mobs to magnet pull whitelist (some from alex caves)
-- improved magnet auto detection of magnetic blocks
+- Fallen logs can rarely spawn on water
+- Fallen logs can no longer spawn on ice and other non terrain blocks (added tag for them)
+- Fallen log decoration (moss and vines) are now biome temperature and humidify dependent. No more moss in snowy biomes
