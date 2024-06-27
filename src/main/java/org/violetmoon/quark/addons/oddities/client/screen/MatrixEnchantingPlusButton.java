@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class MatrixEnchantingPlusButton extends Button {
 
 	public MatrixEnchantingPlusButton(int x, int y, OnPress onPress) {
-		super(new Button.Builder(Component.literal(""), onPress).size(50, 12).pos(x, y));
+		super(Button.builder(Component.literal(""), onPress).size(50, 12).pos(x, y));
 	}
 
 	@Override

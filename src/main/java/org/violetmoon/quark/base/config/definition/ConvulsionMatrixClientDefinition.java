@@ -103,7 +103,7 @@ public class ConvulsionMatrixClientDefinition implements ClientDefinitionExt<Sec
 			for(Map.Entry<String, double[]> entry : params.presetMap.entrySet()) {
 				String name = entry.getKey();
 				double[] preset = entry.getValue();
-				addRenderableWidget(new Button.Builder(Component.literal(name), __ -> setFromArray(preset)).size(w - p, 20).pos(x + (w * i), y + 115).build());
+				addRenderableWidget(Button.builder(Component.literal(name), __ -> setFromArray(preset)).size(w - p, 20).pos(x + (w * i), y + 115).build());
 				i++;
 			}
 
