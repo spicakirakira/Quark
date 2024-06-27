@@ -1,5 +1,6 @@
 package org.violetmoon.quark.content.world.module;
 
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.quark.base.util.QuarkWorldGenWeights;
 import org.violetmoon.quark.content.world.undergroundstyle.PermafrostStyle;
 import org.violetmoon.quark.content.world.undergroundstyle.base.UndergroundStyleConfig;
@@ -56,7 +57,8 @@ public class PermafrostModule extends ZetaModule {
 				.setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS, Blocks.DEEPSLATE, true);
 
 		event.getVariantRegistry().addSlabStairsWall(permafrost, null);
-		event.getVariantRegistry().addSlabStairsWall((IZetaBlock) new ZetaBlock("permafrost_bricks", this, Block.Properties.copy(permafrost)).setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS), null);
+		event.getVariantRegistry().addSlabStairsWall((IZetaBlock) new ZetaBlock("permafrost_bricks", this,
+				BlockPropertyUtil.copyPropertySafe(permafrost)).setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS), null);
 		CreativeTabManager.endDaisyChain();
 
 		((PermafrostStyle) generationSettings.style).setBlock(permafrost.defaultBlockState());

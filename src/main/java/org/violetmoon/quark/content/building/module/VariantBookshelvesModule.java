@@ -13,7 +13,7 @@ import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.CreativeTabManager;
 
-@ZetaLoadModule(category = "building", antiOverlap = { "woodworks" })
+@ZetaLoadModule(category = "building", antiOverlap = { "woodworks", "woodster" })
 public class VariantBookshelvesModule extends ZetaModule {
 
 	@Config

@@ -186,7 +186,7 @@ public class MatrixEnchantingTableBlockEntity extends AbstractEnchantingTableBlo
 					EnchantedBookItem.addEnchantment(out, new EnchantmentInstance(e.getKey(), e.getValue()));
 			else {
 				EnchantmentHelper.setEnchantments(enchantments, out);
-				ItemNBTHelper.getNBT(out).remove(TAG_STACK_MATRIX);
+				out.removeTagKey(TAG_STACK_MATRIX);
 			}
 
 			setItem(2, out);

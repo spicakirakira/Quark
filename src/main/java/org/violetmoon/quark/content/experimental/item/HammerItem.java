@@ -39,7 +39,7 @@ public class HammerItem extends ZetaItem {
 
 		if(player != null) {
 			String variant = VariantSelectorModule.getSavedVariant(player);
-			Block variantBlock = VariantSelectorModule.getVariantOrOriginal(block, variant);
+			Block variantBlock = VariantSelectorModule.getVariantBlockFromAny(block, variant);
 			if(variantBlock != null) {
 				level.removeBlock(pos, false);
 

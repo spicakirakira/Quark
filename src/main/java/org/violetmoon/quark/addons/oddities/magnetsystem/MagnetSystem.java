@@ -4,18 +4,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
+import org.violetmoon.quark.addons.oddities.block.MovingMagnetizedBlock;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagnetMoveAction;
 import org.violetmoon.quark.api.IMagnetTracker;
 import org.violetmoon.quark.api.QuarkCapabilities;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.zeta.api.ICollateralMover;
+import org.violetmoon.zeta.event.play.ZRecipeCrawl;
 import org.violetmoon.zeta.util.RegistryUtil;
-import org.violetmoon.zeta.util.handler.RecipeCrawlHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +35,7 @@ import net.minecraft.world.level.material.PushReaction;
 public class MagnetSystem {
 
 	private static final HashSet<Block> magnetizableBlocks = new HashSet<>();
+	private static final HashSet<Item> magnetizableItems = new HashSet<>();
 
 	private static final HashMap<Block, IMagnetMoveAction> BLOCK_MOVE_ACTIONS = new HashMap<>();
 
@@ -38,6 +44,7 @@ public class MagnetSystem {
 	}
 
 	public static IMagnetMoveAction getMoveAction(Block block) {
+		if (block instanceof IMagnetMoveAction ma)return ma;
 		return BLOCK_MOVE_ACTIONS.get(block);
 	}
 
@@ -61,19 +68,28 @@ public class MagnetSystem {
 		magnetizableBlocks.clear();
 	}
 
-	public static void onDigest() {
+	public static void onDigest(ZRecipeCrawl.Digest digest) {
 		//TODO(Zeta): Eschew the built-in whitelist/blacklist system... (https://github.com/VazkiiMods/Zeta/issues/2)
-		RecipeCrawlHandler.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
-			if(i instanceof BlockItem bi)
+		digest.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
+			if(i instanceof BlockItem bi) {
 				magnetizableBlocks.add(bi.getBlock());
+			}
+			magnetizableItems.add(i);
 		});
 
 		//...in favor of manual fixup
-		List<Block> magneticWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.BLOCK);
-		List<Block> magneticBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.BLOCK);
+		List<Block> magneticBlockWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.BLOCK);
+		List<Block> magneticBlockBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.BLOCK);
 
-		magnetizableBlocks.addAll(magneticWhitelist);
-		magneticBlacklist.forEach(magnetizableBlocks::remove);
+		magnetizableBlocks.addAll(magneticBlockWhitelist);
+		magneticBlockBlacklist.forEach(magnetizableBlocks::remove);
+
+		//...and manual fixup for items
+		List<Item> magneticItemWhitelist = RegistryUtil.massRegistryGet(MagnetsModule.magneticWhitelist, BuiltInRegistries.ITEM);
+		List<Item> magneticItemBlacklist = RegistryUtil.massRegistryGet(MagnetsModule.magneticBlacklist, BuiltInRegistries.ITEM);
+
+		magnetizableItems.addAll(magneticItemWhitelist);
+		magneticItemBlacklist.forEach(magnetizableItems::remove);
 	}
 
 	public static void applyForce(Level world, BlockPos pos, int magnitude, boolean pushing, Direction dir, int distance, BlockPos origin) {
@@ -82,28 +98,49 @@ public class MagnetSystem {
 			tracker.applyForce(pos, magnitude, pushing, dir, distance, origin);
 	}
 
-	public static PushReaction getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
+	public static ICollateralMover.MoveResult getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
+		if(state.getBlock() instanceof MovingMagnetizedBlock)return ICollateralMover.MoveResult.SKIP;
 		Level world = magnet.getLevel();
-		if(world != null && isBlockMagnetic(state)) {
-			BlockPos targetLocation = pos.relative(moveDir);
-			BlockState stateAtTarget = world.getBlockState(targetLocation);
-			if(stateAtTarget.isAir())
-				return PushReaction.IGNORE;
-			else if(stateAtTarget.getPistonPushReaction() == PushReaction.DESTROY)
-				return PushReaction.DESTROY;
+		if(world != null && canBlockBeMagneticallyMoved(state, pos, world, moveDir, magnet)) {
+			BlockPos frontPos = pos.relative(moveDir);
+			BlockState frontState = world.getBlockState(frontPos);
+
+			if(state.getBlock() instanceof ICollateralMover cm && cm.isCollateralMover(world, magnet.getBlockPos(), moveDir, pos)){
+				return cm.getCollateralMovement(world, magnet.getBlockPos(), moveDir, moveDir, pos);
+			}
+
+			if(frontState.isAir())
+				return ICollateralMover.MoveResult.MOVE;
+			else if(frontState.getPistonPushReaction() == PushReaction.DESTROY)
+				return ICollateralMover.MoveResult.BREAK;
 		}
 
-		return PushReaction.BLOCK;
+		return ICollateralMover.MoveResult.SKIP;
 	}
 
+	public static boolean isItemMagnetic(Item item) {
+		if(item == Items.AIR)return false;
+		return magnetizableItems.contains(item);
+	}
+
+	// Just checks if its magnetic. Not if it can be moved
 	public static boolean isBlockMagnetic(BlockState state) {
 		Block block = state.getBlock();
+		if (block == MagnetsModule.magnet || state.isAir()) return false;
+		return (magnetizableBlocks.contains(block) || BLOCK_MOVE_ACTIONS.containsKey(block));
+	}
 
-		if(block == Blocks.PISTON || block == Blocks.STICKY_PISTON) {
-			if(state.getValue(PistonBaseBlock.EXTENDED))
+	public static boolean canBlockBeMagneticallyMoved(BlockState state, BlockPos pos, Level level, Direction moveDir, BlockEntity magnet) {
+		Block block = state.getBlock();
+
+		if (block == Blocks.PISTON || block == Blocks.STICKY_PISTON) {
+			if (state.getValue(PistonBaseBlock.EXTENDED))
 				return false;
 		}
+		if (block == MagnetsModule.magnet || state.isAir()) return false;
 
-		return block != MagnetsModule.magnet && (magnetizableBlocks.contains(block) || BLOCK_MOVE_ACTIONS.containsKey(block) || block instanceof IMagnetMoveAction);
+		IMagnetMoveAction action = getMoveAction(block);
+		if (action != null) return action.canMagnetMove(level, pos, moveDir, state, magnet);
+		return (magnetizableBlocks.contains(block));
 	}
 }

@@ -1,8 +1,10 @@
 package org.violetmoon.quark.content.building.block;
 
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.RenderLayerRegistry;
@@ -71,7 +73,7 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 	public WoodPostBlock(@Nullable ZetaModule module, Block parent, String prefix, SoundType sound) {
 		super(Quark.ZETA.registryUtil.inherit(parent, s -> prefix + s.replace("_fence", "_post")),
 				module,
-				Properties.copy(parent).sound(sound));
+				BlockPropertyUtil.copyPropertySafe(parent).sound(sound));
 
 		BlockState state = stateDefinition.any().setValue(WATERLOGGED, false).setValue(AXIS, Axis.Y);
 		for(EnumProperty<PostSideType> prop : SIDES)
@@ -84,6 +86,8 @@ public class WoodPostBlock extends ZetaBlock implements SimpleWaterloggedBlock {
 		module.zeta.renderLayerRegistry.put(this, RenderLayerRegistry.Layer.CUTOUT);
 		setCreativeTab(CreativeModeTabs.BUILDING_BLOCKS, parent, true);
 	}
+
+
 
 	@NotNull
 	@Override

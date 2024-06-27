@@ -122,8 +122,10 @@ public class ColorRunesModule extends ZetaModule {
 			TRIDENT_STACK_REFERENCES.put(trident, stack);
 	}
 
-	public static ItemStack withRune(ItemStack stack, RuneColor color) {
-		ItemNBTHelper.setString(stack, ColorRunesModule.TAG_RUNE_COLOR, color.getSerializedName());
+	public static ItemStack withRune(ItemStack stack, @Nullable RuneColor color) {
+		if (color != null) {
+			ItemNBTHelper.setString(stack, ColorRunesModule.TAG_RUNE_COLOR, color.getSerializedName());
+		}
 		return stack;
 	}
 

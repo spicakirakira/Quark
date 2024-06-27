@@ -163,7 +163,7 @@ public final class SmithingRuneRecipe extends SmithingTrimRecipe { // Extends to
 		public SmithingRuneRecipe fromNetwork(@Nonnull ResourceLocation id, @Nonnull FriendlyByteBuf buf) {
 			Ingredient template = Ingredient.fromNetwork(buf);
 			Ingredient addition = buf.readBoolean() ? Ingredient.EMPTY : Ingredient.fromNetwork(buf);
-			RuneColor runeColor = buf.readEnum(RuneColor.class);
+			RuneColor runeColor = RuneColor.byName(buf.readUtf());
 			return new SmithingRuneRecipe(id, template, addition, runeColor);
 		}
 
@@ -175,7 +175,7 @@ public final class SmithingRuneRecipe extends SmithingTrimRecipe { // Extends to
 			if (!additionIsEmpty)
 				recipe.addition.toNetwork(buf);
 
-			buf.writeEnum(recipe.runeColor);
+			buf.writeUtf(recipe.runeColor.getSerializedName());
 		}
 	}
 }

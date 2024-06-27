@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import org.lwjgl.opengl.GL11;
 import org.violetmoon.quark.api.IRotationLockable;
 import org.violetmoon.quark.base.Quark;
@@ -16,6 +17,7 @@ import org.violetmoon.quark.content.building.block.VerticalSlabBlock;
 import org.violetmoon.zeta.client.event.load.ZKeyMapping;
 import org.violetmoon.zeta.client.event.play.ZInput;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
+import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
@@ -58,6 +60,9 @@ public class LockRotationModule extends ZetaModule {
 	private static final String TAG_LOCKED_ONCE = "quark:locked_once";
 
 	private static final HashMap<UUID, LockProfile> lockProfiles = new HashMap<>();
+
+	@Config(description = "When true, lock rotation indicator in the same style as crosshair")
+	public static boolean renderLikeCrossHair = true;
 
 	@LoadEvent
 	public final void configChanged(ZConfigChanged event) {
@@ -254,9 +259,13 @@ public class LockRotationModule extends ZetaModule {
 				GuiGraphics guiGraphics = event.getGuiGraphics();
 
 				RenderSystem.enableBlend();
-				RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-				RenderSystem.setShader(GameRenderer::getPositionTexShader);
-				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.5F);
+				if(renderLikeCrossHair) {
+					RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
+				}else{
+					RenderSystem.defaultBlendFunc();
+					RenderSystem.setShaderColor(1, 1, 1, 0.5f);
+				}
 
 				Window window = event.getWindow();
 				int x = window.getGuiScaledWidth() / 2 + 20;
@@ -265,8 +274,6 @@ public class LockRotationModule extends ZetaModule {
 
 				if(clientProfile.half > -1)
 					guiGraphics.blit(ClientUtil.GENERAL_ICONS, x + 16, y, clientProfile.half * 16, 79, 16, 16, 256, 256);
-
-				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 			}
 		}

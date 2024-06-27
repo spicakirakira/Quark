@@ -10,6 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -65,10 +66,12 @@ public class EnhancedLaddersModule extends ZetaModule {
 
 	private static boolean staticEnabled;
 	private static TagKey<Item> laddersTag;
+	private static TagKey<Block> laddersBlockTag;
 
 	@LoadEvent
 	public final void setup(ZCommonSetup event) {
 		laddersTag = ItemTags.create(new ResourceLocation(Quark.MOD_ID, "ladders"));
+		laddersBlockTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "ladders"));
 	}
 
 	@LoadEvent
@@ -116,31 +119,26 @@ public class EnhancedLaddersModule extends ZetaModule {
 		return false;
 	}
 
+	// replaces ladder survives logic
 	public static boolean canLadderSurvive(BlockState state, LevelReader world, BlockPos pos) {
 		if(!staticEnabled || !allowFreestanding)
 			return false;
+		if(!state.is(laddersBlockTag))return false;
 
 		Direction facing = state.getValue(LadderBlock.FACING);
 		Direction opposite = facing.getOpposite();
 		BlockPos oppositePos = pos.relative(opposite);
 		BlockState oppositeState = world.getBlockState(oppositePos);
 
-		boolean solid = facing.getAxis() != Axis.Y && oppositeState.isFaceSturdy(world, oppositePos, facing) && !(oppositeState.getBlock() instanceof LadderBlock);
+		boolean solid =  oppositeState.isFaceSturdy(world, oppositePos, facing) && !(oppositeState.getBlock() instanceof LadderBlock);
 		BlockState topState = world.getBlockState(pos.above());
 		return solid || (topState.getBlock() instanceof LadderBlock && (facing.getAxis() == Axis.Y || topState.getValue(LadderBlock.FACING) == facing));
 	}
 
-	public static boolean updateLadder(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos currentPos, BlockPos facingPos) {
-		if(!staticEnabled || !allowFreestanding)
-			return true;
-
-		return canLadderSurvive(state, world, currentPos);
-	}
 
 	@PlayEvent
 	public void onInteract(ZRightClickBlock event) {
-		if(!allowDroppingDown)
-			return;
+		if(!allowDroppingDown) return;
 
 		Player player = event.getPlayer();
 		InteractionHand hand = event.getHand();

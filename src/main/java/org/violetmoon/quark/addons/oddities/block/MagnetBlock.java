@@ -19,32 +19,39 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetBlockEntity;
 import org.violetmoon.quark.addons.oddities.block.be.MagnetizedBlockBlockEntity;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
+import org.violetmoon.zeta.api.ICollateralMover;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.module.ZetaModule;
+import org.violetmoon.zeta.registry.RenderLayerRegistry;
 
 import java.util.List;
 
-public class MagnetBlock extends ZetaBlock implements EntityBlock {
+public class MagnetBlock extends ZetaBlock implements EntityBlock{
 
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 	public static final BooleanProperty WAXED = BooleanProperty.create("waxed");
-	public boolean waxed = false;
 
 	public MagnetBlock(@Nullable ZetaModule module) {
-		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK));
+		super("magnet", module, Properties.copy(Blocks.IRON_BLOCK)
+				.hasPostProcess(MagnetBlock::isPowered)
+				.lightLevel(state -> state.getValue(POWERED) ? 3 : 0));
+
 		registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(POWERED, false).setValue(WAXED, false));
+
 
 		if(module == null) //auto registration below this line
 			return;
 		setCreativeTab(CreativeModeTabs.REDSTONE_BLOCKS);
+
+		module.zeta.renderLayerRegistry.put(this, RenderLayerRegistry.Layer.CUTOUT);
+
 	}
 
 	@Override
@@ -63,7 +70,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 		super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
 
 		boolean wasPowered = state.getValue(POWERED);
-		boolean isPowered = isPowered(worldIn, pos, state.getValue(FACING));
+		boolean isPowered = hasPower(worldIn, pos, state.getValue(FACING));
 		if(isPowered != wasPowered)
 			worldIn.setBlockAndUpdate(pos, state.setValue(POWERED, isPowered));
 	}
@@ -81,35 +88,39 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 			return false;
 
 		BlockPos endPos = targetPos.relative(moveDir);
-		PushReaction reaction = MagnetSystem.getPushAction(be, targetPos, targetState, moveDir);
-		if(reaction != PushReaction.IGNORE && reaction != PushReaction.DESTROY)
+		var reaction = MagnetSystem.getPushAction(be, targetPos, targetState, moveDir);
+		if(reaction != ICollateralMover.MoveResult.MOVE && reaction != ICollateralMover.MoveResult.BREAK)
 			return false;
 
 		BlockEntity tilePresent = world.getBlockEntity(targetPos);
 		CompoundTag tileData = new CompoundTag();
-		if(tilePresent != null && !(tilePresent instanceof MagnetizedBlockBlockEntity))
+		if(tilePresent != null && !(tilePresent instanceof MagnetizedBlockBlockEntity)) {
 			tileData = tilePresent.saveWithFullMetadata();
+			tilePresent.setRemoved();
+		}
 
 		BlockState setState = MagnetsModule.magnetized_block.defaultBlockState().setValue(MovingMagnetizedBlock.FACING, moveDir);
 		MagnetizedBlockBlockEntity movingTile = new MagnetizedBlockBlockEntity(endPos, setState, targetState, tileData, moveDir);
 
-		if(!world.isClientSide && reaction == PushReaction.DESTROY) {
-			BlockState blockstate = world.getBlockState(endPos);
-			Block.dropResources(blockstate, world, endPos, tilePresent);
+		if(!world.isClientSide && reaction == ICollateralMover.MoveResult.BREAK) {
+			world.destroyBlock(endPos, true);
 		}
-
-		if(tilePresent != null)
-			tilePresent.setRemoved();
 
 		world.setBlock(endPos, setState, 68);
 		world.setBlockEntity(movingTile);
 
 		world.setBlock(targetPos, Blocks.AIR.defaultBlockState(), 67);
 
+		//TODO:push iron golems here...
+
 		return true;
 	}
 
-	private boolean isPowered(Level worldIn, BlockPos pos, Direction facing) {
+	private static boolean isPowered(BlockState state, BlockGetter pLevel, BlockPos pPos) {
+		return state.getValue(POWERED);
+	}
+
+	private boolean hasPower(Level worldIn, BlockPos pos, Direction facing) {
 		return worldIn.hasNeighborSignal(pos);
 	}
 
@@ -117,7 +128,7 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock {
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Direction facing = context.getNearestLookingDirection().getOpposite();
 		return defaultBlockState().setValue(FACING, facing)
-				.setValue(POWERED, isPowered(context.getLevel(), context.getClickedPos(), facing));
+				.setValue(POWERED, hasPower(context.getLevel(), context.getClickedPos(), facing));
 	}
 
 	@NotNull

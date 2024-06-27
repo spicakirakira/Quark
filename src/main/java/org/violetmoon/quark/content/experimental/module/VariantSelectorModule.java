@@ -1,30 +1,37 @@
 package org.violetmoon.quark.content.experimental.module;
 
 import java.util.List;
+import java.util.Objects;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.world.level.block.PressurePlateBlock;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.QuarkClient;
 import org.violetmoon.quark.base.client.handler.ClientUtil;
+import org.violetmoon.quark.base.network.message.experimental.PlaceVariantRestoreMessage;
 import org.violetmoon.quark.base.network.message.experimental.PlaceVariantUpdateMessage;
 import org.violetmoon.quark.content.experimental.client.screen.VariantSelectorScreen;
 import org.violetmoon.quark.content.experimental.client.tooltip.VariantsComponent;
 import org.violetmoon.quark.content.experimental.config.VariantsConfig;
 import org.violetmoon.quark.content.experimental.item.HammerItem;
+import org.violetmoon.quark.mixin.mixins.accessor.AccessorBlockItem;
 import org.violetmoon.zeta.client.event.load.ZKeyMapping;
 import org.violetmoon.zeta.client.event.load.ZTooltipComponents;
-import org.violetmoon.zeta.client.event.play.ZClientTick;
 import org.violetmoon.zeta.client.event.play.ZInput;
 import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
 import org.violetmoon.zeta.client.event.play.ZRenderTooltip;
 import org.violetmoon.zeta.config.Config;
+import org.violetmoon.zeta.config.ConfigManager;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
 import org.violetmoon.zeta.event.load.ZRegister;
 import org.violetmoon.zeta.event.play.entity.ZEntityJoinLevel;
+import org.violetmoon.zeta.event.play.entity.player.ZPlayer;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 
@@ -38,7 +45,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -53,7 +59,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -67,7 +72,8 @@ public class VariantSelectorModule extends ZetaModule {
 
 	private static final String TAG_CURRENT_VARIANT = Quark.MOD_ID + ":CurrentSelectedVariant";
 
-	private static String clientVariant = null;
+	@NotNull
+	private static String clientVariant = "";
 	private static boolean staticEnabled;
 
 	@Config(description = "Set this to true to automatically convert any dropped variant items into their originals. Do this ONLY if you intend to take control of every recipe via a data pack or equivalent, as this will introduce dupes otherwise.")
@@ -93,10 +99,17 @@ public class VariantSelectorModule extends ZetaModule {
 	@Config
 	public static int hudOffsetY = 0;
 
+	@Config(description = "When true, selector arrow will render in same style as crosshair")
+	public static boolean renderLikeCrossHair = true;
+
+	@Config(description = "Uses smaller arrow icon for variant selector overlay")
+	public static boolean smallerArrow = false;
+
 	@Config
 	public static VariantsConfig variants = new VariantsConfig();
 
 	public static Item hammer;
+
 
 	@LoadEvent
 	public final void register(ZRegister event) {
@@ -108,45 +121,53 @@ public class VariantSelectorModule extends ZetaModule {
 		staticEnabled = enabled;
 	}
 
+	@NotNull
 	public static String getSavedVariant(Player player) {
 		if(player.level().isClientSide)
 			return clientVariant;
-
 		return player.getPersistentData().getString(TAG_CURRENT_VARIANT);
 	}
 
-	public static void setSavedVariant(ServerPlayer player, String variant) {
-		if(variant == null)
-			variant = "";
-
+	public static void setSavedVariant(ServerPlayer player, @NotNull String variant) {
 		if(variant.isEmpty() || variants.isKnownVariant(variant))
 			player.getPersistentData().putString(TAG_CURRENT_VARIANT, variant);
 	}
 
+	@Nullable
 	private static Block getMainHandVariantBlock(Player player, String variant) {
 		ItemStack mainHand = player.getMainHandItem();
 		if(mainHand.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
-			return getVariantForBlock(block, variant);
+			return getVariantBlockFromOriginal(block, variant);
 		}
 
 		return null;
 	}
 
-	public static Block getVariantForBlock(Block block, String variant) {
-		return variants.getBlockForVariant(block, variant);
+	// returns null if block was not changed!
+	// Like below but just accepts original block
+	@Nullable
+	public static Block getVariantBlockFromOriginal(Block original, @NotNull String variant) {
+		return variants.getBlockOfVariant(original, variant);
 	}
 
-	public static Block getVariantOrOriginal(Block block, String variant) {
-		if(!variants.isVariant(block) && !variants.isOriginal(block))
-			return null;
+	// returns null if block was not changed!
+	@Nullable
+	public static Block getVariantBlockFromAny(Block block, @NotNull String variant) {
+		Block originalBlock = variants.getOriginalBlock(block);
+		Block variantBlock = variant.isEmpty() ? originalBlock :
+				getVariantBlockFromOriginal(originalBlock, variant);
+		if(variantBlock != block)return variantBlock;
+		return null;
+	}
 
-		block = variants.getOriginalBlock(block);
-
-		if(variant == null || variant.isEmpty())
-			return variants.getOriginalBlock(block);
-
-		return getVariantForBlock(block, variant);
+	// Restore saved variant on join
+	@PlayEvent
+	public void onPlayerJoin(ZPlayer.LoggedIn event) {
+		if (event.getPlayer() instanceof ServerPlayer player) {
+			String variant = getSavedVariant(player);
+			Quark.ZETA.network.sendToPlayer(new PlaceVariantRestoreMessage(variant), player);
+		}
 	}
 
 	@PlayEvent
@@ -176,9 +197,11 @@ public class VariantSelectorModule extends ZetaModule {
 		Player player = ctx.getPlayer();
 		if(player != null) {
 			String variant = getSavedVariant(player);
-			if(variant != null && !variant.isEmpty()) {
-				Block target = getVariantForBlock(state.getBlock(), variant);
-				return target.getStateForPlacement(ctx);
+			if(!variant.isEmpty()) {
+				Block target = getVariantBlockFromOriginal(state.getBlock(), variant);
+				if (target != null && target.asItem() instanceof AccessorBlockItem accessor) {
+					return accessor.quark$getPlacementState(ctx);
+				}
 			}
 		}
 
@@ -196,8 +219,8 @@ public class VariantSelectorModule extends ZetaModule {
 			Minecraft mc = Minecraft.getInstance();
 			if(player == mc.player && stack.getItem() instanceof BlockItem bi) {
 				Block block = bi.getBlock();
-				if(clientVariant != null && !clientVariant.isEmpty()) {
-					Block variant = variants.getBlockForVariant(block, clientVariant);
+				if(!clientVariant.isEmpty()) {
+					Block variant = variants.getBlockOfVariant(block, clientVariant);
 					if(variant != null && variant != block)
 						return new ItemStack(variant);
 				}
@@ -212,13 +235,47 @@ public class VariantSelectorModule extends ZetaModule {
 		}
 
 		public static void setClientVariant(String variant, boolean sync) {
-			clientVariant = variant;
-
-			if(sync) {
-				if(variant == null)
-					variant = "";
+			if(sync && !Objects.equals(clientVariant, variant)) {
 				QuarkClient.ZETA_CLIENT.sendToServer(new PlaceVariantUpdateMessage(variant));
 			}
+
+            clientVariant = variant;
+		}
+
+		//Null on pass, Itemstack on success
+		public static ItemStack onPickBlock(Player player, ItemStack pickResult) {
+			if(!staticEnabled)return null;
+			if(pickResult.getItem() instanceof BlockItem pickedVariant){
+				Block pickedBlock = pickedVariant.getBlock();
+				Block baseBlock = null;
+				ItemStack mainHand = player.getMainHandItem();
+				if(mainHand.getItem() instanceof BlockItem handItem) {
+					baseBlock = handItem.getBlock();
+				}else if(mainHand.is(hammer)){
+					baseBlock = variants.getOriginalBlock(pickedBlock);
+				}
+				if(baseBlock != pickedBlock) {
+					String variantKey = variants.getVariantOfBlock(baseBlock, pickedBlock);
+					if (variantKey != null) {
+						setClientVariant(variantKey, true);
+						return pickResult;
+					}
+				}
+				// swap to base instead of variant if above failed
+				baseBlock = variants.getOriginalBlock(pickedBlock);
+				if(baseBlock != pickedBlock) {
+					ItemStack baseItem = new ItemStack(baseBlock);
+					if (!baseItem.isEmpty() && player.getInventory().hasAnyMatching(i -> i.is(baseItem.getItem()))) {
+						String variantKey = variants.getVariantOfBlock(baseBlock, pickedBlock);
+						if (variantKey != null) {
+							setClientVariant(variantKey, true);
+						}
+						return baseItem;
+					}
+				}
+
+			}
+			return null;
 		}
 
 		@PlayEvent
@@ -228,21 +285,29 @@ public class VariantSelectorModule extends ZetaModule {
 				if(variantSelectorKey.isDown()) {
 
 					ItemStack stack = mc.player.getMainHandItem();
+					Block originalBlock = null;
 					if(stack.is(hammer)) {
-						HitResult result = mc.hitResult;
-						if(result instanceof BlockHitResult bhr) {
-							BlockPos pos = bhr.getBlockPos();
-							Block block = mc.player.level().getBlockState(pos).getBlock();
-							stack = new ItemStack(variants.getOriginalBlock(block));
-						}
+						originalBlock = variants.getOriginalBlock(getLookedAtBlock());
+					}else if(!stack.isEmpty() && stack.getItem() instanceof BlockItem bi){
+						originalBlock = bi.getBlock();
 					}
-
-					if(!stack.isEmpty() && stack.getItem() instanceof BlockItem)
-						mc.setScreen(new VariantSelectorScreen(stack, variantSelectorKey, clientVariant, variants.getVisibleVariants()));
-
-					return;
+				    if(originalBlock != null && variants.hasVariants(originalBlock)){
+						mc.setScreen(new VariantSelectorScreen(originalBlock, variantSelectorKey,
+								clientVariant, variants.getVisibleVariants()));
+					}
 				}
 			}
+		}
+
+		private Block getLookedAtBlock() {
+			Minecraft mc = Minecraft.getInstance();
+			HitResult result = mc.hitResult;
+			if(result instanceof BlockHitResult bhr) {
+				BlockPos pos = bhr.getBlockPos();
+				Block block = mc.player.level().getBlockState(pos).getBlock();
+				return block;
+			}
+			return null;
 		}
 
 		@LoadEvent
@@ -270,22 +335,7 @@ public class VariantSelectorModule extends ZetaModule {
 		}
 
 		private boolean hasTooltip(ItemStack stack) {
-			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && !variants.getAllVariants(bi.getBlock()).isEmpty();
-		}
-
-		@PlayEvent
-		public void clientTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.END)
-				return;
-
-			Minecraft mc = Minecraft.getInstance();
-			Level level = mc.level;
-			if(level == null)
-				setClientVariant(null, false);
-			else {
-				if(clientVariant == null)
-					setClientVariant("", true);
-			}
+			return !stack.isEmpty() && stack.getItem() instanceof BlockItem bi && variants.hasVariants(bi.getBlock());
 		}
 
 		@PlayEvent
@@ -299,81 +349,90 @@ public class VariantSelectorModule extends ZetaModule {
 			Player player = mc.player;
 			String savedVariant = getSavedVariant(player);
 
-			if(savedVariant != null) {
-				ItemStack mainHand = player.getMainHandItem();
-				ItemStack displayLeft = mainHand.copy();
+			ItemStack mainHand = player.getMainHandItem();
+			ItemStack displayLeft = mainHand.copy();
 
-				Block variantBlock = null;
+			Block variantBlock = null;
 
-				if(displayLeft.is(hammer)) {
-					HitResult result = mc.hitResult;
-					if(result instanceof BlockHitResult bhr) {
-						BlockPos pos = bhr.getBlockPos();
-						Block testBlock = player.level().getBlockState(pos).getBlock();
+			if(displayLeft.is(hammer)) {
+				HitResult result = mc.hitResult;
+				if(result instanceof BlockHitResult bhr) {
+					BlockPos pos = bhr.getBlockPos();
+					Block testBlock = player.level().getBlockState(pos).getBlock();
 
-						displayLeft = new ItemStack(testBlock);
-						variantBlock = getVariantOrOriginal(testBlock, savedVariant);
+					displayLeft = new ItemStack(testBlock);
+					variantBlock = getVariantBlockFromAny(testBlock, savedVariant);
+				}
+			} else
+				variantBlock = getMainHandVariantBlock(player, savedVariant);
+
+			if(variantBlock != null) {
+				ItemStack displayRight = new ItemStack(variantBlock);
+
+				if(displayLeft.getItem() == displayRight.getItem())
+					return;
+
+				Window window = event.getWindow();
+				int x = window.getGuiScaledWidth() / 2;
+				int y = window.getGuiScaledHeight() / 2 + 12;
+
+				if(alignHudToHotbar) {
+					HumanoidArm arm = mc.options.mainHand().get();
+					if(arm == HumanoidArm.RIGHT)
+						x += 125;
+					else
+						x -= 93;
+
+					y = window.getGuiScaledHeight() - 19;
+				}
+
+				int offset = 8;
+				int width = smallerArrow ? 13 : 16;
+
+				displayLeft.setCount(1);
+
+				int posX = x - offset - width + hudOffsetX;
+				int posY = y + hudOffsetY;
+
+				if( !showSimpleHud) {
+					guiGraphics.renderFakeItem(displayLeft, posX, posY);
+
+					RenderSystem.enableBlend();
+					if(renderLikeCrossHair) {
+						RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1);
+					}else{
+						RenderSystem.defaultBlendFunc();
+						RenderSystem.setShaderColor(0.8f, 0.8f, 0.8f, 0.7f);
 					}
-				} else
-					variantBlock = getMainHandVariantBlock(player, savedVariant);
+					//alternative smaller arrow
+					if(smallerArrow){
+						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY+5, 0,
+								141+17, 22, 15, 256, 256);
+					}else {
+						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY, 0,
+								141, 22, 15, 256, 256);
+					}
 
-				if(variantBlock != null) {
-					ItemStack displayRight = new ItemStack(variantBlock);
+					RenderSystem.defaultBlendFunc();
 
-					if(displayLeft.getItem() == displayRight.getItem())
-						return;
-
-					Window window = event.getWindow();
-					int x = window.getGuiScaledWidth() / 2;
-					int y = window.getGuiScaledHeight() / 2 + 12;
+					posX += width * 2;
+				} else {
+					final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widget.png");
 
 					if(alignHudToHotbar) {
-						HumanoidArm arm = mc.options.mainHand().get();
-						if(arm == HumanoidArm.RIGHT)
-							x += 125;
-						else
-							x -= 93;
-
-						y = window.getGuiScaledHeight() - 19;
-					}
-
-					int offset = 8;
-					int width = 16;
-
-					displayLeft.setCount(1);
-
-					int posX = x - offset - width + hudOffsetX;
-					int posY = y + hudOffsetY;
-
-					if(!showSimpleHud) {
-						guiGraphics.renderFakeItem(displayLeft, posX, posY);
-
 						RenderSystem.enableBlend();
 						RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-						RenderSystem.setShader(GameRenderer::getPositionTexShader);
-						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.75F);
-
-						guiGraphics.blit(ClientUtil.GENERAL_ICONS, posX + 8, posY, 0, 141, 22, 15, 256, 256);
-
-						posX += width * 2;
-					} else {
-						final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widget.png");
-
-						if(alignHudToHotbar) {
-							RenderSystem.enableBlend();
-							RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-							RenderSystem.setShader(GameRenderer::getPositionTexShader);
-							if(enableGreenTint)
-								RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
-							else
-								RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-							guiGraphics.blit(WIDGETS_LOCATION, posX - 3, posY - 3, 24, 23, 22, 22, 256, 256);
-						} else
-							posX += width;
-					}
-
-					guiGraphics.renderFakeItem(displayRight, posX, posY);
+						if(enableGreenTint)
+							RenderSystem.setShaderColor(0.5F, 1.0F, 0.5F, 1.0F);
+						else
+							RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+						guiGraphics.blit(WIDGETS_LOCATION, posX - 3, posY - 3, 24, 23, 22, 22, 256, 256);
+					} else
+						posX += width;
 				}
+
+				guiGraphics.renderFakeItem(displayRight, posX, posY);
 			}
 		}
 	}

@@ -26,6 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.RenderLayerRegistry;
@@ -57,7 +58,7 @@ public class CorundumClusterBlock extends ZetaBlock implements SimpleWaterlogged
 
 	public CorundumClusterBlock(CorundumBlock base) {
 		super(Quark.ZETA.registryUtil.inheritQuark(base, "%s_cluster"), base.getModule(),
-				Block.Properties.copy(base)
+				BlockPropertyUtil.copyPropertySafe(base)
 						.sound(SoundType.AMETHYST_CLUSTER));
 
 		this.base = base;

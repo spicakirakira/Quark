@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +12,7 @@ import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.content.tools.base.RuneColor;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -39,7 +41,7 @@ public class GlintRenderTypes extends RenderType {
 	}
 
 	private static Map<RuneColor, RenderType> newRenderMap(Function<String, RenderType> func) {
-		EnumMap<RuneColor, RenderType> map = new EnumMap<>(RuneColor.class);
+		Map<RuneColor, RenderType> map = new Object2ObjectOpenHashMap<>();
 
 		for(RuneColor color : RuneColor.values())
 			map.put(color, func.apply(color.getSerializedName()));

@@ -43,10 +43,8 @@ public class NarratorReadoutModule extends ZetaModule {
 
 		@LoadEvent
 		public void registerKeybinds(ZKeyMapping event) {
-			if(enabled) {
-				keybind = event.init("quark.keybind.narrator_readout", null, QuarkClient.MISC_GROUP);
-				keybindFull = event.init("quark.keybind.narrator_full_readout", null, QuarkClient.MISC_GROUP);
-			}
+			keybind = event.init("quark.keybind.narrator_readout", null, QuarkClient.MISC_GROUP);
+			keybindFull = event.init("quark.keybind.narrator_full_readout", null, QuarkClient.MISC_GROUP);
 		}
 
 		@PlayEvent

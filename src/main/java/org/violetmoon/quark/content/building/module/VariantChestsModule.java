@@ -10,6 +10,7 @@ import java.util.function.BooleanSupplier;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.QuarkClient;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.quark.content.building.block.VariantChestBlock;
 import org.violetmoon.quark.content.building.block.VariantTrappedChestBlock;
 import org.violetmoon.quark.content.building.block.be.VariantChestBlockEntity;
@@ -128,7 +129,7 @@ public class VariantChestsModule extends ZetaModule {
 	}
 
 	private void makeChestBlocks(ZetaModule module, String name, Block base, @Nullable SoundType sound, BooleanSupplier condition) {
-		BlockBehaviour.Properties props = BlockBehaviour.Properties.copy(base);
+		BlockBehaviour.Properties props = BlockPropertyUtil.copyPropertySafe(base);
 		if(sound != null)
 			props = props.sound(sound);
 

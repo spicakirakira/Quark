@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.content.experimental.module.VariantSelectorModule;
 import org.violetmoon.quark.content.tweaks.block.DirtyGlassBlock;
 import org.violetmoon.zeta.block.ZetaBlock;
 import org.violetmoon.zeta.block.ZetaInheritedPaneBlock;

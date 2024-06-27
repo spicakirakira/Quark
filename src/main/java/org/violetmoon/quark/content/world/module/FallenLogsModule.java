@@ -36,30 +36,33 @@ public class FallenLogsModule extends ZetaModule {
 	
 	@Config
 	public static int rarity = 5;
+
+	@Config(description = "chance for logs to spawn on water")
+	public static double onWaterChance = 0.2;
 	
 	@Config
 	public static int sparseBiomeRarity = 12;
 	
 	@Config(description = "Tags that define which biomes can have which wood types")
-	public static List<String> biomeTags = Arrays.asList(new String[] {
+	public static List<String> biomeTags = Arrays.asList(
 			"quark:has_fallen_acacia=minecraft:acacia_log",
-			"quark:has_fallen_birch=minecraft:birch_log",
-			"quark:has_fallen_cherry=minecraft:cherry_log",
-			"quark:has_fallen_dark_oak=minecraft:dark_oak_log",
-			"quark:has_fallen_jungle=minecraft:jungle_log",
-			"quark:has_fallen_mangrove=minecraft:mangrove_log",
-			"quark:has_fallen_oak=minecraft:oak_log",
-			"quark:has_fallen_spruce=minecraft:spruce_log"
-	});
+            "quark:has_fallen_birch=minecraft:birch_log",
+            "quark:has_fallen_cherry=minecraft:cherry_log",
+            "quark:has_fallen_dark_oak=minecraft:dark_oak_log",
+            "quark:has_fallen_jungle=minecraft:jungle_log",
+            "quark:has_fallen_mangrove=minecraft:mangrove_log",
+            "quark:has_fallen_oak=minecraft:oak_log",
+            "quark:has_fallen_spruce=minecraft:spruce_log");
 
 	public static Map<TagKey<Biome>, Block> blocksPerTag = new HashMap<>();
 	
 	public static TagKey<Biome> reducedLogsTag;
+	public static TagKey<Block> canSpawnOnTag;
 
 	@LoadEvent
 	public final void setup(ZCommonSetup event) {
 		reducedLogsTag = TagKey.create(Registries.BIOME, new ResourceLocation(Quark.MOD_ID, "has_lower_fallen_tree_density"));
-		
+		canSpawnOnTag = TagKey.create(Registries.BLOCK, new ResourceLocation(Quark.MOD_ID, "fallen_log_can_spawn_on"));
 		WorldGenHandler.addGenerator(this, new FallenLogGenerator(dimensions), Decoration.TOP_LAYER_MODIFICATION, QuarkWorldGenWeights.FALLEN_LOGS);
 	}
 	

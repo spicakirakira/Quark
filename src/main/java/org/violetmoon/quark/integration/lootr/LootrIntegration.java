@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.jetbrains.annotations.Nullable;
 
 import org.violetmoon.quark.base.Quark;
+import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.module.ZetaModule;
 
 import java.util.ArrayList;
@@ -43,10 +44,12 @@ public class LootrIntegration implements ILootrIntegration {
 
 	@Override
 	public void makeChestBlocks(ZetaModule module, String name, Block base, BooleanSupplier condition, Block quarkRegularChest, Block quarkTrappedChest) {
-		Block lootrRegularChest = new LootrVariantChestBlock(name, module, () -> chestTEType, BlockBehaviour.Properties.copy(base)).setCondition(condition);
+		Block lootrRegularChest = new LootrVariantChestBlock(name, module, () -> chestTEType,
+				BlockPropertyUtil.copyPropertySafe(base)).setCondition(condition);
 		lootrRegularChests.add(lootrRegularChest);
 
-		Block lootrTrappedChest = new LootrVariantTrappedChestBlock(name, module, () -> trappedChestTEType, BlockBehaviour.Properties.copy(base)).setCondition(condition);
+		Block lootrTrappedChest = new LootrVariantTrappedChestBlock(name, module, () -> trappedChestTEType,
+				BlockPropertyUtil.copyPropertySafe(base)).setCondition(condition);
 		lootrTrappedChests.add(lootrTrappedChest);
 
 		chestMappings.put(quarkRegularChest, lootrRegularChest);

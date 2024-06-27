@@ -23,7 +23,7 @@ import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.util.Hint;
 
-@ZetaLoadModule(category = "building")
+@ZetaLoadModule(category = "building", antiOverlap = {"supplementaries"})
 public class RopeModule extends ZetaModule {
 
 	@Hint

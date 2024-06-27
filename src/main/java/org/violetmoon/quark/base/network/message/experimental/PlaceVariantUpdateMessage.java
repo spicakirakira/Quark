@@ -13,7 +13,8 @@ public class PlaceVariantUpdateMessage implements IZetaMessage {
 
 	public String variant;
 
-	public PlaceVariantUpdateMessage() {}
+	public PlaceVariantUpdateMessage() {
+	}
 
 	public PlaceVariantUpdateMessage(String variant) {
 		this.variant = variant;
