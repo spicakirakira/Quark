@@ -289,7 +289,6 @@
 	"quark.jei.hint.minecraft.calcite": "山に方解石の大きな塊として追加されます。",
 	"quark.jei.hint.minecraft.chain": "ブロックに接続され、そのブロックがピストンによって動かされた場合、鎖と接続されたブロックを動かすことができます。",
 	"quark.jei.hint.minecraft.emerald_block": "動物が食べ物に追従するように、村人を追従させることができます。",
-	"quark.jei.hint.minecraft.jukebox": "ディスペンサーを使用してレコードをジュークボックスに入れると、自動的に音楽が再生されます。",
 	"quark.jei.hint.minecraft.magma_cream": "溶岩によって死んだスライムはマグマキューブに分裂します。ただし、小さなマグマキューブはマグマクリームをドロップしません。",
 	"quark.jei.hint.minecraft.poisonous_potato": "子どもの動物に与えると、毒にする可能性があります。毒になった動物は、決して大人に成長しません。",
 	"quark.jei.hint.minecraft.scaffolding": "任意のブロックで足場を右クリックすると、最も遠い足場がそのブロックで置き換えられます。通常の配置にはスニークが必要です。",

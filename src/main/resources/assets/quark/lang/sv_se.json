@@ -291,7 +291,6 @@
     "quark.jei.hint.minecraft.calcite": "Ytterligare stora kalcitkluster finns i bergen.",
     "quark.jei.hint.minecraft.chain": "När den ansluter sig till ett block följer kedjan och allting annat på andra änden med om detta block flyttas av en kolv.",
     "quark.jei.hint.minecraft.emerald_block": "Kan användas för att få bybor att följa efter dig på ett liknande sätt som djur gör med matföremål.",
-    "quark.jei.hint.minecraft.jukebox": "Använd en automat för att placera skivor i jukeboxen och spela upp musik automatiskt.",
     "quark.jei.hint.minecraft.magma_cream": "En slemkub som dör på magmablock förvandlas till magmakuber istället. Observera att små magmakuber inte avger någon magmakräm.",
     "quark.jei.hint.minecraft.poisonous_potato": "När man matar en sådan till en djurbaby finns en chans att det förgiftas. Om djuret förgiftas kommer de aldrig bli vuxet.",
     "quark.jei.hint.minecraft.scaffolding": "När man högerklickar på en byggnadsställning med ett block ersätts byggnadsställningen längst bort med detta block. Smyg för att placera som vanligt.",
