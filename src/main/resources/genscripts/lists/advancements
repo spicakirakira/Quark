@@ -127,7 +127,7 @@ ancient_apple_overlevel
 parent=minecraft:husbandry/plant_seed
 type=challenge
 flag=blossom_trees
-item=quark:pink_blossom_sapling
+item=quark:red_blossom_sapling
 get_all_blossom_saplings
 
 parent=minecraft:story/smelt_iron
