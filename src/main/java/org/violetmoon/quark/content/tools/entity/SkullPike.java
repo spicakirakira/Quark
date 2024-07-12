@@ -52,7 +52,7 @@ public class SkullPike extends Entity {
 	}
 
 	public boolean isVisible(Entity entityIn) {
-		Vec3 vector3d = new Vec3(getX(), getY() + 1, getZ());
+		Vec3 vector3d = new Vec3(getX(), getEyeY(), getZ());
 		Vec3 vector3d1 = new Vec3(entityIn.getX(), entityIn.getEyeY(), entityIn.getZ());
 		return level().clip(new ClipContext(vector3d, vector3d1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType() == HitResult.Type.MISS;
 	}
