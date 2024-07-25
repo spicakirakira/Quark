@@ -33,7 +33,7 @@ public class VariantsConfig implements IConfigType {
 		description = "By default, only a mod's namespace is scanned for variants for its items (e.g. if coolmod adds coolmod:fun_block, it'll search only for coolmod:fun_block_stairs).\n"
 				+ " Mods in this list are also scanned for variants if none are found in itself (e.g. if quark is in the list and coolmod:fun_block_stairs doesn't exist, it'll try to look for quark:fun_block_stairs next)"
 	)
-	private List<String> testedMods = Arrays.asList("quark");
+	private List<String> testedMods = Arrays.asList("quark", "everycomp", "v_slab_compat");
 
 	@Config
 	private boolean printVariantMapToLog = false;
@@ -215,12 +215,17 @@ public class VariantsConfig implements IConfigType {
 		String namespace = resloc.getNamespace();
 		String name = resloc.getPath();
 
-		Block ret = getSuffixedBlock(namespace, name, suffix);
+		Block ret = getSuffixedBlock(namespace, name, suffix, "%s:%s_%s");
 		if(ret != null)
 			return ret;
 
 		for(String mod : testedMods) {
-			ret = getSuffixedBlock(mod, name, suffix);
+			if(!Quark.ZETA.isModLoaded(mod))continue;
+			ret = getSuffixedBlock(mod, name, suffix, "%s:%s_%s");
+			if(ret != null)
+				return ret;
+			//for ec format. this could have its own config... bad code
+			ret = getSuffixedBlock(mod, name, suffix, "%s:"+namespace+"\\%s_%s");
 			if(ret != null)
 				return ret;
 		}
@@ -228,23 +233,23 @@ public class VariantsConfig implements IConfigType {
 		return null;
 	}
 
-	private Block getSuffixedBlock(String namespace, String name, String suffix) {
+	private Block getSuffixedBlock(String namespace, String name, String suffix, String format) {
 		for(String strip : stripCandidates)
 			if(name.endsWith(strip)) {
 				String stripped = name.substring(0, name.length() - strip.length());
-				Block strippedAttempt = getSuffixedBlock(namespace, stripped, suffix);
+				Block strippedAttempt = getSuffixedBlock(namespace, stripped, suffix, format);
 				if(strippedAttempt != null)
 					return strippedAttempt;
 			}
 
-		String targetStr = String.format("%s:%s_%s", namespace, name, suffix);
+		String targetStr = String.format(format, namespace, name, suffix);
 		ResourceLocation target = new ResourceLocation(targetStr);
 		Block ret = BuiltInRegistries.BLOCK.get(target);
 
 		if(ret == Blocks.AIR) {
 			if(aliasMap.containsKey(suffix))
 				for(String alias : aliasMap.get(suffix)) {
-					Block aliasAttempt = getSuffixedBlock(namespace, name, alias);
+					Block aliasAttempt = getSuffixedBlock(namespace, name, alias, format);
 					if(aliasAttempt != null)
 						return aliasAttempt;
 				}
