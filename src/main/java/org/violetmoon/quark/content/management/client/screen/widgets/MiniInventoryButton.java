@@ -47,7 +47,7 @@ public class MiniInventoryButton extends Button {
 	}
 
 	public MiniInventoryButton(AbstractContainerScreen<?> parent, int spriteType, int x, int y, Supplier<List<Component>> tooltip, OnPress onPress) {
-		super(new Button.Builder(Component.literal(""), onPress).size(10, 10).pos(parent.getGuiLeft() + x, parent.getGuiTop() + y));
+		super(Button.builder(Component.literal(""), onPress).size(10, 10).pos(parent.getGuiLeft() + x, parent.getGuiTop() + y));
 		this.parent = parent;
 		this.spriteType = spriteType;
 		this.tooltip = tooltip;

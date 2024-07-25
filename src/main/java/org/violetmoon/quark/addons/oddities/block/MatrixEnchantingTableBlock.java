@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -47,6 +48,9 @@ public class MatrixEnchantingTableBlock extends EnchantmentTableBlock implements
 
 		this.module = module;
 		module.zeta.registry.registerBlock(this, "matrix_enchanter", true);
+
+		if(!MatrixEnchantingModule.automaticallyConvert)
+			setCreativeTab(CreativeModeTabs.FUNCTIONAL_BLOCKS, Blocks.ENCHANTING_TABLE, false);
 	}
 
 	@NotNull

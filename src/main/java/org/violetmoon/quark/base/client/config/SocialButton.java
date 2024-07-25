@@ -22,7 +22,7 @@ public class SocialButton extends Button {
 	private final int socialId;
 
 	public SocialButton(int x, int y, Component text, int textColor, int socialId, OnPress onClick) {
-		super(new Button.Builder(Component.literal(""), onClick).size(20, 20).pos(x, y));
+		super(Button.builder(Component.literal(""), onClick).size(20, 20).pos(x, y));
 		this.textColor = textColor;
 		this.socialId = socialId;
 
