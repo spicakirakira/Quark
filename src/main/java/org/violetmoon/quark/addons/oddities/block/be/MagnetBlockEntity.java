@@ -17,6 +17,7 @@ import org.violetmoon.quark.addons.oddities.block.MagnetBlock;
 import org.violetmoon.quark.addons.oddities.magnetsystem.MagnetSystem;
 import org.violetmoon.quark.addons.oddities.module.MagnetsModule;
 import org.violetmoon.quark.api.IMagneticEntity;
+import org.violetmoon.quark.content.automation.entity.Gravisand;
 import org.violetmoon.quark.content.experimental.module.VariantSelectorModule;
 import org.violetmoon.quark.mixin.mixins.accessor.AccessorServerGamePacketListener;
 import org.violetmoon.zeta.api.ICollateralMover;
@@ -66,7 +67,6 @@ public class MagnetBlockEntity extends BlockEntity {
 
         //TODO: move this into magnet system. although might not be needed as there it only serves since directions must be discrete
         if (MagnetsModule.affectEntities && blockDist > 1) {
-
             var entities = level.getEntities((Entity) null, new AABB(worldPosition)
                     .expandTowards(new Vec3(dir.step().mul(blockDist))), this::canPullEntity);
             for (Entity e : entities) {
@@ -99,6 +99,8 @@ public class MagnetBlockEntity extends BlockEntity {
     }
 
     private void pushEntity(Direction dir, double magnitude, Entity e) {
+        if(e instanceof Gravisand) magnitude = -magnitude; //idk why its needed
+
         double distanceFromMagnetSq = e.distanceToSqr(worldPosition.getCenter());
         double invSquared = 1 / distanceFromMagnetSq;
         // magic number chosen. around 1 block hover height for iron golems

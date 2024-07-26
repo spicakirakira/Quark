@@ -100,12 +100,18 @@ public class MagnetSystem {
 
 	public static ICollateralMover.MoveResult getPushAction(MagnetBlockEntity magnet, BlockPos pos, BlockState state, Direction moveDir) {
 		if(state.getBlock() instanceof MovingMagnetizedBlock)return ICollateralMover.MoveResult.SKIP;
+
+
 		Level world = magnet.getLevel();
 		if(world != null && canBlockBeMagneticallyMoved(state, pos, world, moveDir, magnet)) {
 			BlockPos frontPos = pos.relative(moveDir);
 			BlockState frontState = world.getBlockState(frontPos);
 
 			if(state.getBlock() instanceof ICollateralMover cm && cm.isCollateralMover(world, magnet.getBlockPos(), moveDir, pos)){
+				//now check if block in front is immovable (probably meaning unbreakable)
+				if(MagnetsModule.usePistonLogic && !PistonBaseBlock.isPushable(frontState, world, frontPos, moveDir, true, moveDir.getOpposite())){
+					return ICollateralMover.MoveResult.PREVENT;
+				}
 				return cm.getCollateralMovement(world, magnet.getBlockPos(), moveDir, moveDir, pos);
 			}
 
@@ -132,6 +138,11 @@ public class MagnetSystem {
 
 	public static boolean canBlockBeMagneticallyMoved(BlockState state, BlockPos pos, Level level, Direction moveDir, BlockEntity magnet) {
 		Block block = state.getBlock();
+
+		//cant push stuff that pistons cant push
+		if(MagnetsModule.usePistonLogic && !PistonBaseBlock.isPushable(state, level, pos, moveDir, false, moveDir.getOpposite())){
+			return false;
+		}
 
 		if (block == Blocks.PISTON || block == Blocks.STICKY_PISTON) {
 			if (state.getValue(PistonBaseBlock.EXTENDED))

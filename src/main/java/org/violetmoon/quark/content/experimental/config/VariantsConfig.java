@@ -225,7 +225,7 @@ public class VariantsConfig implements IConfigType {
 			if(ret != null)
 				return ret;
 			//for ec format. this could have its own config... bad code
-			ret = getSuffixedBlock(mod, name, suffix, "%s:"+namespace+"\\%s_%s");
+			ret = getSuffixedBlock(mod, name, suffix, "%s:"+namespace+"/%s_%s");
 			if(ret != null)
 				return ret;
 		}
