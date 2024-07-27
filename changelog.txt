@@ -4,3 +4,8 @@
 - Freestanding ladders will now break off the wall when you break the top block
 - Matrix Enchanting Table appears in creative if automaticallyConvert is off
 - Fixed Skull Pikes not functioning when there's a block on top, by lowering the detection point
+- Fixed Hanging sign recipes using log instead of stripped log
+- Fixed pickarang logic for hardness calculation not using the item correctly. AS a consequence this fixes some exploits with it
+- Pickarang will now emit block particles when hitting a block it cant break
+- Creative players can break any block with a pickarang
+- Added unique pickarang damage type and death message
