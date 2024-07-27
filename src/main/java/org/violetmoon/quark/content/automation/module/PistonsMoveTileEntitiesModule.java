@@ -54,6 +54,7 @@ public class PistonsMoveTileEntitiesModule extends ZetaModule {
 
 	@Config
 	public static List<String> renderBlacklist = Lists.newArrayList("psi:programmer", "botania:starfield");
+	// todo: shouldn't this be a tag? Its more efficient and clean than checking the id every time
 	@Config
 	public static List<String> movementBlacklist = Lists.newArrayList("minecraft:spawner", "integrateddynamics:cable", "randomthings:blockbreaker", "minecraft:ender_chest", "minecraft:enchanting_table", "minecraft:trapped_chest", "quark:spruce_trapped_chest", "quark:birch_trapped_chest", "quark:jungle_trapped_chest", "quark:acacia_trapped_chest", "quark:dark_oak_trapped_chest", "endergetic:bolloom_bud");
 	@Config
@@ -149,7 +150,6 @@ public class PistonsMoveTileEntitiesModule extends ZetaModule {
 
 	public static boolean setPistonBlock(Level world, BlockPos pos, BlockState state, int flags) {
 		if(!Quark.ZETA.modules.isEnabled(PistonsMoveTileEntitiesModule.class)) {
-			world.setBlock(pos, state, flags);
 			return false;
 		}
 
