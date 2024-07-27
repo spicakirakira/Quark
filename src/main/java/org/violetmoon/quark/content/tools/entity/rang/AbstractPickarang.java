@@ -4,7 +4,6 @@ import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -55,7 +54,6 @@ import org.violetmoon.quark.base.handler.QuarkSounds;
 import org.violetmoon.quark.content.mobs.entity.Toretoise;
 import org.violetmoon.quark.content.tools.config.PickarangType;
 import org.violetmoon.quark.content.tools.module.PickarangModule;
-import org.violetmoon.quark.mixin.mixins.DamageSourcesMixin;
 
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +63,6 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	private static final EntityDataAccessor<ItemStack> STACK = SynchedEntityData.defineId(AbstractPickarang.class, EntityDataSerializers.ITEM_STACK);
 	private static final EntityDataAccessor<Boolean> RETURNING = SynchedEntityData.defineId(AbstractPickarang.class, EntityDataSerializers.BOOLEAN);
 
-	protected LivingEntity owner;
 	private UUID ownerId;
 
 	protected int liveTime;
@@ -184,7 +181,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		return ProjectileUtil.getEntityHitResult(level(), this, from, to, getBoundingBox().expandTowards(getDeltaMovement()).inflate(1.0D), (entity) -> !entity.isSpectator()
 				&& entity.isAlive()
 				&& (entity.isPickable() || entity instanceof AbstractPickarang)
-				&& entity != getThrower()
+				&& entity != getOwner()
 				&& (entitiesHit == null || !entitiesHit.contains(entity.getId())));
 	}
 
@@ -202,7 +199,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		if(getPiercingModifier() == 0 || state.isSolid())
 			addHit();
 
-		if(!(owner instanceof ServerPlayer player))
+		if(!(getOwner() instanceof ServerPlayer player))
 			return;
 
 		ItemStack prev = player.getMainHandItem();
@@ -239,78 +236,78 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 	protected void onHitEntity(EntityHitResult result) {
 		super.onHitEntity(result);
 
+		Entity owner = getOwner();
 		Entity hit = result.getEntity();
+		if(hit == owner) return;
 
-		if(hit != owner) {
-			addHit(hit);
-			if (hit instanceof AbstractPickarang apg) {
-				apg.setReturning();
-				clank(result);
-			} else {
-				ItemStack pickarang = getStack();
-				Multimap<Attribute, AttributeModifier> modifiers = pickarang.getAttributeModifiers(EquipmentSlot.MAINHAND);
+		addHit(hit);
+		if (hit instanceof AbstractPickarang<?> apg) {
+			apg.setReturning();
+			clank(result);
+			return;
+		}
+		ItemStack pickarang = getStack();
+		Multimap<Attribute, AttributeModifier> modifiers = pickarang.getAttributeModifiers(EquipmentSlot.MAINHAND);
 
-				if (owner != null) {
-					ItemStack prev = owner.getMainHandItem();
-					owner.setItemInHand(InteractionHand.MAIN_HAND, pickarang);
-					owner.getAttributes().addTransientAttributeModifiers(modifiers);
+		if (owner instanceof LivingEntity leOwner) {
+			ItemStack prev = leOwner.getMainHandItem();
+			leOwner.setItemInHand(InteractionHand.MAIN_HAND, pickarang);
+			leOwner.getAttributes().addTransientAttributeModifiers(modifiers);
+			PickarangModule.setActivePickarangDamage(PickarangModule.getDamageSource(this, leOwner));
 
-					int ticksSinceLastSwing = owner.attackStrengthTicker;
-					owner.attackStrengthTicker = (int) (1.0 / owner.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0) + 1;
+			int ticksSinceLastSwing = leOwner.attackStrengthTicker;
+			leOwner.attackStrengthTicker = (int) (1.0 / leOwner.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0) + 1;
 
-					float prevHealth = hit instanceof LivingEntity ? ((LivingEntity) hit).getHealth() : 0;
+			float prevHealth = hit instanceof LivingEntity ? ((LivingEntity) hit).getHealth() : 0;
 
-					PickarangModule.setActivePickarang(this);
+			hitEntity:
+			{
+				if (hit instanceof Toretoise toretoise) {
+					int ore = toretoise.getOreType();
 
-					hitEntity:
-					{
-						if (hit instanceof Toretoise toretoise) {
-							int ore = toretoise.getOreType();
-
-							if (ore != 0) {
-								addHit(toretoise);
-								if (level() instanceof ServerLevel serverLevel) {
-									LootParams.Builder lootBuilder = new LootParams.Builder(serverLevel)
-											.withParameter(LootContextParams.TOOL, pickarang);
-									if (owner instanceof Player player)
-										lootBuilder.withLuck(player.getLuck());
-									toretoise.dropOre(ore, lootBuilder);
-								}
-								break hitEntity;
-							}
+					if (ore != 0) {
+						addHit(toretoise);
+						if (level() instanceof ServerLevel serverLevel) {
+							LootParams.Builder lootBuilder = new LootParams.Builder(serverLevel)
+									.withParameter(LootContextParams.TOOL, pickarang);
+							if (owner instanceof Player player)
+								lootBuilder.withLuck(player.getLuck());
+							toretoise.dropOre(ore, lootBuilder);
 						}
-
-						if (owner instanceof Player p)
-							p.attack(hit);
-						else
-							owner.doHurtTarget(hit);
-
-						if (hit instanceof LivingEntity && ((LivingEntity) hit).getHealth() == prevHealth)
-							clank(result);
+						break hitEntity;
 					}
-
-					PickarangModule.setActivePickarang(null);
-
-					owner.attackStrengthTicker = ticksSinceLastSwing;
-
-					setStack(owner.getMainHandItem());
-					owner.setItemInHand(InteractionHand.MAIN_HAND, prev);
-					owner.getAttributes().addTransientAttributeModifiers(modifiers);
-				} else {
-					Builder mapBuilder = new Builder();
-					mapBuilder.add(Attributes.ATTACK_DAMAGE, 1);
-					AttributeSupplier map = mapBuilder.build();
-					AttributeMap manager = new AttributeMap(map);
-					manager.addTransientAttributeModifiers(modifiers);
-
-					ItemStack stack = getStack();
-					stack.hurt(1, level().random, null);
-					setStack(stack);
-					//fixme maybe register custom damage source? - IThundxr
-					hit.hurt(level().damageSources().indirectMagic(this, this),
-							(float) manager.getValue(Attributes.ATTACK_DAMAGE));
 				}
+
+				// we need to call attack for enchantments and whatnot. we need the damage source hack so we can set it as a projectile so its not the player damage source
+				if (owner instanceof Player p)
+					p.attack(hit);
+				else
+					leOwner.doHurtTarget(hit);
+
+
+				if (hit instanceof LivingEntity && ((LivingEntity) hit).getHealth() == prevHealth)
+					clank(result);
 			}
+
+			leOwner.attackStrengthTicker = ticksSinceLastSwing;
+
+			setStack(leOwner.getMainHandItem());
+			leOwner.setItemInHand(InteractionHand.MAIN_HAND, prev);
+			leOwner.getAttributes().addTransientAttributeModifiers(modifiers);
+			PickarangModule.setActivePickarangDamage(null);
+		} else {
+			Builder mapBuilder = new Builder();
+			mapBuilder.add(Attributes.ATTACK_DAMAGE, 1);
+			AttributeSupplier map = mapBuilder.build();
+			AttributeMap manager = new AttributeMap(map);
+			manager.addTransientAttributeModifiers(modifiers);
+
+			ItemStack stack = getStack();
+			stack.hurt(1, level().random, null);
+			setStack(stack);
+
+			hit.hurt(PickarangModule.getDamageSource (this, owner),
+					(float) manager.getValue(Attributes.ATTACK_DAMAGE));
 		}
 	}
 
@@ -431,9 +428,10 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		setYRot(Mth.lerp(0.2F, this.yRotO, this.getYRot()));
 
 		float drag;
+		Level level = this.level();
 		if(this.isInWater()) {
 			for(int i = 0; i < 4; ++i) {
-				this.level().addParticle(ParticleTypes.BUBBLE, pos.x - ourMotion.x * 0.25D, pos.y - ourMotion.y * 0.25D, pos.z - ourMotion.z * 0.25D, ourMotion.x, ourMotion.y, ourMotion.z);
+				level.addParticle(ParticleTypes.BUBBLE, pos.x - ourMotion.x * 0.25D, pos.y - ourMotion.y * 0.25D, pos.z - ourMotion.z * 0.25D, ourMotion.x, ourMotion.y, ourMotion.z);
 			}
 
 			drag = 0.8F;
@@ -455,9 +453,9 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		boolean returning = isReturning();
 		liveTime++;
 
-		LivingEntity owner = getThrower();
+		Entity owner = getOwner();
 		if(owner == null || !owner.isAlive() || !(owner instanceof Player)) {
-			if(!level().isClientSide) {
+			if(!level.isClientSide) {
 				while(isInWall())
 					setPos(getX(), getY() + 1, getZ());
 
@@ -471,15 +469,15 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		if(!returning) {
 			if(liveTime > getPickarangType().timeout)
 				setReturning();
-			if(!level().getWorldBorder().isWithinBounds(getBoundingBox()))
+			if(!level.getWorldBorder().isWithinBounds(getBoundingBox()))
 				spark();
 		} else {
 			noPhysics = true;
 
 			int eff = getEfficiencyModifier();
 
-			List<ItemEntity> items = level().getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(2));
-			List<ExperienceOrb> xp = level().getEntitiesOfClass(ExperienceOrb.class, getBoundingBox().inflate(2));
+			List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(2));
+			List<ExperienceOrb> xp = level.getEntitiesOfClass(ExperienceOrb.class, getBoundingBox().inflate(2));
 
 			Vec3 ourPos = position();
 			for(ItemEntity item : items) {
@@ -505,7 +503,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				Inventory inventory = player.getInventory();
 				ItemStack stackInSlot = inventory.getItem(slot);
 
-				if(!level().isClientSide) {
+				if(!level.isClientSide) {
 					playSound(QuarkSounds.ENTITY_PICKARANG_PICKUP, 1, 1);
 
 					if(player instanceof ServerPlayer sp && (this instanceof Flamerang) && isOnFire() && getPassengers().size() > 0)
@@ -569,20 +567,6 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 			player.drop(drop, false);
 			itemEntity.discard();
 		}
-	}
-
-	@Nullable
-	public LivingEntity getThrower() {
-		if(this.owner == null && this.ownerId != null && this.level() instanceof ServerLevel) {
-			Entity entity = ((ServerLevel) this.level()).getEntity(this.ownerId);
-			if(entity instanceof LivingEntity) {
-				this.owner = (LivingEntity) entity;
-			} else {
-				this.ownerId = null;
-			}
-		}
-
-		return this.owner;
 	}
 
 	@Override

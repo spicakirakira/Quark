@@ -11,10 +11,11 @@ import org.violetmoon.quark.content.tools.module.PickarangModule;
 
 @Mixin(DamageSources.class)
 public class DamageSourcesMixin {
+
     @Inject(method = "playerAttack", at = @At("HEAD"), cancellable = true)
     private void playerAttack(Player player, CallbackInfoReturnable<DamageSource> callbackInfoReturnable) {
-        DamageSource damage = PickarangModule.createDamageSource(player);
-
+        //Needed since pickarang needs to both have unique damage source AND go through the player attack logic to pickup enchantments and whatnot
+        DamageSource damage = PickarangModule.getActiveDamage();
         if (damage != null)
             callbackInfoReturnable.setReturnValue(damage);
     }
