@@ -1,10 +1,10 @@
 package org.violetmoon.quark.content.tools.entity.rang;
 
 import com.google.common.collect.Multimap;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -48,15 +48,14 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.NetworkHooks;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.handler.QuarkSounds;
 import org.violetmoon.quark.content.mobs.entity.Toretoise;
 import org.violetmoon.quark.content.tools.config.PickarangType;
 import org.violetmoon.quark.content.tools.module.PickarangModule;
+import org.violetmoon.quark.mixin.mixins.DamageSourcesMixin;
 
 import java.util.List;
 import java.util.UUID;
@@ -189,122 +188,132 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 				&& (entitiesHit == null || !entitiesHit.contains(entity.getId())));
 	}
 
-	protected boolean canDestroyBlock(BlockState state) {
-		return !state.is(PickarangModule.pickarangImmuneTag);
+	protected boolean isBlockBlackListead(BlockState state) {
+		return state.is(PickarangModule.pickarangImmuneTag);
 	}
 
 	@Override
-	protected void onHit(@NotNull HitResult result) {
-		LivingEntity owner = getThrower();
+	protected void onHitBlock(BlockHitResult result) {
+		super.onHitBlock(result);
 
-		if(result.getType() == Type.BLOCK && result instanceof BlockHitResult blockHitResult) {
-			BlockPos hit = blockHitResult.getBlockPos();
-			BlockState state = level().getBlockState(hit);
+		BlockPos hit = result.getBlockPos();
+		BlockState state = level().getBlockState(hit);
 
-			// TODO find replacement for BlockState#isSolid since it's deprecated. Vanilla uses it everywhere though
-			if(getPiercingModifier() == 0 || state.isSolid())
-				addHit();
+		if(getPiercingModifier() == 0 || state.isSolid())
+			addHit();
 
-			if(!(owner instanceof ServerPlayer player))
-				return;
-			//more general way of doing it instead of just checking hardness
-			float progress = getBlockDestroyProgress(state, player, level(), hit);
-			if(progress == 0)
-				return;
+		if(!(owner instanceof ServerPlayer player))
+			return;
 
-			float equivalentHardness = (1) / (progress * 100);
+		ItemStack prev = player.getMainHandItem();
+		player.getInventory().setItem(player.getInventory().selected, getStack());
+		player.setItemInHand(InteractionHand.MAIN_HAND, getStack());
 
-			if(equivalentHardness <= getPickarangType().maxHardness
-					&& equivalentHardness >= 0
-					&& canDestroyBlock(state)) {
-				ItemStack prev = player.getMainHandItem();
-				player.setItemInHand(InteractionHand.MAIN_HAND, getStack());
+		//more general way of doing it instead of just checking hardness
+		float progress = getBlockDestroyProgress(state, player, level(), hit);
+		if(progress == 0)
+			return;
 
-				if(player.gameMode.destroyBlock(hit))
-					level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, hit, Block.getId(state));
-				else
-					clank();
+		//re calculates equivalent hardness assuming correct tool for drop
+		float equivalentHardness = ((1 / progress) / 100) * (100/30f);
 
-				setStack(player.getMainHandItem());
+		if((equivalentHardness <= getPickarangType().maxHardness
+				&& equivalentHardness >= 0
+				&& !isBlockBlackListead(state)) || player.getAbilities().instabuild) {
 
-				player.setItemInHand(InteractionHand.MAIN_HAND, prev);
-			} else
-				clank();
-		} else if(result.getType() == Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
-			Entity hit = entityHitResult.getEntity();
+			if(player.gameMode.destroyBlock(hit))
+				level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, hit, Block.getId(state));
+			else
+				clank(result);
 
-			if(hit != owner) {
-				addHit(hit);
-				if(hit instanceof AbstractPickarang) {
-					((AbstractPickarang<?>) hit).setReturning();
-					clank();
-				} else {
-					ItemStack pickarang = getStack();
-					Multimap<Attribute, AttributeModifier> modifiers = pickarang.getAttributeModifiers(EquipmentSlot.MAINHAND);
+			setStack(player.getInventory().getSelected());
 
-					if(owner != null) {
-						ItemStack prev = owner.getMainHandItem();
-						owner.setItemInHand(InteractionHand.MAIN_HAND, pickarang);
-						owner.getAttributes().addTransientAttributeModifiers(modifiers);
+		} else
+			clank(result);
 
-						int ticksSinceLastSwing = owner.attackStrengthTicker;
-						owner.attackStrengthTicker = (int) (1.0 / owner.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0) + 1;
+		player.setItemInHand(InteractionHand.MAIN_HAND, prev);
+		player.getInventory().setItem(player.getInventory().selected, prev);
+	}
 
-						float prevHealth = hit instanceof LivingEntity ? ((LivingEntity) hit).getHealth() : 0;
+	@Override
+	protected void onHitEntity(EntityHitResult result) {
+		super.onHitEntity(result);
 
-						PickarangModule.setActivePickarang(this);
+		Entity hit = result.getEntity();
 
-						hitEntity: {
-							if(hit instanceof Toretoise toretoise) {
-								int ore = toretoise.getOreType();
+		if(hit != owner) {
+			addHit(hit);
+			if (hit instanceof AbstractPickarang apg) {
+				apg.setReturning();
+				clank(result);
+			} else {
+				ItemStack pickarang = getStack();
+				Multimap<Attribute, AttributeModifier> modifiers = pickarang.getAttributeModifiers(EquipmentSlot.MAINHAND);
 
-								if(ore != 0) {
-									addHit(toretoise);
-									if(level() instanceof ServerLevel serverLevel) {
-										LootParams.Builder lootBuilder = new LootParams.Builder(serverLevel)
-												.withParameter(LootContextParams.TOOL, pickarang);
-										if(owner instanceof Player player)
-											lootBuilder.withLuck(player.getLuck());
-										toretoise.dropOre(ore, lootBuilder);
-									}
-									break hitEntity;
+				if (owner != null) {
+					ItemStack prev = owner.getMainHandItem();
+					owner.setItemInHand(InteractionHand.MAIN_HAND, pickarang);
+					owner.getAttributes().addTransientAttributeModifiers(modifiers);
+
+					int ticksSinceLastSwing = owner.attackStrengthTicker;
+					owner.attackStrengthTicker = (int) (1.0 / owner.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0) + 1;
+
+					float prevHealth = hit instanceof LivingEntity ? ((LivingEntity) hit).getHealth() : 0;
+
+					PickarangModule.setActivePickarang(this);
+
+					hitEntity:
+					{
+						if (hit instanceof Toretoise toretoise) {
+							int ore = toretoise.getOreType();
+
+							if (ore != 0) {
+								addHit(toretoise);
+								if (level() instanceof ServerLevel serverLevel) {
+									LootParams.Builder lootBuilder = new LootParams.Builder(serverLevel)
+											.withParameter(LootContextParams.TOOL, pickarang);
+									if (owner instanceof Player player)
+										lootBuilder.withLuck(player.getLuck());
+									toretoise.dropOre(ore, lootBuilder);
 								}
+								break hitEntity;
 							}
-
-							if(owner instanceof Player)
-								((Player) owner).attack(hit);
-							else
-								owner.doHurtTarget(hit);
-
-							if(hit instanceof LivingEntity && ((LivingEntity) hit).getHealth() == prevHealth)
-								clank();
 						}
 
-						PickarangModule.setActivePickarang(null);
+						if (owner instanceof Player p)
+							p.attack(hit);
+						else
+							owner.doHurtTarget(hit);
 
-						owner.attackStrengthTicker = ticksSinceLastSwing;
-
-						setStack(owner.getMainHandItem());
-						owner.setItemInHand(InteractionHand.MAIN_HAND, prev);
-						owner.getAttributes().addTransientAttributeModifiers(modifiers);
-					} else {
-						Builder mapBuilder = new Builder();
-						mapBuilder.add(Attributes.ATTACK_DAMAGE, 1);
-						AttributeSupplier map = mapBuilder.build();
-						AttributeMap manager = new AttributeMap(map);
-						manager.addTransientAttributeModifiers(modifiers);
-
-						ItemStack stack = getStack();
-						stack.hurt(1, level().random, null);
-						setStack(stack);
-						//fixme maybe register custom damage source? - IThundxr
-						hit.hurt(level().damageSources().indirectMagic(this, this),
-								(float) manager.getValue(Attributes.ATTACK_DAMAGE));
+						if (hit instanceof LivingEntity && ((LivingEntity) hit).getHealth() == prevHealth)
+							clank(result);
 					}
+
+					PickarangModule.setActivePickarang(null);
+
+					owner.attackStrengthTicker = ticksSinceLastSwing;
+
+					setStack(owner.getMainHandItem());
+					owner.setItemInHand(InteractionHand.MAIN_HAND, prev);
+					owner.getAttributes().addTransientAttributeModifiers(modifiers);
+				} else {
+					Builder mapBuilder = new Builder();
+					mapBuilder.add(Attributes.ATTACK_DAMAGE, 1);
+					AttributeSupplier map = mapBuilder.build();
+					AttributeMap manager = new AttributeMap(map);
+					manager.addTransientAttributeModifiers(modifiers);
+
+					ItemStack stack = getStack();
+					stack.hurt(1, level().random, null);
+					setStack(stack);
+					//fixme maybe register custom damage source? - IThundxr
+					hit.hurt(level().damageSources().indirectMagic(this, this),
+							(float) manager.getValue(Attributes.ATTACK_DAMAGE));
 				}
 			}
 		}
 	}
+
 
 	//equivalent of BlockState::getDestroyProgress
 	private float getBlockDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
@@ -314,7 +323,7 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		} else {
 			float i = ForgeHooks.isCorrectToolForDrops(state, player) ? 30 : 100;
 			float digSpeed = getPlayerDigSpeed(player, state, pos);
-			return (digSpeed / f / i);
+			return (digSpeed / (f * i));
 		}
 	}
 
@@ -348,7 +357,13 @@ public abstract class AbstractPickarang<T extends AbstractPickarang<T>> extends 
 		setReturning();
 	}
 
-	public void clank() {
+	public void clank(HitResult hit) {
+		if(hit instanceof BlockHitResult bh) {
+			BlockState state = level().getBlockState(bh.getBlockPos());
+			Vec3 hitPos = bh.getLocation();
+			((ServerLevel) this.level()).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state),
+					hitPos.x, hitPos.y, hitPos.z, 2, 0, 0, 0, 0);
+		}
 		playSound(QuarkSounds.ENTITY_PICKARANG_CLANK, 1, 1);
 		setReturning();
 	}
