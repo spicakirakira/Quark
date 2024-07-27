@@ -21,6 +21,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
@@ -87,6 +91,13 @@ public class GameNerfsModule extends ZetaModule {
 
 	@Config(description = "Makes tripwire hooks unable to be duplicated")
 	public static boolean disableTripwireHookDupe = true;
+
+	@Config(description = "Makes villages spawn less often when close to spawn")
+	public static boolean villageSpawnNerf = false;
+
+	@Config(description = "Distance at which villages will spawn as normal. Effect scales linearly from world spawn")
+	public static int villageSpawnNerfDistance = 7000;
+
 
 	@Config
 	public static List<String> nonGriefingEntities = Arrays.asList("minecraft:creeper", "minecraft:enderman");

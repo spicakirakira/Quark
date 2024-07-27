@@ -10,3 +10,4 @@
 - Creative players can break any block with a pickarang
 - Added unique pickarang damage type and death message
 - Added a (temporary) beach zombie villager texture
+- Added new game nerf feature that allows villages to spawn more rarely around spawn and have also a greater chance of being zombie ones
