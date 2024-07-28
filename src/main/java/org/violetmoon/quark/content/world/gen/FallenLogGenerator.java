@@ -154,7 +154,7 @@ public class FallenLogGenerator extends Generator {
     private static Block getLogBlockForPos(LevelAccessor level, BlockPos pos) {
         Block base = getBaseLogBlockForPos(level, pos);
 
-        if (FallenLogsModule.useHollowLogs && HollowLogsModule.staticEnabled) {
+        if (HollowLogsModule.staticEnabled && level.getRandom().nextFloat() < FallenLogsModule.hollowChance){
             Block hollow = HollowLogsModule.logMap.get(base);
             if (hollow != null)
                 return hollow;

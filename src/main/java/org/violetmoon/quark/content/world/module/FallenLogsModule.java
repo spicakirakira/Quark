@@ -30,9 +30,9 @@ public class FallenLogsModule extends ZetaModule {
 
 	@Config
 	public static DimensionConfig dimensions = new DimensionConfig(false, "minecraft:overworld");
-	
-	@Config(description = "Requires the Hollow Logs module to be enabled too")
-	public static boolean useHollowLogs = true;
+
+	@Config(description = "Percentage of fallen logs spawning as hollow. Requires Hollow Logs Module to be enabled")
+	public static double hollowChance = 0.7;
 	
 	@Config
 	public static int rarity = 5;
