@@ -167,11 +167,11 @@ public class FallenLogGenerator extends Generator {
         Holder<Biome> biome = level.getBiome(pos);
         List<Block> matched = new ArrayList<>();
 
-        for (TagKey<Biome> tag : FallenLogsModule.blocksPerTag.keySet())
-            if (biome.is(tag))
-                matched.add(FallenLogsModule.blocksPerTag.get(tag));
+        for (var e : FallenLogsModule.blocksPerTag.entrySet())
+            if (biome.is(e.getKey()))
+                matched.add(e.getValue());
 
-        if (matched.size() == 0)
+        if (matched.isEmpty())
             return Blocks.AIR;
 
         return matched.get(level.getRandom().nextInt(matched.size()));
