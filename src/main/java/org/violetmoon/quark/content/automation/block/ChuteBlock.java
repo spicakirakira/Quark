@@ -38,6 +38,7 @@ public class ChuteBlock extends ZetaBlock implements EntityBlock {
 	private static final VoxelShape DOWN_SHAPE = Shapes.or(CHUTE_TOP_SHAPE, Block.box(6.0D, 0.0D, 6.0D, 10.0D, 4.0D, 10.0D));
 
 	public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
+	//public static final BooleanProperty HAS_SPACE_BELOW =  BooleanProperty.create("has_space_below");
 
 	public ChuteBlock(String regname, @Nullable ZetaModule module, Properties properties) {
 		super(regname, module, properties);

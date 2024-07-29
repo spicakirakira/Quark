@@ -1,5 +1,6 @@
 package org.violetmoon.quark.content.automation.block.be;
 
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.content.automation.block.ChuteBlock;
@@ -25,6 +26,8 @@ import net.minecraftforge.items.IItemHandler;
  */
 public class ChuteBlockEntity extends ZetaBlockEntity {
 
+	private static final AABB CLEARANCE = new AABB(BlockPos.ZERO).deflate(0.25).move(0, 0.25, 0);
+
 	public ChuteBlockEntity(BlockPos pos, BlockState state) {
 		super(ChuteModule.blockEntityType, pos, state);
 	}
@@ -33,9 +36,15 @@ public class ChuteBlockEntity extends ZetaBlockEntity {
 		if(level != null && level.getBlockState(worldPosition).getValue(ChuteBlock.ENABLED)) {
 			BlockPos below = worldPosition.below();
 			BlockState state = level.getBlockState(below);
-			return state.isAir() || state.getCollisionShape(level, below).isEmpty() 
-					|| state.getBlock() == GrateModule.grate
-					|| (state.is(HollowLogsModule.hollowLogsTag) && state.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y);
+			if (state.isAir()) return true;
+			//this could be cached in a blockstate property. maybe micro optimization...
+			var shape = state.getCollisionShape(level, below);
+			if (shape.isEmpty() ) return true;
+			if (shape.max(Direction.Axis.Y)>1) return false;
+			for (AABB box : shape.toAabbs()){
+				if (box.intersects(CLEARANCE)) return false;
+			}
+            return true;
 		}
 
 		return false;
@@ -60,7 +69,8 @@ public class ChuteBlockEntity extends ZetaBlockEntity {
 				return stack;
 
 			if(!simulate && level != null && !stack.isEmpty()) {
-				ItemEntity entity = new ItemEntity(level, worldPosition.getX() + 0.5, worldPosition.getY() - 0.5, worldPosition.getZ() + 0.5, stack.copy());
+				ItemEntity entity = new ItemEntity(level, worldPosition.getX() + 0.5,
+						worldPosition.getY() - 0.5, worldPosition.getZ() + 0.5, stack.copy());
 				entity.setDeltaMovement(0, 0, 0);
 				level.addFreshEntity(entity);
 			}
