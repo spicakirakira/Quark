@@ -61,7 +61,7 @@ public class AbacusModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void onHUDRender(ZRenderGuiOverlay.Crosshair event) {
+		public void onHUDRenderPost(ZRenderGuiOverlay.Crosshair.Post event) {
 			Minecraft mc = Minecraft.getInstance();
 			Player player = mc.player;
 			GuiGraphics guiGraphics = event.getGuiGraphics();
