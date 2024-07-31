@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,10 +20,10 @@ import org.violetmoon.zeta.item.ZetaItem;
 import org.violetmoon.zeta.module.ZetaModule;
 
 public class ParrotEggItem extends ZetaItem {
-	private final int variant;
+	private final Parrot.Variant variant;
 
-	public ParrotEggItem(String suffix, int variant, ZetaModule module) {
-		super("egg_parrot_" + suffix, module,
+	public ParrotEggItem(Parrot.Variant variant, ZetaModule module) {
+		super("egg_parrot_" + variant.name(), module,
 				new Item.Properties()
 						.stacksTo(16));
 		this.variant = variant;

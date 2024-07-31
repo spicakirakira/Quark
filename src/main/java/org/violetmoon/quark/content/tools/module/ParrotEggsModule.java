@@ -60,8 +60,6 @@ public class ParrotEggsModule extends ZetaModule {
 	private static final ResourceLocation KOTO = new ResourceLocation("quark", "textures/model/entity/variants/kotobirb.png");
 	private static final String EGG_TIMER = "quark:parrot_egg_timer";
 
-	private static final List<String> NAMES = List.of("red_blue", "blue", "green", "yellow_blue", "grey");
-
 	public static EntityType<ParrotEgg> parrotEggType;
 
 	public static TagKey<Item> feedTag;
@@ -92,10 +90,8 @@ public class ParrotEggsModule extends ZetaModule {
 
 		CreativeTabManager.daisyChain();
 		parrotEggs = new ArrayList<>();
-		for(int i = 0; i < ParrotEgg.VARIANTS; i++) {
-			int variant = i;
-
-			Item parrotEgg = new ParrotEggItem(NAMES.get(variant), variant, this).setCreativeTab(CreativeModeTabs.INGREDIENTS, Items.EGG, false);
+		for(Parrot.Variant variant : Parrot.Variant.values()) {
+			Item parrotEgg = new ParrotEggItem(variant, this).setCreativeTab(CreativeModeTabs.INGREDIENTS, Items.EGG, false);
 			parrotEggs.add(parrotEgg);
 
 			DispenserBlock.registerBehavior(parrotEgg, new AbstractProjectileDispenseBehavior() {
@@ -176,19 +172,20 @@ public class ParrotEggsModule extends ZetaModule {
 			if(time > 0) {
 				if(time == 1) {
 					e.playSound(QuarkSounds.ENTITY_PARROT_EGG, 1.0F, (parrot.level().random.nextFloat() - parrot.level().random.nextFloat()) * 0.2F + 1.0F);
-					e.spawnAtLocation(new ItemStack(parrotEggs.get(getResultingEggColor(parrot))), 0);
+					e.spawnAtLocation(new ItemStack(parrotEggs.get(getResultingEggColor(parrot).getId())), 0);
 				}
 				e.getPersistentData().putInt(EGG_TIMER, time - 1);
 			}
 		}
 	}
 
-	private int getResultingEggColor(Parrot parrot) {
-		int color = parrot.getVariant().getId();
+	private Parrot.Variant getResultingEggColor(Parrot parrot) {
+		Parrot.Variant originalVariant = parrot.getVariant();
 		RandomSource rand = parrot.level().random;
 		if(rand.nextBoolean())
-			return color;
-		return rand.nextInt(ParrotEgg.VARIANTS);
+			return originalVariant;
+		// mutation?
+		return Parrot.Variant.byId(rand.nextInt(Parrot.Variant.values().length));
 	}
 
 	@ZetaLoadModule(clientReplacement = true)

@@ -21,9 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.violetmoon.quark.content.tools.module.ParrotEggsModule;
 
 public class ParrotEgg extends ThrowableItemProjectile {
-	public static final int VARIANTS = 5;
-
-	protected static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(ParrotEgg.class, EntityDataSerializers.INT);
+	protected static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ParrotEgg.class, EntityDataSerializers.INT);
 
 	private static final int EVENT_BREAK = 3;
 
@@ -42,22 +40,21 @@ public class ParrotEgg extends ThrowableItemProjectile {
 	@Override
 	protected void defineSynchedData() {
 		super.defineSynchedData();
-		getEntityData().define(COLOR, 0);
+		getEntityData().define(VARIANT, 0);
 	}
 
-	//Todo: This COULD just return an enum reference, but Im too lazy to do that rn
-	public int getVariant() {
-		return Mth.clamp(getEntityData().get(COLOR), 0, VARIANTS - 1);
+	public Parrot.Variant getVariant() {
+		return Parrot.Variant.byId(getEntityData().get(VARIANT));
 	}
 
-	public void setVariant(int variant) {
-		getEntityData().set(COLOR, Mth.clamp(variant, 0, VARIANTS - 1));
+	public void setVariant(Parrot.Variant variant) {
+		getEntityData().set(VARIANT, variant.getId());
 	}
 
 	@NotNull
 	@Override
 	protected Item getDefaultItem() {
-		return ParrotEggsModule.parrotEggs.get(getVariant());
+		return ParrotEggsModule.parrotEggs.get(getVariant().getId());
 	}
 
 	@Override
@@ -84,7 +81,7 @@ public class ParrotEgg extends ThrowableItemProjectile {
 		if(!this.level().isClientSide) {
 			Parrot parrot = EntityType.PARROT.create(level());
 			if(parrot != null) {
-				parrot.setVariant(Parrot.Variant.byId(getVariant()));
+				parrot.setVariant(getVariant());
 				parrot.setAge(-24000);
 				parrot.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
 				level().addFreshEntity(parrot);
