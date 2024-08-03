@@ -1,4 +1,5 @@
 Requires Zeta 1.0-20
+(sorry for double release i messed up)
 
 -Fallen logs can rarely spawn on water
 - Fallen logs can no longer spawn on ice and other non terrain blocks (added tag for them)
