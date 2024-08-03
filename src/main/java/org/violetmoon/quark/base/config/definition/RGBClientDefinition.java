@@ -100,7 +100,7 @@ public class RGBClientDefinition implements ClientDefinitionExt<SectionDefinitio
 		private static final Component EMPTY = Component.empty();
 
 		private ForgeSlider makeSliderPlease(int x, int y, int width, int height, ValueDefinition<Double> binding, String label, int labelColor) {
-			//TODO: AbstractSliderButton instead
+			//TODO: keep this for forge with a platform delegate or copy paste in common
 			return new ForgeSlider(x, y + 50, width, height, EMPTY, EMPTY, 0f, 1f, 0, 0, 1, false) {
 				@Override
 				protected void applyValue() {

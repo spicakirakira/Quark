@@ -1,20 +1,20 @@
 package org.violetmoon.quark.content.client.module;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Vector2i;
+import org.joml.Vector2ic;
 import org.violetmoon.quark.base.QuarkClient;
 import org.violetmoon.quark.base.client.handler.ClientUtil;
 import org.violetmoon.zeta.client.event.play.ZClientTick;
 import org.violetmoon.zeta.client.event.play.ZRenderContainerScreen;
 import org.violetmoon.zeta.client.event.play.ZScreen;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 
@@ -33,7 +33,6 @@ import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookPage;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -54,11 +53,9 @@ public class MicrocraftingHelperModule extends ZetaModule {
 
 		@PlayEvent
 		public void onClick(ZScreen.MouseButtonPressed.Pre event) {
-			Minecraft mc = Minecraft.getInstance();
-			Screen screen = mc.screen;
-			RegistryAccess registryAccess = QuarkClient.ZETA_CLIENT.hackilyGetCurrentClientLevelRegistryAccess();
-
+			Screen screen = event.getScreen();
 			if(screen instanceof CraftingScreen cscreen && event.getButton() == 1) {
+
 				RecipeBookComponent recipeBook = cscreen.getRecipeBookComponent();
 
 				Pair<GhostRecipe, GhostIngredient> pair = getHoveredGhost(cscreen, recipeBook);
@@ -67,12 +64,15 @@ public class MicrocraftingHelperModule extends ZetaModule {
 					GhostIngredient ghostIngr = pair.getRight();
 					Ingredient ingr = ghostIngr.ingredient;
 
-					Recipe<?> recipeToSet = getRecipeToSet(recipeBook, ingr, true);
+					Minecraft mc = screen.getMinecraft();
+					RegistryAccess registryAccess = mc.level.registryAccess();
+					Recipe<?> recipeToSet = getRecipeToSet(recipeBook, ingr, true, registryAccess);
 					if(recipeToSet == null)
-						recipeToSet = getRecipeToSet(recipeBook, ingr, false);
+						recipeToSet = getRecipeToSet(recipeBook, ingr, false, registryAccess);
 
 					if(recipeToSet != null) {
 						int ourCount = 0;
+
 
 						ItemStack testStack = recipeToSet.getResultItem(registryAccess);
 						for(int j = 1; j < ghost.size(); j++) { // start at 1 to skip output
@@ -83,7 +83,7 @@ public class MicrocraftingHelperModule extends ZetaModule {
 								ourCount++;
 						}
 
-						if(ourCount > 0) {
+						if (ourCount > 0) {
 							int prevCount = compoundCount;
 							int reqCount = ourCount * prevCount;
 
@@ -162,16 +162,40 @@ public class MicrocraftingHelperModule extends ZetaModule {
 				if(pair != null) {
 					GhostIngredient ingr = pair.getRight();
 					if(ingr != null)
-						//TODO: Don't use TopLayerTooltipHandler, it's hacky. But just calling GuiGraphics.renderTooltip from here has Z-ordering issues.
-						QuarkClient.ZETA_CLIENT.topLayerTooltipHandler.setTooltip(List.of(I18n.get("quark.misc.rightclick_to_craft")), event.getMouseX(), event.getMouseY() - 17);
+						currentScreen.setTooltipForNextRenderPass(
+								Tooltip.create(Component.translatable("quark.misc.rightclick_to_craft")),
+										AboveCursorPositioner.INSTANCE , false);
 				}
 			}
 		}
 
+		private static class AboveCursorPositioner implements ClientTooltipPositioner{
+
+			private static final AboveCursorPositioner INSTANCE = new AboveCursorPositioner();
+
+			@Override
+			public Vector2ic positionTooltip(int pScreenWidth, int pScreenHeight, int pMouseX, int pMouseY, int pTooltipWidth, int pTooltipHeight) {
+				Vector2i vector2i = (new Vector2i(pMouseX, pMouseY)).add(12, -12 - 17);
+				this.positionTooltip(pScreenWidth, pScreenHeight, vector2i, pTooltipWidth, pTooltipHeight);
+				return vector2i;
+			}
+
+			private void positionTooltip(int pScreenWidth, int pScreenHeight, Vector2i pTooltipPos, int pTooltipWidth, int pTooltipHeight) {
+				if (pTooltipPos.x + pTooltipWidth > pScreenWidth) {
+					pTooltipPos.x = Math.max(pTooltipPos.x - 24 - pTooltipWidth, 4);
+				}
+
+				int i = pTooltipHeight + 3;
+				if (pTooltipPos.y + i > pScreenHeight) {
+					pTooltipPos.y = pScreenHeight - i;
+				}
+
+			}
+		}
+
+
 		@PlayEvent
-		public void onTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.START)
-				return;
+		public void onTick(ZClientTick.Start event) {
 
 			Minecraft mc = Minecraft.getInstance();
 			Screen prevScreen = currentScreen;
@@ -186,14 +210,12 @@ public class MicrocraftingHelperModule extends ZetaModule {
 			if(!recipes.isEmpty()) {
 				if(currentScreen instanceof CraftingScreen crafting) {
 					RecipeBookComponent book = crafting.getRecipeBookComponent();
-					if(book != null) {
-						GhostRecipe ghost = book.ghostRecipe;
-						if(ghost == null || (currentRecipe != null && ghost.getRecipe() != null && ghost.getRecipe() != currentRecipe)) {
-							recipes.clear();
-							currentRecipe = null;
-						}
-					}
-				}
+                    GhostRecipe ghost = book.ghostRecipe;
+                    if(currentRecipe != null && ghost.getRecipe() != null && ghost.getRecipe() != currentRecipe) {
+                        recipes.clear();
+                        currentRecipe = null;
+                    }
+                }
 
 				if(!recipes.isEmpty()) {
 					StackedRecipe top = recipes.peek();
@@ -216,9 +238,8 @@ public class MicrocraftingHelperModule extends ZetaModule {
 				compoundCount = 1;
 		}
 
-		private Recipe<?> getRecipeToSet(RecipeBookComponent recipeBook, Ingredient ingr, boolean craftableOnly) {
+		private Recipe<?> getRecipeToSet(RecipeBookComponent recipeBook, Ingredient ingr, boolean craftableOnly, RegistryAccess registryAccess) {
 			EditBox text = recipeBook.searchBox;
-			RegistryAccess registryAccess = QuarkClient.ZETA_CLIENT.hackilyGetCurrentClientLevelRegistryAccess();
 
 			for(ItemStack stack : ingr.getItems()) {
 				String itemName = stack.getHoverName().copy().getString().toLowerCase(Locale.ROOT).trim();
@@ -227,39 +248,37 @@ public class MicrocraftingHelperModule extends ZetaModule {
 				recipeBook.checkSearchStringUpdate();
 
 				RecipeBookPage page = recipeBook.recipeBookPage;
-				if(page != null) {
-					List<RecipeCollection> recipeLists = page.recipeCollections;
-					recipeLists = new ArrayList<>(recipeLists); // ensure we're not messing with the original
+                List<RecipeCollection> recipeLists = page.recipeCollections;
+                recipeLists = new ArrayList<>(recipeLists); // ensure we're not messing with the original
 
-					if(recipeLists != null && recipeLists.size() > 0) {
-						recipeLists.removeIf(rl -> {
-							List<Recipe<?>> list = rl.getDisplayRecipes(craftableOnly);
-							return list == null || list.isEmpty();
-						});
+                if(!recipeLists.isEmpty()) {
+                    recipeLists.removeIf(rl -> {
+                        List<Recipe<?>> list = rl.getDisplayRecipes(craftableOnly);
+                        return list.isEmpty();
+                    });
 
-						if(recipeLists.isEmpty())
-							return null;
+                    if(recipeLists.isEmpty())
+                        return null;
 
-						Collections.sort(recipeLists, (rl1, rl2) -> {
-							if(rl1 == rl2)
-								return 0;
+                    recipeLists.sort((rl1, rl2) -> {
+                        if (rl1 == rl2)
+                            return 0;
 
-							Recipe<?> r1 = rl1.getDisplayRecipes(craftableOnly).get(0);
-							Recipe<?> r2 = rl2.getDisplayRecipes(craftableOnly).get(0);
-							return compareRecipes(r1, r2);
-						});
+                        Recipe<?> r1 = rl1.getDisplayRecipes(craftableOnly).get(0);
+                        Recipe<?> r2 = rl2.getDisplayRecipes(craftableOnly).get(0);
+                        return compareRecipes(r1, r2);
+                    });
 
-						for(RecipeCollection list : recipeLists) {
-							List<Recipe<?>> recipeList = list.getDisplayRecipes(craftableOnly);
-							recipeList.sort(this::compareRecipes);
+                    for(RecipeCollection list : recipeLists) {
+                        List<Recipe<?>> recipeList = list.getDisplayRecipes(craftableOnly);
+                        recipeList.sort(this::compareRecipes);
 
-							for(Recipe<?> recipe : recipeList)
-								if(ingr.test(recipe.getResultItem(registryAccess)))
-									return recipe;
-						}
-					}
-				}
-			}
+                        for(Recipe<?> recipe : recipeList)
+                            if(ingr.test(recipe.getResultItem(registryAccess)))
+                                return recipe;
+                    }
+                }
+            }
 
 			return null;
 		}
@@ -302,7 +321,7 @@ public class MicrocraftingHelperModule extends ZetaModule {
 
 			if(recipeBook != null && slot != null) {
 				GhostRecipe ghost = recipeBook.ghostRecipe;
-				if(ghost != null && ghost.getRecipe() != null) {
+				if(ghost.getRecipe() != null) {
 					for(int i = 1; i < ghost.size(); i++) { // start at 1 to skip output
 						GhostIngredient ghostIngr = ghost.get(i);
 

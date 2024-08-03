@@ -16,6 +16,7 @@ import org.violetmoon.quark.content.tweaks.module.SimpleHarvestModule;
  * Ony fires if said block is not blacklisted
  * Can also be used for blocks that hae other max age requirements as it fires for all crop blocks
  */
+//TODO: this can me moved to a zeta event no problem
 @Cancelable
 public class SimpleHarvestEvent extends Event {
 

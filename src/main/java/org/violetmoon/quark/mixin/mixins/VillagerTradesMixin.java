@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.violetmoon.quark.content.tweaks.module.BeachVillagersModule;
+import org.violetmoon.quark.content.tweaks.module.MoreVillagersModule;
 
 @Mixin(VillagerTrades.class)
 public class VillagerTradesMixin {
@@ -19,7 +19,7 @@ public class VillagerTradesMixin {
                     ordinal = 0,
                     target = "Lcom/google/common/collect/ImmutableMap;builder()Lcom/google/common/collect/ImmutableMap$Builder;"))
     private static ImmutableMap.Builder<VillagerType, Item> addBeachType(ImmutableMap.Builder<VillagerType, Item> original) {
-        original.put(BeachVillagersModule.beach, Items.JUNGLE_BOAT);
+        MoreVillagersModule.addExtraTrades(original);
         return original;
     }
 }

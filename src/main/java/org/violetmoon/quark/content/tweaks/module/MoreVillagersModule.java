@@ -1,7 +1,10 @@
 package org.violetmoon.quark.content.tweaks.module;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.npc.VillagerType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
@@ -23,6 +26,7 @@ public class MoreVillagersModule extends ZetaModule {
     // need it here so I can reference it early in the trade mixin
     public static final VillagerType beach = new VillagerType("beach");
     public static final VillagerType ocean = new VillagerType("ocean");
+
 
     @LoadEvent
     public final void register(ZRegister event) {
@@ -52,5 +56,8 @@ public class MoreVillagersModule extends ZetaModule {
         }
     }
 
-
+    public static void addExtraTrades(ImmutableMap.Builder<VillagerType, Item> original) {
+        original.put(MoreVillagersModule.beach, Items.JUNGLE_BOAT);
+        original.put(MoreVillagersModule.ocean, Items.OAK_BOAT);
+    }
 }

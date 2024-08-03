@@ -46,8 +46,9 @@ public class DefaultMoveActions {
 		if(world instanceof ServerLevel serverLevel) {
 			BlockPos up = pos.above();
 			BlockState breakState = world.getBlockState(up);
+
 			double hardness = breakState.getDestroySpeed(world, up);
-			if(hardness > -1 && hardness < 3) {
+			if(hardness > -1 && hardness < MagnetsModule.stoneCutterMaxHardness) {
 				if (MagnetsModule.stoneCutterSilkTouch) {
 					destroyBlockWithSilkTouch(breakState, up, serverLevel, 512);
 				}else{
@@ -59,7 +60,7 @@ public class DefaultMoveActions {
 
 	private static final GameProfile FAKE_PLAYER_PROFILE = new GameProfile(UUID.randomUUID(), "[MagnetStonecutter]");
 
-	//Like level.removeBlock buth with skil touch
+	//Like level.removeBlock but with skil touch
 	private static boolean destroyBlockWithSilkTouch(BlockState blockstate, BlockPos pPos, ServerLevel level, int pRecursionLeft) {
 		if (blockstate.isAir()) {
 			return false;
@@ -70,7 +71,7 @@ public class DefaultMoveActions {
 			}
 
 			FakePlayer player = FakePlayerFactory.get(level, FAKE_PLAYER_PROFILE);
-			ItemStack tool = Items.NETHERITE_PICKAXE.getDefaultInstance();
+			ItemStack tool = Items.IRON_PICKAXE.getDefaultInstance();
 			EnchantmentHelper.setEnchantments(Map.of(Enchantments.SILK_TOUCH, 1), tool);
 			player.setItemInHand(InteractionHand.MAIN_HAND, tool);
 

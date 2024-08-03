@@ -69,7 +69,7 @@ public class AutoWalkKeybindModule extends ZetaModule {
 				int y = hudHeight;
 
 				String displayMessage = message;
-				int dots = (QuarkClient.TICKER.ticksInGame / 10) % 2;
+				int dots = (QuarkClient.ticker.ticksInGame / 10) % 2;
 				switch(dots) {
 				case 0 -> displayMessage = "OoO " + message + " oOo";
 				case 1 -> displayMessage = "oOo " + message + " OoO";

@@ -81,7 +81,7 @@ public class UtilityRecipesModule extends ZetaModule {
 	}
 
 	@PlayEvent
-	public void worldTick(ZLevelTick event) {
+	public void worldTick(ZLevelTick.End event) {
 		if(needsChange) {
 			if(effectiveDragonBreath)
 				Items.DRAGON_BREATH.craftingRemainingItem = null;

@@ -86,7 +86,7 @@ public class CloudBlock extends ZetaBlock implements EntityBlock {
 		return InteractionResult.PASS;
 	}
 
-	@SuppressWarnings("deprecation") //Needless Forge extension
+	@SuppressWarnings("deprecation")
 	@Override
 	public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
 		return new ItemStack(BottledCloudModule.bottled_cloud);

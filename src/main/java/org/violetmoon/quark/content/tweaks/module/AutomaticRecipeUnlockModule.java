@@ -25,7 +25,6 @@ import org.violetmoon.zeta.client.event.play.ZScreen;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
 import org.violetmoon.zeta.event.play.entity.player.ZPlayer;
 import org.violetmoon.zeta.module.ZetaLoadModule;
@@ -123,9 +122,7 @@ public class AutomaticRecipeUnlockModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void clientTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.END)
-				return;
+		public void clientTick(ZClientTick.End event) {
 
 			Minecraft mc = Minecraft.getInstance();
 			if(mc.player != null && mc.player.tickCount < 20) {

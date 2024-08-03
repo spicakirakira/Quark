@@ -1,5 +1,6 @@
 package org.violetmoon.quark.base;
 
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import org.violetmoon.quark.integration.lootr.client.ClientLootrIntegration;
 import org.violetmoon.quark.integration.lootr.client.IClientLootrIntegration;
 import org.violetmoon.zeta.client.ClientTicker;
@@ -10,14 +11,12 @@ import org.violetmoon.zetaimplforge.client.ForgeZetaClient;
 public class QuarkClient {
 
 	static {
-		if(Quark.ZETA.side == ZetaSide.SERVER)
+		if (Quark.ZETA.side == ZetaSide.SERVER)
 			throw new IllegalAccessError("SOMEONE LOADED QuarkClient ON THE SERVER!!!! DON'T DO THAT!!!!!!");
 	}
 
-	public static QuarkClient instance;
-
 	public static final ZetaClient ZETA_CLIENT = new ForgeZetaClient(Quark.ZETA);
-	public static final ClientTicker ticker = ZETA_CLIENT.ticker;
+	public static final ClientTicker ticker = ClientTicker.INSTANCE;
 
 	public static final String MISC_GROUP = "quark.gui.keygroup.misc";
 	public static final String INV_GROUP = "quark.gui.keygroup.inv";
@@ -27,9 +26,4 @@ public class QuarkClient {
 			() -> ClientLootrIntegration::new,
 			() -> IClientLootrIntegration.Dummy::new);
 
-	public static void start() {
-		instance = new QuarkClient();
-
-		ZETA_CLIENT.start();
-	}
 }

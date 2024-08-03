@@ -23,7 +23,7 @@ public class ParrotEggItem extends ZetaItem {
 	private final Parrot.Variant variant;
 
 	public ParrotEggItem(Parrot.Variant variant, ZetaModule module) {
-		super("egg_parrot_" + variant.name(), module,
+		super("egg_parrot_" + variant.getSerializedName(), module,
 				new Item.Properties()
 						.stacksTo(16));
 		this.variant = variant;

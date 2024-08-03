@@ -38,7 +38,6 @@ import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.event.load.ZCommonSetup;
 import org.violetmoon.zeta.event.play.entity.player.ZRightClickItem;
 import org.violetmoon.zeta.module.ZetaLoadModule;
@@ -235,9 +234,7 @@ public class ReacharoundPlacingModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void clientTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.END)
-				return;
+		public void clientTick(ZClientTick.End event) {
 
 			currentTarget = null;
 

@@ -304,7 +304,7 @@ public class EmotesModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void renderTick(ZRenderTick event) {
+		public void renderTick(ZRenderTick.Start event) {
 			EmoteHandler.onRenderTick(Minecraft.getInstance());
 		}
 

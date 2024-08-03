@@ -33,6 +33,7 @@ public class QuarkRemapHandler {
 		REMAP.put("quark:bamboo_mosaic", "minecraft:bamboo_mosaic");
 		REMAP.put("quark:bamboo_block", "minecraft:bamboo_block");
 		REMAP.put("quark:stripped_bamboo_block", "minecraft:stripped_bamboo_block");
+		REMAP.put("quark:egg_parrot_grey", "quark:egg_parrot_gray");
 	}
 
 	@SubscribeEvent

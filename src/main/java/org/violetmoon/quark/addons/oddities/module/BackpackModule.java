@@ -210,7 +210,7 @@ public class BackpackModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void clientTick(ZClientTick event) {
+		public void clientTick(ZClientTick.Start event) {
 			Minecraft mc = Minecraft.getInstance();
 			if(isInventoryGUI(mc.screen) && !backpackRequested && isEntityWearingBackpack(mc.player) && !mc.player.isInsidePortal) {
 				requestBackpack();

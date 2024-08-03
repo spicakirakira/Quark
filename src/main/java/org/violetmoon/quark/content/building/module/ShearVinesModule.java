@@ -88,12 +88,12 @@ public class ShearVinesModule extends ZetaModule {
 
 		@LoadEvent
 		public void blockColors(ZAddBlockColorHandlers event) {
-			event.registerNamed(b -> LIKE_VINE, "vine");
+			event.registerNamed(zeta, b -> LIKE_VINE, "vine");
 		}
 
 		@LoadEvent
 		public void itemColors(ZAddItemColorHandlers event) {
-			event.registerNamed(i -> LIKE_VINE, "vine");
+			event.registerNamed(zeta, i -> LIKE_VINE, "vine");
 		}
 	}
 }

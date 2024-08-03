@@ -1,4 +1,6 @@
-- Fallen logs can rarely spawn on water
+Requires Zeta 1.0-20
+
+-Fallen logs can rarely spawn on water
 - Fallen logs can no longer spawn on ice and other non terrain blocks (added tag for them)
 - Fallen log decoration (moss and vines) are now biome temperature and humidify dependent. No more moss in snowy biomes
 - Freestanding ladders will now break off the wall when you break the top block
@@ -8,7 +10,12 @@
 - Fixed pickarang logic for hardness calculation not using the item correctly. AS a consequence this fixes some exploits with it
 - Pickarang will now emit block particles when hitting a block it cant break
 - Creative players can break any block with a pickarang
+- Added more magnet related configs
 - Added unique pickarang damage type and death message
 - Added a new beach zombie villager texture
+- Added ocean villager type
+- Fixed Gray parrot egg being called "Grey"
+- Fixed many render and tick events firing twice. Performance goes brr
+- Fixed magnets blacklist not working as intented with derived recipes. Shulker boxes are no longer movable
 - Chutes can spit out items when they have any block below with enough clearance as opposed to just air and a few selected other blocks
 - Added new game nerf feature that allows villages to spawn more rarely around spawn and have also a greater chance of being zombie ones

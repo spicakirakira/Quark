@@ -28,6 +28,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory;
 import net.minecraftforge.fml.ModLoadingContext;
 
+// TODO: can we merge quark client and this class?
 public class ClientProxy extends CommonProxy {
 
 	public static boolean jingleBellsMotherfucker = false;
@@ -37,9 +38,6 @@ public class ClientProxy extends CommonProxy {
 		LocalDateTime now = LocalDateTime.now();
 		if(now.getMonth() == Month.DECEMBER && now.getDayOfMonth() >= 16 || now.getMonth() == Month.JANUARY && now.getDayOfMonth() <= 6)
 			jingleBellsMotherfucker = true;
-
-		//initialize ZetaClient
-		QuarkClient.start();
 
 		Quark.ZETA.loadBus
 				.subscribe(ModelHandler.class) //TODO: Make this especially not a singleton, move it into respective modules

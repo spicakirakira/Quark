@@ -11,6 +11,7 @@ import net.minecraft.world.level.material.MapColor;
 import org.violetmoon.quark.base.handler.WoodSetHandler;
 import org.violetmoon.quark.base.handler.WoodSetHandler.WoodSet;
 import org.violetmoon.zeta.event.bus.LoadEvent;
+import org.violetmoon.zeta.event.bus.PlayEvent;
 import org.violetmoon.zeta.event.load.ZAddReloadListener;
 import org.violetmoon.zeta.event.load.ZRegister;
 import org.violetmoon.zeta.module.ZetaLoadModule;
@@ -26,7 +27,7 @@ public class AzaleaWoodModule extends ZetaModule {
 		woodSet = WoodSetHandler.addWoodSet(event, this, "azalea", MapColor.COLOR_LIGHT_GREEN, MapColor.COLOR_BROWN, true);
 	}
 
-	@LoadEvent
+	@PlayEvent
 	public final void onServerReload(ZAddReloadListener e) {
 		ConfiguredFeature<?, ?> azaleaFeature = e.getRegistryAccess()
 				.registry(Registries.CONFIGURED_FEATURE)

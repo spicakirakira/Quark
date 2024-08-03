@@ -12,7 +12,7 @@ import org.violetmoon.quark.content.client.tooltip.FoodTooltips;
 import org.violetmoon.quark.content.client.tooltip.FuelTooltips;
 import org.violetmoon.quark.content.client.tooltip.MapTooltips;
 import org.violetmoon.quark.content.client.tooltip.ShulkerBoxTooltips;
-import org.violetmoon.zeta.client.event.load.ZRegisterReloadListeners;
+import org.violetmoon.zeta.client.event.load.ZRegisterClientReloadListener;
 import org.violetmoon.zeta.client.event.load.ZTooltipComponents;
 import org.violetmoon.zeta.client.event.play.ZGatherTooltipComponents;
 import org.violetmoon.zeta.config.Config;
@@ -114,7 +114,7 @@ public class ImprovedTooltipsModule extends ZetaModule {
 		}
 
 		@LoadEvent
-		public void registerReloadListeners(ZRegisterReloadListeners registry) {
+		public void registerReloadListeners(ZRegisterClientReloadListener registry) {
 			registry.accept(new AttributeTooltipManager());
 		}
 

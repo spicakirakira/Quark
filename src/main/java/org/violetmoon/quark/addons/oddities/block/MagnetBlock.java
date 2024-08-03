@@ -111,8 +111,6 @@ public class MagnetBlock extends ZetaBlock implements EntityBlock{
 
 		world.setBlock(targetPos, Blocks.AIR.defaultBlockState(), 67);
 
-		//TODO:push iron golems here...
-
 		return true;
 	}
 

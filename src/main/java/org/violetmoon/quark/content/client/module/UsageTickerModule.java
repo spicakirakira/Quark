@@ -23,7 +23,6 @@ import org.violetmoon.zeta.client.event.play.ZRenderGuiOverlay;
 import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
-import org.violetmoon.zeta.event.bus.ZPhase;
 import org.violetmoon.zeta.event.load.ZConfigChanged;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
@@ -72,10 +71,7 @@ public class UsageTickerModule extends ZetaModule {
 		}
 
 		@PlayEvent
-		public void clientTick(ZClientTick event) {
-			if(event.getPhase() != ZPhase.START)
-				return;
-
+		public void clientTick(ZClientTick.End event) {
 			Minecraft mc = Minecraft.getInstance();
 			if(mc.player != null && mc.level != null)
 				for(TickerElement ticker : elements)

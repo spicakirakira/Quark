@@ -111,7 +111,7 @@ public class TinyPotatoBlock extends ZetaBlock implements SimpleWaterloggedBlock
 		}
 	}
 
-	@SuppressWarnings("deprecation") //Needless Forge extension
+	@SuppressWarnings("deprecation")
 	@Override
 	public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
 		ItemStack stack = super.getCloneItemStack(level, pos, state);

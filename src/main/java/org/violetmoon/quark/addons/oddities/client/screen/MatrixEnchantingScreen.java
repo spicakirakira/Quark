@@ -3,6 +3,7 @@ package org.violetmoon.quark.addons.oddities.client.screen;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.world.entity.monster.Zombie;
 import org.jetbrains.annotations.NotNull;
 import org.violetmoon.quark.addons.oddities.block.be.MatrixEnchantingTableBlockEntity;
 import org.violetmoon.quark.addons.oddities.inventory.EnchantmentMatrix;
@@ -296,7 +297,6 @@ public class MatrixEnchantingScreen extends AbstractContainerScreen<MatrixEnchan
 				float a = 0.2F;
 				if(matrix.canPlace(piece, gridHoverX, gridHoverY))
 					a = (float) ((Math.sin(QuarkClient.ticker.total * 0.2) + 1) * 0.4 + 0.4);
-
 				renderPiece(guiGraphics, piece, a);
 				stack.popPose();
 			}

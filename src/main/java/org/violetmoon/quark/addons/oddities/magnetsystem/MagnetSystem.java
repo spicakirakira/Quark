@@ -69,8 +69,8 @@ public class MagnetSystem {
 	}
 
 	public static void onDigest(ZRecipeCrawl.Digest digest) {
-		//TODO(Zeta): Eschew the built-in whitelist/blacklist system... (https://github.com/VazkiiMods/Zeta/issues/2)
-		digest.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, Collections.emptyList(), Collections.emptyList(), i -> {
+
+		digest.recursivelyFindCraftedItemsFromStrings(MagnetsModule.magneticDerivationList, MagnetsModule.magneticWhitelist, MagnetsModule.magneticBlacklist, i -> {
 			if(i instanceof BlockItem bi) {
 				magnetizableBlocks.add(bi.getBlock());
 			}
