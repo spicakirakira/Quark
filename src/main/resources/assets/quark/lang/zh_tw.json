@@ -590,8 +590,8 @@
 	"item.minecraft.lingering_potion.effect.quark.resilience": "滯留 抗擊退藥水",
 	"item.minecraft.tipped_arrow.effect.quark.resilience": "抗擊退之箭",
 
-	"item.quark.biome_map": "%s Pathfinder Map",
-	"item.quark.biome_map.unknown": "Unknown Biome",
+	"item.quark.biome_map": "%s 探路者地圖",
+	"item.quark.biome_map.unknown": "未知生態域",
 
 	"_biome_map_comment": "The following translation keys are only relevant to maps generated before Quark 354.",
 	"item.quark.biome_map.snowy_plains": "冰雪平原探路者地圖",
