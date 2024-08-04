@@ -5,7 +5,7 @@ from jproperties import Properties
 def main():
 	build = Properties()
 	with open('build.properties', 'rb') as f:
-	    build.load(f , "utf-8")
+		build.load(f , "utf-8")
 
 	mc_version, mcv_meta = build['mc_version']
 	version, v_meta = build['version']
@@ -15,18 +15,25 @@ def main():
 	print('Version:', version)
 	print('Build Number', build_number)
 
-	changelog = '-m "Changelog:" '
+	changelog = ''
 	with open('changelog.txt', 'r') as f:
 		content = f.read()
+		content = content.replace('"', '\'')
+		lines = content.splitlines()
+		for line in lines:
+			changelog = changelog + '-m "'+line+'" '
 
-		content = content.replace('"', '\'');
-		changelog = changelog + re.sub(r'(- .+)\n?', '-m "\g<1>" ', content)
-	
-	os.system('git tag -a release-{}-{}-{} {}'.format(mc_version, version, build_number, changelog))
-	
+	tag_success = os.system('git tag -a release-{}-{}-{} {}'.format(mc_version, version, build_number, changelog))
+
+	if tag_success != 0:
+		print('Failed to create tag')
+		return
+	else :
+		print('Created tag')
+
 	build['build_number'] = str(int(build_number) + 1)
 	with open("build.properties", "wb") as f:
-	    build.store(f, encoding="utf-8")
+		build.store(f, encoding="utf-8")
 
 	os.system('git commit -a -m build')
 	os.system('git push origin master release-{}-{}-{}'.format(mc_version, version, build_number))
