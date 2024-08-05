@@ -120,15 +120,21 @@ public class WraithModule extends ZetaModule {
 		soulBeadTargetTag = TagKey.create(Registries.STRUCTURE, new ResourceLocation(Quark.MOD_ID, "soul_bead_target"));
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(wraithType, WraithRenderer::new);
-		EntityRenderers.register(soulBeadType, SoulBeadRenderer::new);
-	}
 
 	@LoadEvent
 	public final void configChanged(ZConfigChanged event) {
 		validWraithSounds = wraithSounds.stream().filter((s) -> s.split("\\|").length == 3).collect(Collectors.toList());
 	}
+
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends WraithModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(wraithType, WraithRenderer::new);
+			EntityRenderers.register(soulBeadType, SoulBeadRenderer::new);
+		}
+	}
+
 
 }

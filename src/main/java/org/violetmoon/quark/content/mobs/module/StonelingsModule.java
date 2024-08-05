@@ -78,9 +78,13 @@ public class StonelingsModule extends ZetaModule {
 		e.put(stonelingType, Stoneling.prepareAttributes().build());
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(stonelingType, StonelingRenderer::new);
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends StonelingsModule {
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(stonelingType, StonelingRenderer::new);
+		}
+
 	}
 
 }

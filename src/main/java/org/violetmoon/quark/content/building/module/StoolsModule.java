@@ -80,9 +80,13 @@ public class StoolsModule extends ZetaModule {
 		}
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends StoolsModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
 		EntityRenderers.register(stoolEntity, StoolEntityRenderer::new);
+	}
 	}
 
 }

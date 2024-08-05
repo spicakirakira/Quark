@@ -55,8 +55,12 @@ public class CrafterModule extends ZetaModule {
         Quark.ZETA.registry.register(blockEntityType, "crafter", Registries.BLOCK_ENTITY_TYPE);
     }
 
-    @LoadEvent
-    public final void clientSetup(ZClientSetup event) {
-        event.enqueueWork(() -> MenuScreens.register(menuType, CrafterScreen::new));
+    @ZetaLoadModule(clientReplacement = true)
+    public static final class Client extends CrafterModule {
+
+        @LoadEvent
+        public void clientSetup(ZClientSetup event) {
+            event.enqueueWork(() -> MenuScreens.register(menuType, CrafterScreen::new));
+        }
     }
 }

@@ -191,10 +191,6 @@ public class FeedingTroughModule extends ZetaModule {
         event.getRegistry().register(menuType, "feeding_trough", Registries.MENU);
     }
 
-    @LoadEvent
-    public final void clientSetup(ZClientSetup event) {
-        event.enqueueWork(() -> MenuScreens.register(menuType, TroughScreen::new));
-    }
 
     private static final class TroughPointer {
         private final BlockPos pos;
@@ -310,4 +306,15 @@ public class FeedingTroughModule extends ZetaModule {
             return any.get();
         }
     }
+
+
+    @ZetaLoadModule(clientReplacement = true)
+    public static final class Client extends FeedingTroughModule{
+
+        @LoadEvent
+        public void clientSetup(ZClientSetup event) {
+            event.enqueueWork(() -> MenuScreens.register(menuType, TroughScreen::new));
+        }
+    }
+
 }

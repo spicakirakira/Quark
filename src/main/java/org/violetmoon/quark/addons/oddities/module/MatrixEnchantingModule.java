@@ -188,12 +188,6 @@ public class MatrixEnchantingModule extends ZetaModule {
 		event.accept(matrixEnchanter.asItem(), comp);
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		MenuScreens.register(menuType, MatrixEnchantingScreen::new);
-		BlockEntityRenderers.register(blockEntityType, MatrixEnchantingTableRenderer::new);
-	}
-
 	@PlayEvent
 	public void onBlockPlaced(ZBlock.EntityPlace event) {
 		if(event.getPlacedBlock().getBlock().equals(Blocks.ENCHANTING_TABLE) && automaticallyConvert)
@@ -271,6 +265,13 @@ public class MatrixEnchantingModule extends ZetaModule {
 
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends MatrixEnchantingModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			MenuScreens.register(menuType, MatrixEnchantingScreen::new);
+			BlockEntityRenderers.register(blockEntityType, MatrixEnchantingTableRenderer::new);
+		}
+
 		@PlayEvent
 		public void onTooltip(ZItemTooltip event) {
 			ItemStack stack = event.getItemStack();

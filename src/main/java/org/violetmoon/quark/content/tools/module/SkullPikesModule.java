@@ -62,11 +62,6 @@ public class SkullPikesModule extends ZetaModule {
 		pikeTrophiesTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "pike_trophies"));
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(skullPikeType, SkullPikeRenderer::new);
-	}
-
 	@PlayEvent
 	public void onPlaceBlock(ZBlock.EntityPlace event) {
 		BlockState state = event.getPlacedBlock();
@@ -97,5 +92,15 @@ public class SkullPikesModule extends ZetaModule {
 			if(!alreadySetUp)
 				MiscUtil.addGoalJustAfterLatestWithPriority(monster.goalSelector, 3, new RunAwayFromPikesGoal(monster, (float) pikeRange, 1.0D, 1.2D));
 		}
+	}
+
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends SkullPikesModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(skullPikeType, SkullPikeRenderer::new);
+		}
+
 	}
 }

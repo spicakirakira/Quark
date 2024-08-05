@@ -17,8 +17,8 @@ import org.violetmoon.zeta.config.Config;
 import org.violetmoon.zeta.config.ConfigFlagManager;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.bus.PlayEvent;
+import org.violetmoon.zeta.event.load.ZGatherAdditionalFlags;
 import org.violetmoon.zeta.event.load.ZRegister;
-import org.violetmoon.zeta.event.play.loading.ZGatherAdditionalFlags;
 import org.violetmoon.zeta.module.ZetaLoadModule;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.CreativeTabManager;
@@ -60,7 +60,7 @@ public class MoreStoneVariantsModule extends ZetaModule {
 		instance = this;
 	}
 
-	@PlayEvent
+	@LoadEvent
 	public final void moreFlags(ZGatherAdditionalFlags event) {
 		ConfigFlagManager manager = event.flagManager();
 		manager.putFlag(this, "granite", true);
@@ -103,6 +103,8 @@ public class MoreStoneVariantsModule extends ZetaModule {
 
 		event.getVariantRegistry().addSlabStairsWall(bricks, null);
 		CreativeTabManager.endDaisyChain();
+
+
 	}
 
 }

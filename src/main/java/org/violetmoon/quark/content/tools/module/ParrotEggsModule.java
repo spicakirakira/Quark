@@ -121,11 +121,6 @@ public class ParrotEggsModule extends ZetaModule {
 		isEnabled = this.enabled;
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(parrotEggType, ThrownItemRenderer::new);
-	}
-
 	@PlayEvent
 	public void entityInteract(ZPlayerInteract.EntityInteract event) {
 		Entity e = event.getTarget();
@@ -190,6 +185,12 @@ public class ParrotEggsModule extends ZetaModule {
 
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends ParrotEggsModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(parrotEggType, ThrownItemRenderer::new);
+		}
+
 		@Nullable
 		public static ResourceLocation getTextureForParrot(Parrot parrot) {
 			if(!isEnabled || !enableKotobirb)

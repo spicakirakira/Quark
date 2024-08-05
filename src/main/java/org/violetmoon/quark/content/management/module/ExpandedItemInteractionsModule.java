@@ -94,11 +94,6 @@ public class ExpandedItemInteractionsModule extends ZetaModule {
 	}
 
 	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		MenuScreens.register(heldShulkerBoxMenuType, HeldShulkerBoxScreen::new);
-	}
-
-	@LoadEvent
 	public final void configChanged(ZConfigChanged event) {
 		staticEnabled = enabled;
 
@@ -374,6 +369,12 @@ public class ExpandedItemInteractionsModule extends ZetaModule {
 
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends ExpandedItemInteractionsModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			MenuScreens.register(heldShulkerBoxMenuType, HeldShulkerBoxScreen::new);
+		}
+
 		@PlayEvent
 		public void gatherTooltip(ZRenderTooltip.GatherComponents.Low event) {
 			if(!enableArmorInteraction && (!enableShulkerBoxInteraction || !allowOpeningShulkerBoxes))

@@ -153,8 +153,12 @@ public class CrabsModule extends ZetaModule {
 		crabSpawnableTag = BlockTags.create(new ResourceLocation(Quark.MOD_ID, "crab_spawnable"));
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(crabType, CrabRenderer::new);
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends CrabsModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(crabType, CrabRenderer::new);
+		}
 	}
 }

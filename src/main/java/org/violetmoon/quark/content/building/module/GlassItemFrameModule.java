@@ -65,13 +65,15 @@ public class GlassItemFrameModule extends ZetaModule {
 		CreativeTabManager.endDaisyChain();
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(glassFrameEntity, GlassItemFrameRenderer::new);
-	}
 
 	@ZetaLoadModule(clientReplacement = true)
 	public static class Client extends GlassItemFrameModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(glassFrameEntity, GlassItemFrameRenderer::new);
+		}
+
 		@LoadEvent
 		public void registerAdditionalModels(ZAddModels event) {
 			event.register(new ModelResourceLocation(Quark.MOD_ID, "extra/glass_item_frame", "inventory"));

@@ -84,9 +84,13 @@ public class ToretoiseModule extends ZetaModule {
 		e.put(toretoiseType, Toretoise.prepareAttributes().build());
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(toretoiseType, ToretoiseRenderer::new);
-	}
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends ToretoiseModule {
 
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(toretoiseType, ToretoiseRenderer::new);
+		}
+
+	}
 }

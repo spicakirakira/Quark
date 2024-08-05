@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.client.color.block.BlockColors;
+import org.violetmoon.zeta.client.event.load.ZAddBlockColorHandlers;
 import org.violetmoon.zeta.client.event.load.ZClientSetup;
 import org.violetmoon.zeta.event.bus.LoadEvent;
 import org.violetmoon.zeta.event.load.ZRegister;
@@ -69,12 +71,16 @@ public class MorePottedPlantsModule extends ZetaModule {
 		return event.getVariantRegistry().addFlowerPot(block, name, Functions.identity());
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		for(Block b : tintedBlocks.keySet()) {
-			BlockState tState = tintedBlocks.get(b).defaultBlockState();
-			BlockColor color = (state, worldIn, pos, tintIndex) -> Minecraft.getInstance().getBlockColors().getColor(tState, worldIn, pos, tintIndex);
-			Minecraft.getInstance().getBlockColors().register(color, b);
+	@ZetaLoadModule(clientReplacement = true)
+	public static final class Client extends MorePottedPlantsModule {
+		@LoadEvent
+		public void registerColors(ZAddBlockColorHandlers event) {
+			for(Block b : tintedBlocks.keySet()) {
+				BlockState tState = tintedBlocks.get(b).defaultBlockState();
+				BlockColors blockColors = event.getBlockColors();
+				BlockColor color = (state, worldIn, pos, tintIndex) -> blockColors.getColor(tState, worldIn, pos, tintIndex);
+				event.register(color, b);
+			}
 		}
 	}
 

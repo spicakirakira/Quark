@@ -97,11 +97,6 @@ public class MagnetsModule extends ZetaModule {
         event.getRegistry().register(repulsorParticle, "repulsor", Registries.PARTICLE_TYPE);
     }
 
-    @LoadEvent
-    public final void clientSetup(ZClientSetup event) {
-        BlockEntityRenderers.register(magnetizedBlockType, MagnetizedBlockRenderer::new);
-    }
-
     @PlayEvent
     public void tickStart(ZLevelTick.Start event) {
         MagnetSystem.tick(true, event.getLevel());
@@ -120,6 +115,15 @@ public class MagnetsModule extends ZetaModule {
     @PlayEvent
     public void crawlDigest(ZRecipeCrawl.Digest event) {
         MagnetSystem.onDigest(event);
+    }
+
+    @ZetaLoadModule(clientReplacement = true)
+    public static final class Client extends MagnetsModule {
+
+        @LoadEvent
+        public void clientSetup(ZClientSetup event) {
+            BlockEntityRenderers.register(magnetizedBlockType, MagnetizedBlockRenderer::new);
+        }
     }
 
 }

@@ -69,9 +69,15 @@ public class ShibaModule extends ZetaModule {
 		e.put(shibaType, Wolf.createAttributes().build());
 	}
 
-	@LoadEvent
-	public final void clientSetup(ZClientSetup event) {
-		EntityRenderers.register(shibaType, ShibaRenderer::new);
+	@ZetaLoadModule(clientReplacement = true)
+	public static class Client extends ShibaModule {
+
+		@LoadEvent
+		public final void clientSetup(ZClientSetup event) {
+			EntityRenderers.register(shibaType, ShibaRenderer::new);
+		}
 	}
+
+
 
 }
