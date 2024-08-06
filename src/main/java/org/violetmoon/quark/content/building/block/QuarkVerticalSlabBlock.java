@@ -28,9 +28,6 @@ public class QuarkVerticalSlabBlock extends VerticalSlabBlock implements IZetaBl
 
 		this.module = module;
 
-		if(module.category.isAddon())
-			module.zeta.requiredModTooltipHandler.map(this, module.category.requiredMod);
-
 		if(!(parent instanceof SlabBlock))
 			throw new IllegalArgumentException("Can't rotate a non-slab block into a vertical slab.");
 

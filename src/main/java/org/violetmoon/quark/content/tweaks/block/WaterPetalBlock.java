@@ -33,9 +33,7 @@ public class WaterPetalBlock extends PinkPetalsBlock implements IZetaBlock {
             return;
 
         module.zeta.registry.registerBlock(this, regname, false);
-        if(module.category.isAddon())
-            module.zeta.requiredModTooltipHandler.map(this, module.category.requiredMod);
-        
+
 		module.zeta.renderLayerRegistry.put(this, RenderLayerRegistry.Layer.CUTOUT);
     }
     

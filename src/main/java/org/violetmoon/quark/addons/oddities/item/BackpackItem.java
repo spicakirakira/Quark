@@ -29,11 +29,13 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.jetbrains.annotations.Nullable;
 import org.violetmoon.quark.addons.oddities.inventory.BackpackMenu;
 import org.violetmoon.quark.addons.oddities.module.BackpackModule;
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.handler.ProxiedItemStackHandler;
 import org.violetmoon.zeta.item.IZetaItem;
+import org.violetmoon.zeta.item.ZetaItem;
 import org.violetmoon.zeta.item.ext.IZetaItemExtensions;
 import org.violetmoon.zeta.module.ZetaModule;
 import org.violetmoon.zeta.registry.CreativeTabManager;
@@ -48,9 +50,10 @@ public class BackpackItem extends DyeableArmorItem implements IZetaItem, IZetaIt
 	private static final String WORN_TEXTURE = Quark.MOD_ID + ":textures/misc/backpack_worn.png";
 	private static final String WORN_OVERLAY_TEXTURE = Quark.MOD_ID + ":textures/misc/backpack_worn_overlay.png";
 
+	@Nullable
 	private final ZetaModule module;
 
-	public BackpackItem(ZetaModule module) {
+	public BackpackItem(@Nullable ZetaModule module) {
 		super(ArmorMaterials.LEATHER, Type.CHESTPLATE,
 				new Item.Properties()
 						.stacksTo(1)
@@ -58,10 +61,10 @@ public class BackpackItem extends DyeableArmorItem implements IZetaItem, IZetaIt
 						.rarity(Rarity.RARE));
 
 		this.module = module;
-		module.zeta.registry.registerItem(this, "backpack");
 
-		if(module.category.isAddon())
-			module.zeta.requiredModTooltipHandler.map(this, module.category.requiredMod);
+		if (module == null)return;
+
+		module.zeta.registry.registerItem(this, "backpack");
 
 		CreativeTabManager.addToCreativeTabNextTo(CreativeModeTabs.TOOLS_AND_UTILITIES, this, Items.SADDLE, true);
 	}
