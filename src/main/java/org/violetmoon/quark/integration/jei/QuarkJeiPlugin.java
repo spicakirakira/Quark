@@ -89,51 +89,6 @@ public class QuarkJeiPlugin implements IModPlugin {
 	}
 
 	@Override
-	public void onRuntimeAvailable(@NotNull final IJeiRuntime jeiRuntime) {
-		List<ItemStack> disabledItems = Quark.ZETA.requiredModTooltipHandler.disabledItems();
-		if(!disabledItems.isEmpty())
-			jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, disabledItems);
-
-		Quark.ZETA.configManager.setJeiReloadListener(configInternals -> {
-			if(Quark.ZETA.modules.isEnabled(DiamondRepairModule.class))
-				Minecraft.getInstance().submitAsync(() -> hideAnvilRepairRecipes(jeiRuntime.getRecipeManager()));
-
-			// TODO: This needs to be moved to zeta
-			if(!ZetaGeneralConfig.hideDisabledContent)
-				return;
-
-			Set<Potion> hidePotions = Sets.newHashSet();
-			for(Potion potion : BuiltInRegistries.POTION) {
-				ResourceLocation loc = BuiltInRegistries.POTION.getKey(potion);
-				if(loc != null && loc.getNamespace().equals("quark")) {
-					if(!Quark.ZETA.brewingRegistry.isEnabled(potion)) {
-						hidePotions.add(potion);
-					}
-				}
-			}
-
-			NonNullList<ItemStack> stacksToHide = NonNullList.create();
-			for(Item item : BuiltInRegistries.ITEM) {
-				ResourceLocation loc = BuiltInRegistries.ITEM.getKey(item);
-				if(loc.getNamespace().equals("quark") && !IDisableable.isEnabled(item)) {
-					//TODO 1.20: this just enumerated the item's variants
-					//item.fillItemCategory(CreativeModeTab.TAB_SEARCH, stacksToHide);
-				}
-
-				if(item instanceof PotionItem || item instanceof TippedArrowItem) {
-					NonNullList<ItemStack> potionStacks = NonNullList.create();
-					//TODO 1.20: this just enumerated the item's variants
-					//item.fillItemCategory(CreativeModeTab.TAB_SEARCH, potionStacks);
-					potionStacks.stream().filter(it -> hidePotions.contains(PotionUtils.getPotion(it))).forEach(stacksToHide::add);
-				}
-			}
-
-			if(!stacksToHide.isEmpty())
-				Minecraft.getInstance().submitAsync(() -> jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, stacksToHide));
-		});
-	}
-
-	@Override
 	public void registerVanillaCategoryExtensions(@NotNull IVanillaCategoryExtensionRegistration registration) {
 		registration.getCraftingCategory().addCategoryExtension(ElytraDuplicationRecipe.class, ElytraDuplicationExtension::new);
 		registration.getCraftingCategory().addCategoryExtension(SlabToBlockRecipe.class, SlabToBlockExtension::new);
@@ -166,36 +121,6 @@ public class QuarkJeiPlugin implements IModPlugin {
 
 		if(Quark.ZETA.modules.isEnabled(DiamondRepairModule.class))
 			registerCustomAnvilRecipes(registration, factory);
-
-		// TODO: This needs to be moved to zeta
-		if(ZetaGeneralConfig.enableJeiItemInfo) {
-			MutableComponent externalPreamble = Component.translatable("quark.jei.hint_preamble");
-			externalPreamble.setStyle(externalPreamble.getStyle().withColor(0x0b5d4b));
-
-			List<Item> blacklist = RegistryUtil.massRegistryGet(ZetaGeneralConfig.suppressedInfo, BuiltInRegistries.ITEM);
-
-			Quark.ZETA.playBus.fire(new ZGatherHints() {
-				@Override
-				public void accept(ItemLike itemLike, Component extra) {
-					Item item = itemLike.asItem();
-
-					if(blacklist.contains(item))
-						return;
-
-					MutableComponent compound = Component.literal("");
-					if(!BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Quark.MOD_ID))
-						compound = compound.append(externalPreamble);
-					compound = compound.append(extra);
-
-					registration.addItemStackInfo(new ItemStack(item), compound);
-				}
-
-				@Override
-				public RegistryAccess getRegistryAccess() {
-					return QuarkClient.ZETA_CLIENT.hackilyGetCurrentClientLevelRegistryAccess();
-				}
-			}, ZGatherHints.class);
-		}
 	}
 
 	@Override

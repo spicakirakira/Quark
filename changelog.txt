@@ -1,1 +1,2 @@
-Re-built and published because for some arcane reason previous version didn't work?
+- fixed grate blocking chute drops
+- fixed magnets not pushing breakable blocks

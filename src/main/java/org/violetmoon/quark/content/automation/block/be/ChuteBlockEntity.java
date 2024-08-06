@@ -37,6 +37,7 @@ public class ChuteBlockEntity extends ZetaBlockEntity {
 			BlockPos below = worldPosition.below();
 			BlockState state = level.getBlockState(below);
 			if (state.isAir()) return true;
+			if (state.is(GrateModule.grate)) return true;
 			//this could be cached in a blockstate property. maybe micro optimization...
 			var shape = state.getCollisionShape(level, below);
 			if (shape.isEmpty() ) return true;

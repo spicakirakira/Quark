@@ -140,7 +140,7 @@ public class MagnetSystem {
 		Block block = state.getBlock();
 
 		//cant push stuff that pistons cant push
-		if(MagnetsModule.usePistonLogic && !PistonBaseBlock.isPushable(state, level, pos, moveDir, false, moveDir.getOpposite())){
+		if(MagnetsModule.usePistonLogic && !PistonBaseBlock.isPushable(state, level, pos, moveDir, true, moveDir.getOpposite())){
 			return false;
 		}
 
