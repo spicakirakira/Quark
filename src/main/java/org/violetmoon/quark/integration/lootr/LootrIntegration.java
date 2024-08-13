@@ -4,10 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-
 import org.jetbrains.annotations.Nullable;
-
 import org.violetmoon.quark.base.Quark;
 import org.violetmoon.quark.base.util.BlockPropertyUtil;
 import org.violetmoon.zeta.module.ZetaModule;
@@ -60,6 +57,11 @@ public class LootrIntegration implements ILootrIntegration {
 	@Nullable
 	public Block lootrVariant(Block base) {
 		return chestMappings.get(base);
+	}
+
+	@Override
+	public void populate(Map<Block, Block> map) {
+		map.putAll(chestMappings);
 	}
 
 	@Override

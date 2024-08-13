@@ -3,11 +3,10 @@ package org.violetmoon.quark.integration.lootr;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-
 import org.jetbrains.annotations.Nullable;
-
 import org.violetmoon.zeta.module.ZetaModule;
 
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -31,6 +30,10 @@ public interface ILootrIntegration {
 	@Nullable
 	default Block lootrVariant(Block base) {
 		return null;
+	}
+
+	default void populate(Map<Block, Block> map) {
+		// NO-OP
 	}
 
 	default void postRegister() {
