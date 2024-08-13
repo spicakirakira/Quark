@@ -1,7 +1,6 @@
 package org.violetmoon.quark.integration.mixin.lootr;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -30,10 +29,9 @@ public class ConfigManagerMixin {
 		return original;
 	}
 
-	@WrapOperation(method = "replacement", at = @At(value = "INVOKE", target = "Ljava/util/HashMap;<init>()V"), remap = false)
-	private static Map<Block, Block> addQuarkChests(Operation<Map<Block, Block>> original) {
-		Map<Block, Block> map = original.call();
-		Quark.LOOTR_INTEGRATION.populate(map);
-		return map;
+	@ModifyReturnValue(method = "replacement", at = @At(value = "NEW", target = "java/util/HashMap", remap = false), remap = false)
+	private static Map<Block, Block> addQuarkChests(Map<Block, Block> original) {
+		Quark.LOOTR_INTEGRATION.populate(original);
+		return original;
 	}
 }
