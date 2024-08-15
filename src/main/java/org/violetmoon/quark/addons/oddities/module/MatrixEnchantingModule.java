@@ -94,8 +94,14 @@ public class MatrixEnchantingModule extends ZetaModule {
 	@Config(description = "Set this to true to allow treasure enchantments to be rolled as pieces")
 	public static boolean allowTreasures = false;
 
+	@Config(description = "Set this to true to allow undiscoverable enchantments to be rolled as pieces")
+	public static boolean allowUndiscoverableEnchantments = false;
+
 	@Config(description = "Any treasure enchantment IDs here will be able to appear in books in matrix enchanting")
 	public static List<String> treasureWhitelist = Lists.newArrayList();
+
+	@Config(description = "Any undiscoverable enchantment IDs here will be able to appear in matrix enchanting")
+	public static List<String> undiscoverableWhitelist = Lists.newArrayList();
 
 	@Config(description = "Set to false to disable the tooltip for items with pending enchantments")
 	public static boolean showTooltip = true;

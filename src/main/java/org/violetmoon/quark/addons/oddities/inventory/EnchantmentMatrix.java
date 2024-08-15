@@ -146,9 +146,16 @@ public class EnchantmentMatrix {
 
 		List<EnchantmentDataWrapper> validEnchants = new ArrayList<>();
 		BuiltInRegistries.ENCHANTMENT.forEach(enchantment -> {
+
 			String id = BuiltInRegistries.ENCHANTMENT.getKey(enchantment).toString();
 			boolean isValid = true;
-			if(enchantment.isTreasureOnly()) {
+
+			if (!enchantment.isDiscoverable()) {
+				isValid = MatrixEnchantingModule.allowUndiscoverableEnchantments ||
+					MatrixEnchantingModule.undiscoverableWhitelist.contains(id);
+			}
+
+			if(isValid && enchantment.isTreasureOnly()) {
 				isValid = MatrixEnchantingModule.allowTreasures ||
 						(isBook && MatrixEnchantingModule.treasureWhitelist.contains(id));
 			}
