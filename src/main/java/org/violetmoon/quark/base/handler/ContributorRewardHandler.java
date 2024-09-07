@@ -47,13 +47,13 @@ public class ContributorRewardHandler {
 
 	@LoadEvent
 	public static void init(ZCommonSetup event) {
-		init();
+		//init();
 	}
 
 	@PlayEvent
 	public static void onPlayerJoin(ZPlayer.LoggedIn event) {
 		//refresh the contributor list on login
-		init();
+		//init();
 	}
 
 	public static void init() {
